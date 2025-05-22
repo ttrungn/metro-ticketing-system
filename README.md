@@ -1,6 +1,4 @@
-﻿# SampleService
-
-The project was generated using the [Clean.Architecture.Solution.Template](https://github.com/jasontaylordev/SampleService) version 8.0.6.
+﻿Each service in the project project was generated using the [Clean.Architecture.Solution.Template](https://github.com/jasontaylordev/SampleService) version 8.0.6.
 
 ## Build
 
