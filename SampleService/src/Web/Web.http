@@ -1,0 +1,34 @@
+﻿# SampleService/http/WeatherForecasts.http
+@baseUrl = http://localhost:8000/api/sample/weatherforecasts
+
+### Get all weather forecasts
+GET {{baseUrl}}/
+Accept: application/json
+
+### Create a new weather forecast
+POST {{baseUrl}}/
+Content-Type: application/json
+
+{
+  "date": "2024-03-20T10:00:00Z",
+  "temperatureC": 25,
+  "summary": "Warm and super sunny and very nice"
+}
+
+### Get weather forecast by id (replace with actual id)
+GET {{baseUrl}}/3fa85f64-5717-4562-b3fc-2c963f66afa6
+Accept: application/json
+
+### Update weather forecast (replace with actual id)
+PUT {{baseUrl}}/5db6854e-409b-4336-91cd-08dd969b2e3d
+Content-Type: application/json
+
+{
+  "id": "5db6854e-409b-4336-91cd-08dd969b2e3d",
+  "date": "2024-03-20T10:00:00Z",
+  "temperatureC": 30,
+  "summary": "Hot and humid"
+}
+
+### Delete weather forecast (replace with actual id)
+DELETE {{baseUrl}}/5db6854e-409b-4336-91cd-08dd969b2e3d
