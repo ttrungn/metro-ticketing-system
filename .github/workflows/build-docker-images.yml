@@ -33,7 +33,7 @@ jobs:
 
       - uses: docker/build-push-action@v4
         with:
-          context: ./AuthService/src/Web
+          context: .
           file: ./AuthService/src/Web/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
