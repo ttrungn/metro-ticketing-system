@@ -1,33 +1,37 @@
 services:
-  auth-service:
-    image: ttrungn/mts-auth-service:latest
-    container_name: auth-service
-    expose:
-      - 8080
-    networks:
-      - metro-net
+#  auth-service:
+#    build:
+#      context: .
+#      dockerfile: ./AuthService/src/Web/Dockerfile
+#    container_name: auth-service
+#    expose:
+#      - 8080
+#    networks:
+#      - metro-net
   sample-service:
-    image: ttrungn/mts-sample-service:latest
+    build:
+      context: .
+      dockerfile: ./SampleService/src/Web/Dockerfile
     container_name: sample-service
     expose:
       - 8080
     networks:
       - metro-net
-  api-gateway:
-    build:
-      context: .
-      dockerfile: ./YarpApiGateway/Dockerfile
-    container_name: api-gateway
-    ports:
-      - "9000:8080"
-    depends_on:
-      - auth-service
-      - sample-service
-    environment:
-      - ReverseProxy__Clusters__authService__Destinations__d1__Address=http://auth-service:8080/
-      - ReverseProxy__Clusters__sampleService__Destinations__d1__Address=http://sample-service:8080/
-    networks:
-      - metro-net
+#  api-gateway:
+#    build:
+#      context: .
+#      dockerfile: ./YarpApiGateway/Dockerfile
+#    container_name: api-gateway
+#    ports:
+#      - "9000:8080"
+#    depends_on:
+#      - auth-service
+#      - sample-service
+#    environment:
+#      - ReverseProxy__Clusters__authService__Destinations__d1__Address=http://auth-service:8080/
+#      - ReverseProxy__Clusters__sampleService__Destinations__d1__Address=http://sample-service:8080/
+#    networks:
+#      - metro-net
 
 networks:
   metro-net:
