@@ -13,12 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\SampleService\src\Application\Application.csproj" />
         <ProjectReference Include="..\Domain\Domain.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Common\Models\" />
     </ItemGroup>
 
 </Project>

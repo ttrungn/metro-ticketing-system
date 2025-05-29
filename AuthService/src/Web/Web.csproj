@@ -4,6 +4,7 @@
         <RootNamespace>AuthService.Web</RootNamespace>
         <AssemblyName>AuthService.Web</AssemblyName>
         <ContainerRepository>AuthService</ContainerRepository>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
@@ -33,6 +34,12 @@
       <_ContentIncludedByDefault Remove="Pages\Shared\_LoginPartial.cshtml" />
       <_ContentIncludedByDefault Remove="Pages\_ViewImports.cshtml" />
       <_ContentIncludedByDefault Remove="wwwroot\api\specification.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\..\..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
     </ItemGroup>
 
 

@@ -4,6 +4,7 @@
         <RootNamespace>SampleService.Web</RootNamespace>
         <AssemblyName>SampleService.Web</AssemblyName>
         <ContainerRepository>SamepleService</ContainerRepository>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
@@ -29,7 +30,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="wwwroot\api\sample" />
+      <Content Include="..\..\..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
     </ItemGroup>
 
 
