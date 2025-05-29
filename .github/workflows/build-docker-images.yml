@@ -27,3 +27,10 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/mts-auth-service:${{ steps.sha.outputs.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/mts-auth-service:latest
+          build-args: |
+            WRITE_DB=${{ secrets.AUTH_SERVICE_WRITE_DB_CONNECTION }}
+            READ_DB=POSTGRESQL_URL
+            JWT_SECRET=${{ secrets.SHARED_JWT_SECRET }}
+            JWT_ISSUER=${{ secrets.SHARED_JWT_ISSUER }}
+            JWT_AUDIENCE=${{ secrets.SHARED_JWT_AUDIENCE }}
+            JWT_LIFETIME_MINUTES=${{ secrets.SHARED_JWT_LIFETIME_MINUTES }}

@@ -1,8 +1,6 @@
 services:
   auth-service:
-    build:
-      context: .
-      dockerfile: ./AuthService/src/Web/Dockerfile
+    image: ttrungn/mts-auth-service:latest
     container_name: auth-service
     expose:
       - 8080
