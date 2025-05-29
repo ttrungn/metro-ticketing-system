@@ -5,6 +5,8 @@ on:
     branches: [ trung ]
     paths:
       - 'AuthService/**'
+      - 'SampleService/**'
+      - 'YarpApiGateway/**'
 
 jobs:
   auth:
@@ -47,3 +49,53 @@ jobs:
             JWT_ISSUER=${{ secrets.SHARED_JWT_ISSUER }}
             JWT_AUDIENCE=${{ secrets.SHARED_JWT_AUDIENCE }}
             JWT_LIFETIME_MINUTES=${{ secrets.SHARED_JWT_LIFETIME_MINUTES }}
+  sample:
+    name: Build & Push SampleService
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver: docker-container
+          install: true
+
+      - name: Get Git short SHA
+        id: sha
+        run: echo "::set-output name=sha::$(git rev-parse --short HEAD)"
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & push SampleService multi-arch
+        uses: docker/build-push-action@v4
+        with:
+          # send the whole repo so your csproj references resolve
+          context: .
+          # point at your SampleService Web Dockerfile
+          file: ./SampleService/src/Web/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/mts-sample-service:${{ steps.sha.outputs.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/mts-sample-service:latest
+          build-args: |
+            WRITE_DB=${{ secrets.SAMPLE_SERVICE_WRITE_DB_CONNECTION }}
+            READ_DB=${{ secrets.SAMPLE_SERVICE_READ_DB_CONNECTION }}
+            KAFKA_URL=${{ secrets.KAFKA_URL }}
+            KAFKA_USERNAME=${{ secrets.KAFKA_USERNAME }}
+            KAFKA_PASSWORD=${{ secrets.KAFKA_PASSWORD }}
+            KAFKA_SAMPLE_EVENTS_NAME=${{ secrets.KAFKA_SAMPLE_EVENTS_NAME }}
+            KAFKA_SAMPLE_EVENTS_GROUP=${{ secrets.KAFKA_SAMPLE_EVENTS_GROUP }}
+            KAFKA_PRODUCER_MESSAGE_TIMEOUT_MS=${{ secrets.KAFKA_PRODUCER_MESSAGE_TIMEOUT_MS }}
+            KAFKA_PRODUCER_MAX_RETRIES=${{ secrets.KAFKA_PRODUCER_MAX_RETRIES }}
+            KAFKA_PRODUCER_BACKOFF_MS=${{ secrets.KAFKA_PRODUCER_BACKOFF_MS }}

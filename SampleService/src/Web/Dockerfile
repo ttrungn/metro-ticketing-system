@@ -4,6 +4,28 @@ WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
+ARG WRITE_DB
+ARG READ_DB
+ARG KAFKA_URL
+ARG KAFKA_USERNAME
+ARG KAFKA_PASSWORD
+ARG KAFKA_SAMPLE_EVENTS_NAME
+ARG KAFKA_SAMPLE_EVENTS_GROUP
+ARG KAFKA_PRODUCER_MESSAGE_TIMEOUT_MS
+ARG KAFKA_PRODUCER_MAX_RETRIES
+ARG KAFKA_PRODUCER_BACKOFF_MS
+
+ENV ConnectionStrings__WriteDb=${WRITE_DB}
+ENV ConnectionStrings__ReadDb=${READ_DB}
+ENV KafkaSettings__Url=${KAFKA_URL}
+ENV KafkaSettings__Username=${KAFKA_USERNAME}
+ENV KafkaSettings__Password=${KAFKA_PASSWORD}
+ENV KafkaSettings__SampleEvents__Name=${KAFKA_SAMPLE_EVENTS_NAME}
+ENV KafkaSettings__SampleEvents__Group=${KAFKA_SAMPLE_EVENTS_GROUP}
+ENV KafkaSettings__ProducerConfigs__MessageTimeoutMs=${KAFKA_PRODUCER_MESSAGE_TIMEOUT_MS}
+ENV KafkaSettings__ProducerConfigs__MessageSendMaxRetries=${KAFKA_PRODUCER_MAX_RETRIES}
+ENV KafkaSettings__ProducerConfigs__RetryBackoffMs=${KAFKA_PRODUCER_BACKOFF_MS}
+
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src

@@ -35,6 +35,10 @@
       </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\api\sample\specification.json" />
+    </ItemGroup>
+
 
     <!-- Auto-generated Open API specification and Angular TypeScript clients -->
     <PropertyGroup>
