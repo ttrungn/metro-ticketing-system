@@ -25,8 +25,8 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - uses: docker/build-push-action@v4
         with:
-          context: ./AuthService
-          file: ./AuthService/Dockerfile
+          context: .
+          file: ./AuthService/src/Web/Dockerfile
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/mts-auth-service:${{ steps.sha.outputs.sha }}
