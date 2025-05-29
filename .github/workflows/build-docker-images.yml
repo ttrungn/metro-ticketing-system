@@ -8,10 +8,6 @@ on:
 
 jobs:
   auth:
-    if: ${{
-      contains(join(github.event.commits.*.added, ' '), 'AuthService/')
-      || contains(join(github.event.commits.*.modified, ' '), 'AuthService/')
-      }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
