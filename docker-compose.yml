@@ -7,9 +7,7 @@ services:
     networks:
       - metro-net
   sample-service:
-    build:
-      context: .
-      dockerfile: ./SampleService/src/Web/Dockerfile
+    image: ttrungn/mts-sample-service:latest
     container_name: sample-service
     expose:
       - 8080
