@@ -12,7 +12,7 @@ ARG JWT_AUDIENCE
 ARG JWT_LIFETIME_MINUTES
 
 # Map them to env vars that ASP.NET Core will pick up
-ENV ConnectionStrings__WRITE_DB=${WRITE_DB}
+ENV ConnectionStrings__WriteDb=${WRITE_DB}
 ENV JwtSettings__SecretKey=${JWT_SECRET}
 ENV JwtSettings__Issuer=${JWT_ISSUER}
 ENV JwtSettings__Audience=${JWT_AUDIENCE}
