@@ -4,6 +4,7 @@
         <RootNamespace>AuthService.Web</RootNamespace>
         <AssemblyName>AuthService.Web</AssemblyName>
         <ContainerRepository>AuthService</ContainerRepository>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
@@ -35,6 +36,12 @@
       <_ContentIncludedByDefault Remove="wwwroot\api\specification.json" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include="..\..\..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
+    </ItemGroup>
+
 
     <!-- Auto-generated Open API specification and Angular TypeScript clients -->
     <PropertyGroup>
@@ -42,9 +49,13 @@
     </PropertyGroup>
 
     <Target Name="NSwag" AfterTargets="PostBuildEvent" Condition=" '$(Configuration)' == 'Debug' And '$(SkipNSwag)' != 'True' ">
-        <Exec ConsoleToMSBuild="true" ContinueOnError="true" WorkingDirectory="$(ProjectDir)" EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development" Command="$(NSwagExe_Net80) run config.nswag /variables:Configuration=$(Configuration)">
-            <Output TaskParameter="ExitCode" PropertyName="NSwagExitCode"/>
-            <Output TaskParameter="ConsoleOutput" PropertyName="NSwagOutput"/>
+        <PropertyGroup>
+          <NSwagEnv Condition="'$(Configuration)'=='Debug'">Development</NSwagEnv>
+        </PropertyGroup>
+  
+        <Exec ConsoleToMSBuild="true" ContinueOnError="true" WorkingDirectory="$(ProjectDir)" EnvironmentVariables="ASPNETCORE_ENVIRONMENT=$(NSwagEnv)" Command="$(NSwagExe_Net80) run config.nswag /variables:Configuration=$(Configuration)">
+          <Output TaskParameter="ExitCode" PropertyName="NSwagExitCode"/>
+          <Output TaskParameter="ConsoleOutput" PropertyName="NSwagOutput"/>
         </Exec>
 
         <Message Text="$(NSwagOutput)" Condition="'$(NSwagExitCode)' == '0'" Importance="low"/>

@@ -1,4 +1,4 @@
-﻿using SampleService.Application.Common.Models;
+﻿using AuthService.Application.Common.Models;
 
 namespace AuthService.Application.Common.Interfaces;
 

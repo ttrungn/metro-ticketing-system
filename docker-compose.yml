@@ -1,0 +1,35 @@
+services:
+  auth-service:
+    image: "${REGISTRY_USERNAME}/mts-auth-service:${IMAGE_TAG-latest}"
+    container_name: auth-service
+    expose:
+      - 8080
+    env_file:
+      - .env
+    networks:
+      - metro-net
+  sample-service:
+    image: "${REGISTRY_USERNAME}/mts-sample-service:${IMAGE_TAG-latest}"
+    container_name: sample-service
+    expose:
+      - 8080
+    env_file:
+      - .env
+    networks:
+      - metro-net
+  api-gateway:
+    image: "${REGISTRY_USERNAME}/mts-yarp-api-gateway:${IMAGE_TAG-latest}"
+    container_name: api-gateway
+    ports:
+      - "9000:8080"
+    depends_on:
+      - auth-service
+      - sample-service
+    env_file:
+      - .env
+    networks:
+      - metro-net
+
+networks:
+  metro-net:
+    driver: bridge
