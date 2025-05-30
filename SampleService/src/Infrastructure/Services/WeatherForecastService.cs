@@ -38,8 +38,7 @@ public class WeatherForecastService : IWeatherForecastService
     
     public async Task UpdateAsync(Guid id, DateTime date, int temperatureC, string summary, CancellationToken cancellationToken = default)
     {
-        var entity = await _context.WeatherForecasts
-            .FirstOrDefaultAsync(w => w.Id == id, cancellationToken);
+        var entity = await EF.FirstOrDefaultAsync(_context.WeatherForecasts, w => w.Id == id, cancellationToken);
 
         if (entity == null)
             throw new NotFoundException(nameof(WeatherForecast), id.ToString());
@@ -49,15 +48,14 @@ public class WeatherForecastService : IWeatherForecastService
         entity.Summary = summary;
 
         await _context.SaveChangesAsync(cancellationToken);
-
-        _documentSession.Update(entity);
+        
+        _documentSession.Store(entity);
         await _documentSession.SaveChangesAsync(cancellationToken);
     }
     
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var entity = await _context.WeatherForecasts
-            .FirstOrDefaultAsync(w => w.Id == id, cancellationToken);
+        var entity = await EF.FirstOrDefaultAsync(_context.WeatherForecasts, w => w.Id == id, cancellationToken);
 
         if (entity == null)
             throw new NotFoundException(nameof(WeatherForecast), id.ToString());
@@ -65,7 +63,7 @@ public class WeatherForecastService : IWeatherForecastService
         entity.DeleteFlag = true;
         await _context.SaveChangesAsync(cancellationToken);
 
-        _documentSession.Update(entity);
+        _documentSession.Store(entity);
         await _documentSession.SaveChangesAsync(cancellationToken);
     }
     

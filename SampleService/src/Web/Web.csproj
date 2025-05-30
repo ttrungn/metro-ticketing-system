@@ -4,6 +4,7 @@
         <RootNamespace>SampleService.Web</RootNamespace>
         <AssemblyName>SampleService.Web</AssemblyName>
         <ContainerRepository>SamepleService</ContainerRepository>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
@@ -29,7 +30,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="wwwroot\api\sample" />
+      <Content Include="..\..\..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\api\sample\specification.json" />
     </ItemGroup>
 
 
@@ -39,7 +46,11 @@
     </PropertyGroup>
 
     <Target Name="NSwag" AfterTargets="PostBuildEvent" Condition=" '$(Configuration)' == 'Debug' And '$(SkipNSwag)' != 'True' ">
-        <Exec ConsoleToMSBuild="true" ContinueOnError="true" WorkingDirectory="$(ProjectDir)" EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development" Command="$(NSwagExe_Net80) run config.nswag /variables:Configuration=$(Configuration)">
+        <PropertyGroup>
+          <NSwagEnv Condition="'$(Configuration)'=='Debug'">Development</NSwagEnv>
+        </PropertyGroup>
+      
+        <Exec ConsoleToMSBuild="true" ContinueOnError="true" WorkingDirectory="$(ProjectDir)" EnvironmentVariables="ASPNETCORE_ENVIRONMENT=$(NSwagEnv)" Command="$(NSwagExe_Net80) run config.nswag /variables:Configuration=$(Configuration)">
             <Output TaskParameter="ExitCode" PropertyName="NSwagExitCode"/>
             <Output TaskParameter="ConsoleOutput" PropertyName="NSwagOutput"/>
         </Exec>
