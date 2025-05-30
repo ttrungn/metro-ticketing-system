@@ -1,4 +1,5 @@
 using BuildingBlocks.Constants;
+using BuildingBlocks.Domain.Constants;
 using Microsoft.Extensions.Logging;
 using SampleService.Application.Common.Interfaces;
 using SampleService.Application.Common.Interfaces.Services;

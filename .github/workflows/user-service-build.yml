@@ -1,13 +1,13 @@
-name: CI – Build & Push Yarp Api Gateway Docker Image
+name: CI – Build & Push UserService Docker Image
 
 on:
   push:
     branches: [ trungn ]
     paths:
-      - 'YarpApiGateway/**'
+      - 'UserService/**'
 
 jobs:
-  yarp-api-gateway:
+  auth:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -15,7 +15,7 @@ jobs:
 
       - name: Pull previous cache image
         run: |
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/mts-yarp-api-gateway:cache || echo "no cache yet"
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/mts-user-service:cache || echo "no cache yet"
 
       - name: Restore buildx local cache
         uses: actions/cache@v3
@@ -48,19 +48,19 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build & push Yarp Api Gateway multi-arch
+      - name: Build & push UserService multi-arch
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./YarpApiGateway/Dockerfile
+          file: ./UserService/src/Web/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/mts-yarp-api-gateway:${{ steps.sha.outputs.sha }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/mts-yarp-api-gateway:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/mts-user-service:${{ steps.sha.outputs.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/mts-user-service:latest
           cache-from: |
-            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/mts-yarp-api-gateway:cache
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/mts-user-service:cache
             type=local,src=/tmp/.buildx-cache
           cache-to: |
-            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/mts-yarp-api-gateway:cache,mode=max
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/mts-user-service:cache,mode=max
             type=local,dest=/tmp/.buildx-cache,mode=max

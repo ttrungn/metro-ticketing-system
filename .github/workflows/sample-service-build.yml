@@ -2,7 +2,7 @@ name: CI – Build & Push SampleService Docker Images
 
 on:
   push:
-    branches: [ trung ]
+    branches: [ trungn ]
     paths:
       - 'SampleService/**'
 
