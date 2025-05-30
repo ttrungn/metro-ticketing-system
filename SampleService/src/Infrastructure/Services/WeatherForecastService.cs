@@ -50,7 +50,7 @@ public class WeatherForecastService : IWeatherForecastService
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        _documentSession.Update(entity);
+        _documentSession.Store(entity);
         await _documentSession.SaveChangesAsync(cancellationToken);
     }
     
@@ -65,7 +65,7 @@ public class WeatherForecastService : IWeatherForecastService
         entity.DeleteFlag = true;
         await _context.SaveChangesAsync(cancellationToken);
 
-        _documentSession.Update(entity);
+        _documentSession.Store(entity);
         await _documentSession.SaveChangesAsync(cancellationToken);
     }
     

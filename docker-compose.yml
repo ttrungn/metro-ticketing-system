@@ -1,6 +1,6 @@
 services:
   auth-service:
-    image: ttrungn/mts-auth-service:latest
+    image: "${REGISTRY_USERNAME}/mts-auth-service:${IMAGE_TAG-latest}"
     container_name: auth-service
     expose:
       - 8080
@@ -9,7 +9,7 @@ services:
     networks:
       - metro-net
   sample-service:
-    image: ttrungn/mts-sample-service:latest
+    image: "${REGISTRY_USERNAME}/mts-sample-service:${IMAGE_TAG-latest}"
     container_name: sample-service
     expose:
       - 8080
@@ -18,9 +18,7 @@ services:
     networks:
       - metro-net
   api-gateway:
-    build:
-      context: .
-      dockerfile: ./YarpApiGateway/Dockerfile
+    image: "${REGISTRY_USERNAME}/mts-yarp-api-gateway:${IMAGE_TAG-latest}"
     container_name: api-gateway
     ports:
       - "9000:8080"
