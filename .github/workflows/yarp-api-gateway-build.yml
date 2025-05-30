@@ -1,13 +1,13 @@
-name: CI – Build & Push SampleService Docker Images
+name: CI – Build & Push Yarp Api Gateway Docker Image
 
 on:
   push:
     branches: [ trung ]
     paths:
-      - 'SampleService/**'
+      - 'YarpApiGateway/**'
 
 jobs:
-  sample:
+  auth:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -15,20 +15,20 @@ jobs:
 
       - name: Pull previous cache image
         run: |
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/mts-sample-service:cache || echo "no cache yet"
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/mts-yarp-api-gateway:cache || echo "no cache yet"
 
       - name: Restore buildx local cache
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: buildx-sample-${{ runner.os }}
+          key: buildx-cache-${{ runner.os }}
           restore-keys: |
-            buildx-sample-${{ runner.os }}
+            buildx-cache-${{ runner.os }}
 
       - name: Prepare local cache dir
         run: mkdir -p /tmp/.buildx-cache
 
-      - name: Set up QEMU for multi-arch
+      - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
@@ -37,7 +37,7 @@ jobs:
           driver: docker-container
           install: true
 
-      - name: Get Git short SHA
+      - name: Get SHA
         id: sha
         run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
@@ -48,19 +48,19 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build & push SampleService (multi-arch)
+      - name: Build & push AuthService multi-arch
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./SampleService/src/Web/Dockerfile
+          file: ./AuthService/src/Web/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/mts-sample-service:${{ steps.sha.outputs.sha }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/mts-sample-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/mts-yarp-api-gateway:${{ steps.sha.outputs.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/mts-yarp-api-gateway:latest
           cache-from: |
-            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/mts-sample-service:cache
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/mts-yarp-api-gateway:cache
             type=local,src=/tmp/.buildx-cache
           cache-to: |
-            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/mts-sample-service:cache,mode=max
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/mts-yarp-api-gateway:cache,mode=max
             type=local,dest=/tmp/.buildx-cache,mode=max
