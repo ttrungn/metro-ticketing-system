@@ -1,7 +1,7 @@
 using AuthService.Application.Common.Interfaces;
+using AuthService.Application.Common.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using SampleService.Application.Common.Models;
 
 namespace AuthService.Infrastructure.Identity;
 

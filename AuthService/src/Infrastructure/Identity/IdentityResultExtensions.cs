@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
-using SampleService.Application.Common.Models;
+﻿using AuthService.Application.Common.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace AuthService.Infrastructure.Identity;
 
