@@ -18,15 +18,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingBlocks", "BuildingB
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YarpApiGateway", "YarpApiGateway\YarpApiGateway.csproj", "{EB319DD1-2A64-44C9-800C-D6C1F4523C13}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AuthService", "AuthService", "{8352EB00-B4D4-4F7E-B900-2CC94A5F63D8}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UserService", "UserService", "{8352EB00-B4D4-4F7E-B900-2CC94A5F63D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "AuthService\src\Domain\Domain.csproj", "{51520CEF-545F-4EB5-9FF7-FF11F14EA4AE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "UserService\src\Domain\Domain.csproj", "{51520CEF-545F-4EB5-9FF7-FF11F14EA4AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web", "AuthService\src\Web\Web.csproj", "{D58D4FF9-5962-465D-8239-D6F47F148C21}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web", "UserService\src\Web\Web.csproj", "{D58D4FF9-5962-465D-8239-D6F47F148C21}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "AuthService\src\Application\Application.csproj", "{738DDAA5-C888-482A-AEF7-DC6A0CD6323F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "UserService\src\Application\Application.csproj", "{738DDAA5-C888-482A-AEF7-DC6A0CD6323F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "AuthService\src\Infrastructure\Infrastructure.csproj", "{0F0916F3-6676-450F-9B26-0698C6A890BD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "UserService\src\Infrastructure\Infrastructure.csproj", "{0F0916F3-6676-450F-9B26-0698C6A890BD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
