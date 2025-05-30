@@ -7,7 +7,7 @@ on:
       - 'YarpApiGateway/**'
 
 jobs:
-  auth:
+  yarp-api-gateway:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -52,7 +52,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./AuthService/src/Web/Dockerfile
+          file: ./YarpApiGateway/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
