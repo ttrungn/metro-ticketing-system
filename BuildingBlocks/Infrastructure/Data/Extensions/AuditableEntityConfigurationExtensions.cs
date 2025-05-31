@@ -1,7 +1,7 @@
 ﻿using BuildingBlocks.Domain.Common;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace UserService.Infrastructure.Data.Extensions;
+namespace BuildingBlocks.Infrastructure.Data.Extensions;
 
 public static class AuditableEntityConfigurationExtensions
 {
@@ -14,7 +14,7 @@ public static class AuditableEntityConfigurationExtensions
             .IsRequired();
 
         builder.Property(nameof(IBaseAuditableEntity.DeletedAt))
-            .IsRequired(false);
+            .IsRequired();
 
         builder.Property(nameof(IBaseAuditableEntity.DeleteFlag))
             .IsRequired();

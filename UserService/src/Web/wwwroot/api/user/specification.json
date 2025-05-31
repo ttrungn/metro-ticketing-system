@@ -30,6 +30,31 @@
           }
         }
       }
+    },
+    "/api/user/Auth/register/customer": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "operationId": "RegisterCustomerAsync",
+        "requestBody": {
+          "x-name": "request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterCustomerCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
     }
   },
   "components": {
@@ -42,6 +67,24 @@
             "type": "string"
           },
           "password": {
+            "type": "string"
+          }
+        }
+      },
+      "RegisterCustomerCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
             "type": "string"
           }
         }

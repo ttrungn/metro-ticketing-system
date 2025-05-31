@@ -3,9 +3,9 @@ using BuildingBlocks.Response;
 using Microsoft.Extensions.Logging;
 using UserService.Application.Common.Interfaces.Services;
 
-namespace UserService.Application.Users.Commands.RegisterUser;
+namespace UserService.Application.Users.Commands.RegisterCustomer;
 
-public record RegisterUserCommand : IRequest<RegisterUserResult>
+public record RegisterCustomerCommand : IRequest<ServiceResponse<string>>
 {
     public string Email { get; init; } = null!;
     public string Password { get; init; } = null!;
@@ -13,12 +13,7 @@ public record RegisterUserCommand : IRequest<RegisterUserResult>
     public string LastName { get; init; } = null!;
 }
 
-public class RegisterUserResult : HandlerResult
-{
-    public string? UserId { get; set; }
-}
-
-public class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>
+public class RegisterUserCommandValidator : AbstractValidator<RegisterCustomerCommand>
 {
     public RegisterUserCommandValidator()
     {
@@ -40,7 +35,7 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
     }
 }
 
-public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, RegisterUserResult>
+public class RegisterUserCommandHandler : IRequestHandler<RegisterCustomerCommand, ServiceResponse<string>>
 {
     private readonly ILogger<RegisterUserCommandHandler> _logger;
     private readonly IIdentityService _identityService;
@@ -51,33 +46,19 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
         _identityService = identityService;
     }
 
-    public async Task<RegisterUserResult> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<string>> Handle(RegisterCustomerCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Starting user registration for email: {Email}", request.Email);
-
-        var (result, userId) = await _identityService.RegisterUserAsync(request, Roles.Customer);
-
-        if (!result.Succeeded)
+        var serviceResponse = await _identityService.RegisterUserAsync(request, Roles.Customer);
+        if (!serviceResponse.Succeeded)
         {
-            _logger.LogWarning("User registration failed for email: {Email}. Errors: {Errors}",
-                request.Email, string.Join(", ", result.Errors));
-
-            return new RegisterUserResult()
-            {
-                Status = "failed",
-                Message = result.Errors.FirstOrDefault() ?? "Registration failed.",
-                UserId = null
-            };
+            _logger.LogWarning("User registration failed for email: {Email}. Errors: {Errors}", request.Email, serviceResponse.Message);
         }
-
-        _logger.LogInformation("User registration succeeded for email: {Email} with Id: {UserId}", request.Email, userId);
-
-        return new RegisterUserResult()
+        else
         {
-            Status = "success",
-            Message = "Successfully registered",
-            UserId = userId
-        };
+            _logger.LogInformation("User registration succeeded for email: {Email} with Id: {UserId}", request.Email, serviceResponse.Data);
+        }
+        return serviceResponse;
     }
 
 }

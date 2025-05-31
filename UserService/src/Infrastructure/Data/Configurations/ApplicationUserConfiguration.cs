@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using BuildingBlocks.Infrastructure.Data.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using UserService.Infrastructure.Data.Extensions;
 using UserService.Infrastructure.Services.Identity;
 
 namespace UserService.Infrastructure.Data.Configurations;
@@ -15,7 +15,7 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
             fn.Property(f => f.LastName).HasColumnName("LastName").IsRequired().HasMaxLength(100);
         });
 
-        builder.ConfigureAuditableProperties(); // your auditing extension method
+        builder.ConfigureAuditableProperties();
 
         builder.Ignore(u => u.DomainEvents);
     }

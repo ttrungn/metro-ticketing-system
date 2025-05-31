@@ -1,10 +1,10 @@
+using BuildingBlocks.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using UserService.Application.Common.Interfaces;
 using UserService.Application.Common.Interfaces.Repositories;
 using UserService.Application.Common.Interfaces.Services;
 using UserService.Application.Common.Models;
-using UserService.Application.Users.Commands.RegisterUser;
+using UserService.Application.Users.Commands.RegisterCustomer;
 using UserService.Domain.ValueObjects;
 
 namespace UserService.Infrastructure.Services.Identity;
@@ -50,26 +50,32 @@ public class IdentityService : IIdentityService
         return (Result.Success(), TokenType, token, expiresIn);
     }
 
-    public async Task<(Result Result, string? Id)> RegisterUserAsync(RegisterUserCommand registerUserCommand, string role)
+    public async Task<ServiceResponse<string>> RegisterUserAsync(RegisterCustomerCommand registerCustomerCommand, string role)
     {
-        var user = await _userManager.FindByEmailAsync(registerUserCommand.Email);
+        var user = await _userManager.FindByEmailAsync(registerCustomerCommand.Email);
         if (user != null)
         {
-            return (Result.Failure(["Email is already registered."]), string.Empty);
+            return new ServiceResponse<string>()
+            {
+                Succeeded = false, Message = "User with this email already exists.", Data = string.Empty
+            };
         }
 
         user = new ApplicationUser()
         {
-            FullName = new FullName(registerUserCommand.FirstName, registerUserCommand.LastName),
-            Email = registerUserCommand.Email,
-            UserName = registerUserCommand.Email,
+            FullName = new FullName(registerCustomerCommand.FirstName, registerCustomerCommand.LastName),
+            Email = registerCustomerCommand.Email,
+            UserName = registerCustomerCommand.Email,
         };
 
-        var createUserResult = await _userManager.CreateAsync(user, registerUserCommand.Password);
+        var createUserResult = await _userManager.CreateAsync(user, registerCustomerCommand.Password);
         if (!createUserResult.Succeeded)
         {
             var errors = createUserResult.Errors.Select(e => e.Description).ToArray();
-            return (Result.Failure(errors), null);
+            return new ServiceResponse<string>()
+            {
+                Succeeded = false, Message = string.Join(", ", errors), Data = string.Empty
+            };
         }
 
         var addToRoleResult = await _userManager.AddToRoleAsync(user, role);
@@ -77,10 +83,16 @@ public class IdentityService : IIdentityService
         {
             await _userManager.DeleteAsync(user);
             var errors = addToRoleResult.Errors.Select(e => e.Description).ToArray();
-            return (Result.Failure(errors), null);
+            return new ServiceResponse<string>()
+            {
+                Succeeded = false, Message = string.Join(", ", errors), Data = string.Empty
+            };
         }
 
-        return (Result.Success(), user.Id);
+        return new ServiceResponse<string>()
+        {
+            Succeeded = true, Message = "Successfully registered", Data = user.Id
+        };
     }
 
     

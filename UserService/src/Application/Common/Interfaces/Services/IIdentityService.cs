@@ -1,5 +1,6 @@
-﻿using UserService.Application.Common.Models;
-using UserService.Application.Users.Commands.RegisterUser;
+﻿using BuildingBlocks.Response;
+using UserService.Application.Common.Models;
+using UserService.Application.Users.Commands.RegisterCustomer;
 
 namespace UserService.Application.Common.Interfaces.Services;
 
@@ -7,7 +8,7 @@ public interface IIdentityService
 {
     Task<(Result Result, string TokenType, string Token, int ExpiresIn)> LoginUserAsync(string email, string password);
 
-    Task<(Result Result, string? Id)> RegisterUserAsync(RegisterUserCommand registerUserCommand, string role);
+    Task<ServiceResponse<string>> RegisterUserAsync(RegisterCustomerCommand registerCustomerCommand, string role);
     
     Task<string?> GetUserNameAsync(string userId);
 
