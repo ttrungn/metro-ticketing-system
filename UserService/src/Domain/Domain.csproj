@@ -15,11 +15,9 @@
 
     <ItemGroup>
       <Folder Include="Constants\" />
-      <Folder Include="Entities\" />
       <Folder Include="Enums\" />
       <Folder Include="Events\" />
       <Folder Include="Exceptions\" />
-      <Folder Include="ValueObjects\" />
     </ItemGroup>
 
 </Project>

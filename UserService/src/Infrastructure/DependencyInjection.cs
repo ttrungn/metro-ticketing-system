@@ -63,14 +63,22 @@ public static class DependencyInjection
         services.AddAuthorizationBuilder();
 
         services
-            .AddIdentityCore<ApplicationUser>()
+            .AddIdentityCore<ApplicationUser>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 5;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = true;
+            })
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
         services.AddScoped<ITokenRepository, TokenRepository>();
         
-        services.AddSingleton(TimeProvider.System);
         services.AddTransient<IIdentityService, IdentityService>();
+        
+        services.AddSingleton(TimeProvider.System);
         
         return services;
     }

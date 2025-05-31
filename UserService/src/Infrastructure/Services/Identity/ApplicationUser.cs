@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using BuildingBlocks.Domain.Common;
 using Microsoft.AspNetCore.Identity;
+using UserService.Domain.ValueObjects;
 
 namespace UserService.Infrastructure.Services.Identity;
 
 public class ApplicationUser : IdentityUser, IBaseAuditableEntity, IBaseEntity
 {
+    public FullName FullName { get; init; } = null!;
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset LastModifiedAt { get; set; }
     public DateTimeOffset DeletedAt { get; set; }
