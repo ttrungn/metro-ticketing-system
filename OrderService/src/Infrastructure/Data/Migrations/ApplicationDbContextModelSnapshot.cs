@@ -35,7 +35,7 @@ namespace OrderService.Infrastructure.Data.Migrations
 
                     b.HasKey("CustomerId", "TicketId");
 
-                    b.ToTable("Carts");
+                    b.ToTable("Cart", (string)null);
                 });
 
             modelBuilder.Entity("OrderService.Domain.Entities.Order", b =>
@@ -72,7 +72,7 @@ namespace OrderService.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Order", (string)null);
                 });
 
             modelBuilder.Entity("OrderService.Domain.Entities.OrderDetail", b =>
@@ -90,7 +90,7 @@ namespace OrderService.Infrastructure.Data.Migrations
 
                     b.HasIndex("PurchaseTicketId");
 
-                    b.ToTable("OrderDetails");
+                    b.ToTable("OrderDetail", (string)null);
                 });
 
             modelBuilder.Entity("OrderService.Domain.Entities.PurchasedTicket", b =>
@@ -130,7 +130,7 @@ namespace OrderService.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PurchasedTickets");
+                    b.ToTable("PurchasedTicket", (string)null);
                 });
 
             modelBuilder.Entity("OrderService.Domain.Entities.OrderDetail", b =>

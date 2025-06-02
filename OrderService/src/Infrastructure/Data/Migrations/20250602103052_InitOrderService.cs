@@ -15,7 +15,7 @@ namespace OrderService.Infrastructure.Data.Migrations
                 name: "WeatherForecasts");
 
             migrationBuilder.CreateTable(
-                name: "Carts",
+                name: "Cart",
                 columns: table => new
                 {
                     CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
@@ -24,11 +24,11 @@ namespace OrderService.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Carts", x => new { x.CustomerId, x.TicketId });
+                    table.PrimaryKey("PK_Cart", x => new { x.CustomerId, x.TicketId });
                 });
 
             migrationBuilder.CreateTable(
-                name: "Orders",
+                name: "Order",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -43,11 +43,11 @@ namespace OrderService.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Orders", x => x.Id);
+                    table.PrimaryKey("PK_Order", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "PurchasedTickets",
+                name: "PurchasedTicket",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -63,11 +63,11 @@ namespace OrderService.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PurchasedTickets", x => x.Id);
+                    table.PrimaryKey("PK_PurchasedTicket", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "OrderDetails",
+                name: "OrderDetail",
                 columns: table => new
                 {
                     OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -76,24 +76,24 @@ namespace OrderService.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OrderDetails", x => new { x.OrderId, x.PurchaseTicketId });
+                    table.PrimaryKey("PK_OrderDetail", x => new { x.OrderId, x.PurchaseTicketId });
                     table.ForeignKey(
-                        name: "FK_OrderDetails_Orders_OrderId",
+                        name: "FK_OrderDetail_Order_OrderId",
                         column: x => x.OrderId,
-                        principalTable: "Orders",
+                        principalTable: "Order",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_OrderDetails_PurchasedTickets_PurchaseTicketId",
+                        name: "FK_OrderDetail_PurchasedTicket_PurchaseTicketId",
                         column: x => x.PurchaseTicketId,
-                        principalTable: "PurchasedTickets",
+                        principalTable: "PurchasedTicket",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderDetails_PurchaseTicketId",
-                table: "OrderDetails",
+                name: "IX_OrderDetail_PurchaseTicketId",
+                table: "OrderDetail",
                 column: "PurchaseTicketId");
         }
 
@@ -101,16 +101,16 @@ namespace OrderService.Infrastructure.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Carts");
+                name: "Cart");
 
             migrationBuilder.DropTable(
-                name: "OrderDetails");
+                name: "OrderDetail");
 
             migrationBuilder.DropTable(
-                name: "Orders");
+                name: "Order");
 
             migrationBuilder.DropTable(
-                name: "PurchasedTickets");
+                name: "PurchasedTicket");
 
             migrationBuilder.CreateTable(
                 name: "WeatherForecasts",
