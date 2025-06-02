@@ -11,8 +11,21 @@ namespace CatalogService.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropPrimaryKey(
+                name: "PK_WeatherForecasts",
+                table: "WeatherForecasts");
+
+            migrationBuilder.RenameTable(
+                name: "WeatherForecasts",
+                newName: "WeatherForecast");
+
+            migrationBuilder.AddPrimaryKey(
+                name: "PK_WeatherForecast",
+                table: "WeatherForecast",
+                column: "Id");
+
             migrationBuilder.CreateTable(
-                name: "PriceRanges",
+                name: "PriceRange",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -26,11 +39,11 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PriceRanges", x => x.Id);
+                    table.PrimaryKey("PK_PriceRange", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Routes",
+                name: "Route",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -45,11 +58,11 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Routes", x => x.Id);
+                    table.PrimaryKey("PK_Route", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Stations",
+                name: "Station",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -68,11 +81,11 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Stations", x => x.Id);
+                    table.PrimaryKey("PK_Station", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "TicketTypes",
+                name: "TicketType",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -86,11 +99,11 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TicketTypes", x => x.Id);
+                    table.PrimaryKey("PK_TicketType", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Buses",
+                name: "Bus",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -104,17 +117,17 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Buses", x => x.Id);
+                    table.PrimaryKey("PK_Bus", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Buses_Stations_StationId",
+                        name: "FK_Bus_Station_StationId",
                         column: x => x.StationId,
-                        principalTable: "Stations",
+                        principalTable: "Station",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Lines",
+                name: "Line",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -131,29 +144,29 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Lines", x => x.Id);
+                    table.PrimaryKey("PK_Line", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Lines_Routes_RouteId",
+                        name: "FK_Line_Route_RouteId",
                         column: x => x.RouteId,
-                        principalTable: "Routes",
+                        principalTable: "Route",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Lines_Stations_EntryStationId",
+                        name: "FK_Line_Station_EntryStationId",
                         column: x => x.EntryStationId,
-                        principalTable: "Stations",
+                        principalTable: "Station",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Lines_Stations_ExitStationId",
+                        name: "FK_Line_Station_ExitStationId",
                         column: x => x.ExitStationId,
-                        principalTable: "Stations",
+                        principalTable: "Station",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "LineSegments",
+                name: "LineSegment",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -168,23 +181,23 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_LineSegments", x => x.Id);
+                    table.PrimaryKey("PK_LineSegment", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_LineSegments_Stations_FromStationId",
+                        name: "FK_LineSegment_Station_FromStationId",
                         column: x => x.FromStationId,
-                        principalTable: "Stations",
+                        principalTable: "Station",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_LineSegments_Stations_ToStationId",
+                        name: "FK_LineSegment_Station_ToStationId",
                         column: x => x.ToStationId,
-                        principalTable: "Stations",
+                        principalTable: "Station",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "StationRoutes",
+                name: "StationRoute",
                 columns: table => new
                 {
                     StationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -192,23 +205,23 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_StationRoutes", x => new { x.StationId, x.RouteId });
+                    table.PrimaryKey("PK_StationRoute", x => new { x.StationId, x.RouteId });
                     table.ForeignKey(
-                        name: "FK_StationRoutes_Routes_RouteId",
+                        name: "FK_StationRoute_Route_RouteId",
                         column: x => x.RouteId,
-                        principalTable: "Routes",
+                        principalTable: "Route",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_StationRoutes_Stations_StationId",
+                        name: "FK_StationRoute_Station_StationId",
                         column: x => x.StationId,
-                        principalTable: "Stations",
+                        principalTable: "Station",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Tickets",
+                name: "Ticket",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -222,65 +235,65 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Tickets", x => x.Id);
+                    table.PrimaryKey("PK_Ticket", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Tickets_Lines_LineId",
+                        name: "FK_Ticket_Line_LineId",
                         column: x => x.LineId,
-                        principalTable: "Lines",
+                        principalTable: "Line",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Tickets_TicketTypes_TicketTypeId",
+                        name: "FK_Ticket_TicketType_TicketTypeId",
                         column: x => x.TicketTypeId,
-                        principalTable: "TicketTypes",
+                        principalTable: "TicketType",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Buses_StationId",
-                table: "Buses",
+                name: "IX_Bus_StationId",
+                table: "Bus",
                 column: "StationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Lines_EntryStationId",
-                table: "Lines",
+                name: "IX_Line_EntryStationId",
+                table: "Line",
                 column: "EntryStationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Lines_ExitStationId",
-                table: "Lines",
+                name: "IX_Line_ExitStationId",
+                table: "Line",
                 column: "ExitStationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Lines_RouteId",
-                table: "Lines",
+                name: "IX_Line_RouteId",
+                table: "Line",
                 column: "RouteId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_LineSegments_FromStationId",
-                table: "LineSegments",
+                name: "IX_LineSegment_FromStationId",
+                table: "LineSegment",
                 column: "FromStationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_LineSegments_ToStationId",
-                table: "LineSegments",
+                name: "IX_LineSegment_ToStationId",
+                table: "LineSegment",
                 column: "ToStationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StationRoutes_RouteId",
-                table: "StationRoutes",
+                name: "IX_StationRoute_RouteId",
+                table: "StationRoute",
                 column: "RouteId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tickets_LineId",
-                table: "Tickets",
+                name: "IX_Ticket_LineId",
+                table: "Ticket",
                 column: "LineId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tickets_TicketTypeId",
-                table: "Tickets",
+                name: "IX_Ticket_TicketTypeId",
+                table: "Ticket",
                 column: "TicketTypeId");
         }
 
@@ -288,31 +301,44 @@ namespace CatalogService.Infrastructure.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Buses");
+                name: "Bus");
 
             migrationBuilder.DropTable(
-                name: "LineSegments");
+                name: "LineSegment");
 
             migrationBuilder.DropTable(
-                name: "PriceRanges");
+                name: "PriceRange");
 
             migrationBuilder.DropTable(
-                name: "StationRoutes");
+                name: "StationRoute");
 
             migrationBuilder.DropTable(
-                name: "Tickets");
+                name: "Ticket");
 
             migrationBuilder.DropTable(
-                name: "Lines");
+                name: "Line");
 
             migrationBuilder.DropTable(
-                name: "TicketTypes");
+                name: "TicketType");
 
             migrationBuilder.DropTable(
-                name: "Routes");
+                name: "Route");
 
             migrationBuilder.DropTable(
-                name: "Stations");
+                name: "Station");
+
+            migrationBuilder.DropPrimaryKey(
+                name: "PK_WeatherForecast",
+                table: "WeatherForecast");
+
+            migrationBuilder.RenameTable(
+                name: "WeatherForecast",
+                newName: "WeatherForecasts");
+
+            migrationBuilder.AddPrimaryKey(
+                name: "PK_WeatherForecasts",
+                table: "WeatherForecasts",
+                column: "Id");
         }
     }
 }

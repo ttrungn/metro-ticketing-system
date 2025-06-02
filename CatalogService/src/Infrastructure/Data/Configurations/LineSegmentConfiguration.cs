@@ -1,4 +1,5 @@
-﻿using CatalogService.Domain.Entities;
+﻿using BuildingBlocks.Infrastructure.Data.Extensions;
+using CatalogService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,6 +9,7 @@ public class LineSegmentConfiguration : IEntityTypeConfiguration<LineSegment>
 {
     public void Configure(EntityTypeBuilder<LineSegment> builder)
     {
+        builder.ConfigureAuditableProperties();
         builder.HasKey(ls => ls.Id);
 
         builder.Property(ls => ls.LengthInKm)

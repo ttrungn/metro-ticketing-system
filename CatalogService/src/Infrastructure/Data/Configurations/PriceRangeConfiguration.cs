@@ -1,4 +1,5 @@
-﻿using CatalogService.Domain.Entities;
+﻿using BuildingBlocks.Infrastructure.Data.Extensions;
+using CatalogService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,6 +9,7 @@ public class PriceRangeConfiguration : IEntityTypeConfiguration<PriceRange>
 {
     public void Configure(EntityTypeBuilder<PriceRange> builder)
     {
+        builder.ConfigureAuditableProperties();
         builder.HasKey(p => p.Id);
 
         builder.Property(p => p.FromKm)

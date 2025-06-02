@@ -1,4 +1,5 @@
-﻿using CatalogService.Domain.Entities;
+﻿using BuildingBlocks.Infrastructure.Data.Extensions;
+using CatalogService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,6 +9,7 @@ public class StationConfiguration : IEntityTypeConfiguration<Station>
 {
     public void Configure(EntityTypeBuilder<Station> builder)
     {
+        builder.ConfigureAuditableProperties();
         builder.HasKey(s => s.Id);
 
         builder.Property(s => s.Code)

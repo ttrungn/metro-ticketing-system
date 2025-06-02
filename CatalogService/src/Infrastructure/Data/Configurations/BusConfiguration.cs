@@ -1,4 +1,5 @@
-﻿using CatalogService.Domain.Entities;
+﻿using BuildingBlocks.Infrastructure.Data.Extensions;
+using CatalogService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,6 +9,7 @@ public class BusConfiguration : IEntityTypeConfiguration<Bus>
 {
     public void Configure(EntityTypeBuilder<Bus> builder)
     {
+        builder.ConfigureAuditableProperties();
         builder.HasKey(b => b.Id);
 
         builder.Property(b => b.Code)

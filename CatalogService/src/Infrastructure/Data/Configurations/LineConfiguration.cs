@@ -1,4 +1,5 @@
-﻿using CatalogService.Domain.Entities;
+﻿using BuildingBlocks.Infrastructure.Data.Extensions;
+using CatalogService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,7 +9,7 @@ public class LineConfiguration : IEntityTypeConfiguration<Line>
 {
     public void Configure(EntityTypeBuilder<Line> builder)
     {
-        
+        builder.ConfigureAuditableProperties();
         builder.HasKey(l => l.Id);
 
         builder.Property(l => l.Code)

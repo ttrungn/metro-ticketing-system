@@ -1,4 +1,5 @@
-﻿using CatalogService.Domain.Entities;
+﻿using BuildingBlocks.Infrastructure.Data.Extensions;
+using CatalogService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,6 +9,7 @@ public class TicketTypeConfiguration : IEntityTypeConfiguration<TicketType>
 {
     public void Configure(EntityTypeBuilder<TicketType> builder)
     {
+        builder.ConfigureAuditableProperties();
         builder.HasKey(t => t.Id);
 
         builder.Property(t => t.Name)

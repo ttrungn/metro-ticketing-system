@@ -1,4 +1,5 @@
-﻿using CatalogService.Domain.Entities;
+﻿using BuildingBlocks.Infrastructure.Data.Extensions;
+using CatalogService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,6 +9,7 @@ public class RouteConfiguration : IEntityTypeConfiguration<Route>
 {
     public void Configure(EntityTypeBuilder<Route> builder)
     {
+        builder.ConfigureAuditableProperties();
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Code).IsRequired().HasMaxLength(50);
         builder.Property(r => r.Name).IsRequired().HasMaxLength(200);
