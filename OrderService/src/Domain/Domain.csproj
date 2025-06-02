@@ -6,12 +6,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MediatR"/>
+        <PackageReference Include="MediatR" />
     </ItemGroup>
 
     <ItemGroup>
       <Folder Include="Constants\" />
-      <Folder Include="Enums\" />
       <Folder Include="Events\" />
       <Folder Include="Exceptions\" />
       <Folder Include="ValueObjects\" />
