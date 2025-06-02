@@ -9,6 +9,7 @@ public class PriceRangeConfiguration : IEntityTypeConfiguration<PriceRange>
 {
     public void Configure(EntityTypeBuilder<PriceRange> builder)
     {
+        builder.ToTable("PriceRange");
         builder.ConfigureAuditableProperties();
         builder.HasKey(p => p.Id);
 

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CatalogService.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250602100237_InitCatalog")]
-    partial class InitCatalog
+    [Migration("20250602102424_InitialCatalog")]
+    partial class InitialCatalog
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -59,7 +59,7 @@ namespace CatalogService.Infrastructure.Data.Migrations
 
                     b.HasIndex("StationId");
 
-                    b.ToTable("Bus");
+                    b.ToTable("Bus", (string)null);
                 });
 
             modelBuilder.Entity("CatalogService.Domain.Entities.Line", b =>
@@ -109,7 +109,7 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     b.HasIndex("RouteId")
                         .IsUnique();
 
-                    b.ToTable("Line");
+                    b.ToTable("Line", (string)null);
                 });
 
             modelBuilder.Entity("CatalogService.Domain.Entities.LineSegment", b =>
@@ -148,7 +148,7 @@ namespace CatalogService.Infrastructure.Data.Migrations
 
                     b.HasIndex("ToStationId");
 
-                    b.ToTable("LineSegment");
+                    b.ToTable("LineSegment", (string)null);
                 });
 
             modelBuilder.Entity("CatalogService.Domain.Entities.PriceRange", b =>
@@ -180,7 +180,7 @@ namespace CatalogService.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PriceRange");
+                    b.ToTable("PriceRange", (string)null);
                 });
 
             modelBuilder.Entity("CatalogService.Domain.Entities.Route", b =>
@@ -220,7 +220,7 @@ namespace CatalogService.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Route");
+                    b.ToTable("Route", (string)null);
                 });
 
             modelBuilder.Entity("CatalogService.Domain.Entities.Station", b =>
@@ -277,7 +277,7 @@ namespace CatalogService.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Station");
+                    b.ToTable("Station", (string)null);
                 });
 
             modelBuilder.Entity("CatalogService.Domain.Entities.StationRoute", b =>
@@ -292,7 +292,7 @@ namespace CatalogService.Infrastructure.Data.Migrations
 
                     b.HasIndex("RouteId");
 
-                    b.ToTable("StationRoute");
+                    b.ToTable("StationRoute", (string)null);
                 });
 
             modelBuilder.Entity("CatalogService.Domain.Entities.Ticket", b =>
@@ -330,7 +330,7 @@ namespace CatalogService.Infrastructure.Data.Migrations
 
                     b.HasIndex("TicketTypeId");
 
-                    b.ToTable("Ticket");
+                    b.ToTable("Ticket", (string)null);
                 });
 
             modelBuilder.Entity("CatalogService.Domain.Entities.TicketType", b =>
@@ -364,7 +364,7 @@ namespace CatalogService.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TicketType");
+                    b.ToTable("TicketType", (string)null);
                 });
 
             modelBuilder.Entity("CatalogService.Domain.Entities.WeatherForecast", b =>
@@ -398,7 +398,7 @@ namespace CatalogService.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("WeatherForecast");
+                    b.ToTable("WeatherForecast", (string)null);
                 });
 
             modelBuilder.Entity("CatalogService.Domain.Entities.Bus", b =>

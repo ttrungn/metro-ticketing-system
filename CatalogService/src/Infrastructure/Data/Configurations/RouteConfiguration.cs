@@ -9,6 +9,7 @@ public class RouteConfiguration : IEntityTypeConfiguration<Route>
 {
     public void Configure(EntityTypeBuilder<Route> builder)
     {
+        builder.ToTable("Route");
         builder.ConfigureAuditableProperties();
         builder.HasKey(r => r.Id);
         builder.Property(r => r.Code).IsRequired().HasMaxLength(50);

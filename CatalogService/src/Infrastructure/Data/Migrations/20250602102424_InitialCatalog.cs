@@ -6,24 +6,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CatalogService.Infrastructure.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitCatalog : Migration
+    public partial class InitialCatalog : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_WeatherForecasts",
-                table: "WeatherForecasts");
-
-            migrationBuilder.RenameTable(
-                name: "WeatherForecasts",
-                newName: "WeatherForecast");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_WeatherForecast",
-                table: "WeatherForecast",
-                column: "Id");
-
             migrationBuilder.CreateTable(
                 name: "PriceRange",
                 columns: table => new
@@ -100,6 +87,24 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TicketType", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WeatherForecast",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TemperatureC = table.Column<int>(type: "int", nullable: false),
+                    Summary = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    DeleteFlag = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    LastModifiedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    DeletedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WeatherForecast", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -316,6 +321,9 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 name: "Ticket");
 
             migrationBuilder.DropTable(
+                name: "WeatherForecast");
+
+            migrationBuilder.DropTable(
                 name: "Line");
 
             migrationBuilder.DropTable(
@@ -326,19 +334,6 @@ namespace CatalogService.Infrastructure.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Station");
-
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_WeatherForecast",
-                table: "WeatherForecast");
-
-            migrationBuilder.RenameTable(
-                name: "WeatherForecast",
-                newName: "WeatherForecasts");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_WeatherForecasts",
-                table: "WeatherForecasts",
-                column: "Id");
         }
     }
 }

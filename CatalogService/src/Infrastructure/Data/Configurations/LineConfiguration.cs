@@ -9,6 +9,7 @@ public class LineConfiguration : IEntityTypeConfiguration<Line>
 {
     public void Configure(EntityTypeBuilder<Line> builder)
     {
+        builder.ToTable("Line");
         builder.ConfigureAuditableProperties();
         builder.HasKey(l => l.Id);
 

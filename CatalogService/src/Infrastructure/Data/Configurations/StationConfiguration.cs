@@ -9,6 +9,7 @@ public class StationConfiguration : IEntityTypeConfiguration<Station>
 {
     public void Configure(EntityTypeBuilder<Station> builder)
     {
+        builder.ToTable("Station");
         builder.ConfigureAuditableProperties();
         builder.HasKey(s => s.Id);
 

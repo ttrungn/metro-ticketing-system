@@ -9,6 +9,7 @@ public class LineSegmentConfiguration : IEntityTypeConfiguration<LineSegment>
 {
     public void Configure(EntityTypeBuilder<LineSegment> builder)
     {
+        builder.ToTable("LineSegment");
         builder.ConfigureAuditableProperties();
         builder.HasKey(ls => ls.Id);
 

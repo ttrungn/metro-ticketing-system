@@ -22,10 +22,6 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        foreach (var entityType in builder.Model.GetEntityTypes())
-        {
-            entityType.SetTableName(entityType.DisplayName());
-        }
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
     }
 }

@@ -8,6 +8,7 @@ public class StationRouteConfiguration : IEntityTypeConfiguration<StationRoute>
 {
     public void Configure(EntityTypeBuilder<StationRoute> builder)
     {
+        builder.ToTable("StationRoute");
         // Composite key
         builder.HasKey(sr => new { sr.StationId, sr.RouteId });
 

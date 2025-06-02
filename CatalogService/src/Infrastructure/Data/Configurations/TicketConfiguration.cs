@@ -9,6 +9,7 @@ public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
 {
     public void Configure(EntityTypeBuilder<Ticket> builder)
     {
+        builder.ToTable("Ticket");
         builder.ConfigureAuditableProperties();
         builder.HasKey(t => t.Id);
 

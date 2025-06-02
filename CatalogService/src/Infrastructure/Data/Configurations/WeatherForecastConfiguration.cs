@@ -9,6 +9,7 @@ public class WeatherForecastConfiguration : IEntityTypeConfiguration<WeatherFore
 {
     public void Configure(EntityTypeBuilder<WeatherForecast> builder)
     {
+        builder.ToTable("WeatherForecast");
         builder.ConfigureAuditableProperties();
         builder.HasKey(w => w.Id);
 

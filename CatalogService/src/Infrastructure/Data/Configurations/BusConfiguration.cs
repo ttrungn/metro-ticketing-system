@@ -9,6 +9,7 @@ public class BusConfiguration : IEntityTypeConfiguration<Bus>
 {
     public void Configure(EntityTypeBuilder<Bus> builder)
     {
+        builder.ToTable("Bus");
         builder.ConfigureAuditableProperties();
         builder.HasKey(b => b.Id);
 
