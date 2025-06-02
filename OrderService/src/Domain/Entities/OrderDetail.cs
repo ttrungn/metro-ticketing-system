@@ -2,9 +2,11 @@
 
 namespace OrderService.Domain.Entities;
 
-public class OrderDetail : BaseAuditableEntity<OrderDetail>
+public class OrderDetail
 {
-    public string OrderId { get; set; } = null!;
-    public string PurchaseTicketId { get; set; } = null!;
+    public Guid OrderId { get; set; }
+    public Guid PurchaseTicketId { get; set; }
     public decimal BoughtPrice { get; set; } = 0;
+    public Order Order { get; set; } = null!;
+    public PurchasedTicket PurchasedTicket { get; set; } = null!;
 }

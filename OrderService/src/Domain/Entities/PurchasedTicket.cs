@@ -10,4 +10,7 @@ public class PurchasedTicket : BaseAuditableEntity<Guid>
     public DateTimeOffset ExpiredAt { get; set; }
     public PurchaseTicketStatus Status { get; set; } = PurchaseTicketStatus.Unused;
     public OrderStatus OrderStatus { get; set; } = OrderStatus.Unpaid;
+
+    public List<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+
 }
