@@ -37,7 +37,7 @@ jobs:
           elif [[ "$TRIGGERED" == "CI – Build & Push OrderService Docker Image" ]]; then
             echo "service=order-service" >> $GITHUB_OUTPUT
           elif [[ "$TRIGGERED" == "CI – Build & Push Yarp Api Gateway Docker Image" ]]; then
-            echo "service=yarp-api-gateway" >> $GITHUB_OUTPUT
+            echo "service=api-gateway" >> $GITHUB_OUTPUT
           else
             echo "ERROR: Unrecognized workflow name: $TRIGGERED" >&2
             exit 1
