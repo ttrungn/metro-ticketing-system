@@ -2,7 +2,7 @@ name: CI – Build & Push Yarp Api Gateway Docker Image
 
 on:
   push:
-    branches: [ trung ]
+    branches: [ trungn ]
     paths:
       - 'YarpApiGateway/**'
 
@@ -48,7 +48,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build & push AuthService multi-arch
+      - name: Build & push Yarp Api Gateway multi-arch
         uses: docker/build-push-action@v4
         with:
           context: .

@@ -1,5 +1,4 @@
-﻿// SampleService/src/Web/Endpoints/WeatherForecasts.cs
-using SampleService.Application.WeatherForecasts.Commands.CreateWeatherForecast;
+﻿using SampleService.Application.WeatherForecasts.Commands.CreateWeatherForecast;
 using SampleService.Application.WeatherForecasts.Commands.DeleteWeatherForecast;
 using SampleService.Application.WeatherForecasts.Commands.UpdateWeatherForecast;
 using SampleService.Application.WeatherForecasts.Queries.GetWeatherForecasts;

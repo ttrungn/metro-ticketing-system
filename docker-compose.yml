@@ -1,7 +1,7 @@
 services:
-  auth-service:
-    image: "${REGISTRY_USERNAME}/mts-auth-service:${IMAGE_TAG-latest}"
-    container_name: auth-service
+  user-service:
+    image: "${REGISTRY_USERNAME}/mts-user-service:${IMAGE_TAG-latest}"
+    container_name: user-service
     expose:
       - 8080
     env_file:
@@ -23,7 +23,7 @@ services:
     ports:
       - "9000:8080"
     depends_on:
-      - auth-service
+      - user-service
       - sample-service
     env_file:
       - .env

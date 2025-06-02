@@ -16,8 +16,8 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services,
         IConfiguration configuration)
     {
-        var writeDbConnectionString = configuration.GetConnectionString("WriteDb");
-        var readDbConnectionString = configuration.GetConnectionString("ReadDb");
+        var writeDbConnectionString = configuration.GetConnectionString("SampleServiceWriteDb");
+        var readDbConnectionString = configuration.GetConnectionString("SampleServiceReadDb");
         Guard.Against.Null(writeDbConnectionString, message: "Connection string 'WriteDb' not found. Make sure you have configured the connection");
         Guard.Against.Null(readDbConnectionString, message: "Connection string 'ReadDb' not found. Make sure you have configured the connection");
 
