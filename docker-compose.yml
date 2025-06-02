@@ -1,9 +1,6 @@
 services:
   user-service:
-#    image: "${REGISTRY_USERNAME}/mts-user-service:${IMAGE_TAG-latest}"
-    build:
-      context: .
-      dockerfile: ./UserService/src/Web/Dockerfile
+    image: "${REGISTRY_USERNAME}/mts-user-service:${IMAGE_TAG-latest}"
     container_name: user-service
     expose:
       - 8080

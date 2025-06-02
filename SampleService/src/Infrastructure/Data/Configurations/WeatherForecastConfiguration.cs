@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Data.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SampleService.Domain.Entities;
@@ -15,12 +16,13 @@ public class WeatherForecastConfiguration : IEntityTypeConfiguration<WeatherFore
 
         builder.Property(w => w.TemperatureC)
             .IsRequired();
-
+        
         builder.Property(w => w.Summary)
             .IsRequired()
             .HasMaxLength(200);
-
-        // Ignore computed property
+        
+        builder.ConfigureAuditableProperties();
+        
         builder.Ignore(w => w.TemperatureF);
     }
 }

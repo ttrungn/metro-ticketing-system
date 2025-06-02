@@ -1,5 +1,6 @@
 using BuildingBlocks.Domain.Events.Sample;
 using Marten;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SampleService.Application.Common.Interfaces;
 using SampleService.Application.Common.Interfaces.Services;
@@ -9,11 +10,13 @@ namespace SampleService.Infrastructure.Services;
 
 public class WeatherForecastService : IWeatherForecastService
 {
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IApplicationDbContext _context;
     private readonly IDocumentSession _documentSession;
 
-    public WeatherForecastService(IApplicationDbContext context, IDocumentSession documentSession)
+    public WeatherForecastService(IHttpContextAccessor httpContextAccessor, IApplicationDbContext context, IDocumentSession documentSession)
     {
+        _httpContextAccessor = httpContextAccessor;
         _context = context;
         _documentSession = documentSession;
     }
@@ -30,7 +33,7 @@ public class WeatherForecastService : IWeatherForecastService
 
         _context.WeatherForecasts.Add(entity);
         await _context.SaveChangesAsync(cancellationToken);
-
+        
         return entity.Id;
     }
     

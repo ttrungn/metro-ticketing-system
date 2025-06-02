@@ -10,7 +10,7 @@ namespace UserService.Infrastructure.Data.Configurations
         public void Configure(EntityTypeBuilder<Customer> builder)
         {
             // Map to table "Customers"
-            builder.ToTable("Customers");
+            builder.ToTable("Customer");
 
             // Primary key (inherited as Id from BaseAuditableEntity<Guid>)
             builder.HasKey(c => c.Id);
