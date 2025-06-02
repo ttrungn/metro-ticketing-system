@@ -1,3 +1,4 @@
+using BuildingBlocks.Infrastructure.Data.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using CatalogService.Domain.Entities;
@@ -8,6 +9,8 @@ public class WeatherForecastConfiguration : IEntityTypeConfiguration<WeatherFore
 {
     public void Configure(EntityTypeBuilder<WeatherForecast> builder)
     {
+        builder.ToTable("WeatherForecast");
+        builder.ConfigureAuditableProperties();
         builder.HasKey(w => w.Id);
 
         builder.Property(w => w.Date)

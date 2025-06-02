@@ -186,7 +186,7 @@ namespace UserService.Infrastructure.Data.Migrations
                     b.HasIndex("ApplicationUserId")
                         .HasDatabaseName("IX_Customers_ApplicationUserId");
 
-                    b.ToTable("Customers", (string)null);
+                    b.ToTable("Customer", (string)null);
                 });
 
             modelBuilder.Entity("UserService.Domain.Entities.Staff", b =>
