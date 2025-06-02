@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <RootNamespace>CatalogService.Domain</RootNamespace>
+        <AssemblyName>CatalogService.Domain</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MediatR"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Constants\" />
+      <Folder Include="Enums\" />
+      <Folder Include="Events\" />
+      <Folder Include="Exceptions\" />
+      <Folder Include="ValueObjects\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.csproj" />
+    </ItemGroup>
+
+</Project>
