@@ -18,6 +18,8 @@
 
     <ItemGroup>
       <Folder Include="Common\Interfaces\Repositories\" />
+      <Folder Include="WeatherForecasts\Commands\" />
+      <Folder Include="WeatherForecasts\Queries\" />
     </ItemGroup>
 
 </Project>

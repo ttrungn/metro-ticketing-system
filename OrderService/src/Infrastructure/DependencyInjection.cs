@@ -33,7 +33,7 @@ public static class DependencyInjection
         services.AddMarten(options =>
             {
                 options.DisableNpgsqlLogging = true;
-            
+
             // Establish the connection string to your Marten database
             options.Connection(readDbConnectionString);
 
@@ -41,13 +41,12 @@ public static class DependencyInjection
             options.UseSystemTextJsonForSerialization();
         })
         .UseLightweightSessions();
-        
+
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<ApplicationDbContextInitialiser>();
 
-        services.AddScoped<IWeatherForecastService, WeatherForecastService>();
         services.AddScoped(typeof(IMassTransitService<>), typeof(MassTransitService<>));
-        
+
         services.AddSingleton(TimeProvider.System);
 
         return services;
