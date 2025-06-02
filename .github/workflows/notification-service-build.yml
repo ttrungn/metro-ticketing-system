@@ -1,13 +1,13 @@
-name: CI – Build & Push SampleService Docker Image
+name: CI – Build & Push NotificationService Docker Image
 
 on:
   push:
     branches: [ main ]
     paths:
-      - 'SampleService/**'
+      - 'NotificationService/**'
 
 jobs:
-  sample-service:
+  notification-service:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -15,15 +15,15 @@ jobs:
 
       - name: Pull previous cache image
         run: |
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/mts-sample-service:cache || echo "no cache yet"
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/mts-notification-service:cache || echo "no cache yet"
 
       - name: Restore buildx local cache
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: buildx-sample-${{ runner.os }}
+          key: buildx-notification-${{ runner.os }}
           restore-keys: |
-            buildx-sample-${{ runner.os }}
+            buildx-notification-${{ runner.os }}
 
       - name: Prepare local cache dir
         run: mkdir -p /tmp/.buildx-cache
@@ -48,19 +48,19 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build & push SampleService (multi-arch)
+      - name: Build & push NotificationService (multi-arch)
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./SampleService/src/Web/Dockerfile
+          file: ./NotificationService/src/Web/Dockerfile
           platforms: linux/amd64
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/mts-sample-service:${{ steps.sha.outputs.sha }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/mts-sample-service:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/mts-notification-service:${{ steps.sha.outputs.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/mts-notification-service:latest
           cache-from: |
-            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/mts-sample-service:cache
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/mts-notification-service:cache
             type=local,src=/tmp/.buildx-cache
           cache-to: |
-            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/mts-sample-service:cache,mode=max
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/mts-notification-service:cache,mode=max
             type=local,dest=/tmp/.buildx-cache,mode=max

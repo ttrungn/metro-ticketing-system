@@ -28,7 +28,7 @@ namespace UserService.Infrastructure.Data.Migrations
                 defaultValue: "");
 
             migrationBuilder.CreateTable(
-                name: "Customers",
+                name: "Customer",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -41,7 +41,7 @@ namespace UserService.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Customers", x => x.Id);
+                    table.PrimaryKey("PK_Customer", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -62,7 +62,7 @@ namespace UserService.Infrastructure.Data.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_Customers_ApplicationUserId",
-                table: "Customers",
+                table: "Customer",
                 column: "ApplicationUserId");
 
             migrationBuilder.CreateIndex(
@@ -75,7 +75,7 @@ namespace UserService.Infrastructure.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Customers");
+                name: "Customer");
 
             migrationBuilder.DropTable(
                 name: "Staff");
