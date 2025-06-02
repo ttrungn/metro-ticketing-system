@@ -11,6 +11,8 @@ public class OrderDetailConfiguration : IEntityTypeConfiguration<OrderDetail>
     {
         builder.HasKey(od => new { od.OrderId, od.PurchaseTicketId });
 
+        builder.ToTable("OrderDetail");
+
         builder.Property(o => o.OrderId).IsRequired();
 
         builder.Property(o => o.BoughtPrice).IsRequired();

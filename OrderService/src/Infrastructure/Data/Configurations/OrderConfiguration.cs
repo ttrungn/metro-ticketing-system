@@ -11,6 +11,8 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
     {
         builder.HasKey(o => o.Id);
 
+        builder.ToTable("Order");
+
         builder.Property(o => o.CustomerId).IsRequired();
 
         builder.Property(o => o.ThirdPartyPaymentId).IsRequired();

@@ -11,6 +11,8 @@ public class PurchasedTicketConfiguration : IEntityTypeConfiguration<PurchasedTi
     {
         builder.HasKey(p => p.Id);
 
+        builder.ToTable("PurchasedTicket");
+
         builder.Property(p => p.TicketId).IsRequired();
 
         builder.Property(p => p.CustomerId).IsRequired();

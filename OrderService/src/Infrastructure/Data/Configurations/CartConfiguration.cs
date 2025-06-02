@@ -9,6 +9,8 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
 {
     public void Configure(EntityTypeBuilder<Cart> builder)
     {
+        builder.ToTable("Cart");
+
         builder.HasKey(c => new { c.CustomerId, c.TicketId });
 
         builder.Property(c => c.CustomerId)
