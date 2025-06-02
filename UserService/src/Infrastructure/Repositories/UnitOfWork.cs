@@ -5,7 +5,7 @@ using UserService.Infrastructure.Data;
 
 namespace UserService.Infrastructure.Repositories;
 
-public class UnitOfWork
+public class UnitOfWork : IUnitOfWork
 {
     private readonly ApplicationDbContext _context;
     private readonly Hashtable _repos = new();
@@ -15,7 +15,7 @@ public class UnitOfWork
         _context = context;
     }
 
-    public IGenericRepository<T, TId> Repository<T, TId>()
+    public IGenericRepository<T, TId> GetRepository<T, TId>()
         where T : BaseEntity<TId>
         where TId : notnull
     {

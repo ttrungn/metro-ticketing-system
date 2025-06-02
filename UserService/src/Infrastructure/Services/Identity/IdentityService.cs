@@ -1,3 +1,4 @@
+using BuildingBlocks.Domain.Constants;
 using BuildingBlocks.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -5,12 +6,14 @@ using UserService.Application.Common.Interfaces.Repositories;
 using UserService.Application.Common.Interfaces.Services;
 using UserService.Application.Common.Models;
 using UserService.Application.Users.Commands.RegisterCustomer;
+using UserService.Domain.Entities;
 using UserService.Domain.ValueObjects;
 
 namespace UserService.Infrastructure.Services.Identity;
 
 public class IdentityService : IIdentityService
 {
+    private readonly IUnitOfWork _unitOfWork;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IUserClaimsPrincipalFactory<ApplicationUser> _userClaimsPrincipalFactory;
     private readonly IAuthorizationService _authorizationService;
@@ -18,11 +21,13 @@ public class IdentityService : IIdentityService
     private const string TokenType = "Bearer";
 
     public IdentityService(
+        IUnitOfWork unitOfWork,
         UserManager<ApplicationUser> userManager,
         IUserClaimsPrincipalFactory<ApplicationUser> userClaimsPrincipalFactory,
         IAuthorizationService authorizationService,
         ITokenRepository tokenRepository)
     {
+        _unitOfWork = unitOfWork;
         _userManager = userManager;
         _userClaimsPrincipalFactory = userClaimsPrincipalFactory;
         _authorizationService = authorizationService;
@@ -89,6 +94,41 @@ public class IdentityService : IIdentityService
             };
         }
 
+        try
+        {
+            if (role == Roles.Customer)
+            {
+                var customerRepo = _unitOfWork.GetRepository<Customer, Guid>();
+                var customer = new Customer
+                {
+                    ApplicationUserId = user.Id,
+                    IsStudent         = false
+                };
+                await customerRepo.AddAsync(customer);
+            }
+            else if (role == Roles.Staff)
+            {
+                var staffRepo = _unitOfWork.GetRepository<Staff, Guid>();
+                var staff = new Staff
+                {
+                    ApplicationUserId = user.Id
+                };
+                await staffRepo.AddAsync(staff);
+            }
+            await _unitOfWork.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            await _userManager.DeleteAsync(user);
+
+            return new ServiceResponse<string>
+            {
+                Succeeded = false,
+                Message   = "Failed to create associated Customer/Staff record: " + ex.Message,
+                Data      = string.Empty
+            };
+        }
+        
         return new ServiceResponse<string>()
         {
             Succeeded = true, Message = "Successfully registered", Data = user.Id

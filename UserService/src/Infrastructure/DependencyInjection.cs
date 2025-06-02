@@ -75,6 +75,8 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
         services.AddScoped<ITokenRepository, TokenRepository>();
+        services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         
         services.AddTransient<IIdentityService, IdentityService>();
         

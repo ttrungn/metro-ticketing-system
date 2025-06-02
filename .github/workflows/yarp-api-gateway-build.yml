@@ -2,7 +2,7 @@ name: CI – Build & Push Yarp Api Gateway Docker Image
 
 on:
   push:
-    branches: [ trungn ]
+    branches: [ main ]
     paths:
       - 'YarpApiGateway/**'
 
@@ -53,7 +53,7 @@ jobs:
         with:
           context: .
           file: ./YarpApiGateway/Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/mts-yarp-api-gateway:${{ steps.sha.outputs.sha }}
