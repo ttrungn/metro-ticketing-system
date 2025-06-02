@@ -12,7 +12,7 @@ using UserService.Infrastructure.Data;
 namespace UserService.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250531171304_AddCustomerStaffMigration")]
+    [Migration("20250602080549_AddCustomerStaffMigration")]
     partial class AddCustomerStaffMigration
     {
         /// <inheritdoc />
@@ -189,7 +189,7 @@ namespace UserService.Infrastructure.Data.Migrations
                     b.HasIndex("ApplicationUserId")
                         .HasDatabaseName("IX_Customers_ApplicationUserId");
 
-                    b.ToTable("Customers", (string)null);
+                    b.ToTable("Customer", (string)null);
                 });
 
             modelBuilder.Entity("UserService.Domain.Entities.Staff", b =>

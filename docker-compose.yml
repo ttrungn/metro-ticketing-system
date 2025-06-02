@@ -1,5 +1,8 @@
 services:
   user-service:
+#    build:
+#      context: .
+#      dockerfile: UserService/src/Web/Dockerfile
     image: "${REGISTRY_USERNAME}/mts-user-service:${IMAGE_TAG-latest}"
     container_name: user-service
     expose:
@@ -9,6 +12,9 @@ services:
     networks:
       - metro-net
   sample-service:
+#    build:
+#      context: .
+#      dockerfile: SampleService/src/Web/Dockerfile
     image: "${REGISTRY_USERNAME}/mts-sample-service:${IMAGE_TAG-latest}"
     container_name: sample-service
     expose:
@@ -17,7 +23,46 @@ services:
       - .env
     networks:
       - metro-net
+  catalog-service:
+#    build:
+#      context: .
+#      dockerfile: CatalogService/src/Web/Dockerfile
+    image: "${REGISTRY_USERNAME}/mts-catalog-service:${IMAGE_TAG-latest}"
+    container_name: catalog-service
+    expose:
+      - 8080
+    env_file:
+      - .env
+    networks:
+      - metro-net
+  order-service:
+#    build:
+#      context: .
+#      dockerfile: OrderService/src/Web/Dockerfile
+    image: "${REGISTRY_USERNAME}/mts-order-service:${IMAGE_TAG-latest}"
+    container_name: order-service
+    expose:
+      - 8080
+    env_file:
+      - .env
+    networks:
+      - metro-net
+  notification-service:
+#    build:
+#      context: .
+#      dockerfile: NotificationService/src/Web/Dockerfile
+    image: "${REGISTRY_USERNAME}/mts-notification-service:${IMAGE_TAG-latest}"
+    container_name: notification-service
+    expose:
+      - 8080
+    env_file:
+      - .env
+    networks:
+      - metro-net
   api-gateway:
+#    build:
+#      context: .
+#      dockerfile: YarpApiGateway/Dockerfile
     image: "${REGISTRY_USERNAME}/mts-yarp-api-gateway:${IMAGE_TAG-latest}"
     container_name: api-gateway
     ports:
