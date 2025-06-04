@@ -6,6 +6,79 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/catalog/Routes": {
+      "post": {
+        "tags": [
+          "Routes"
+        ],
+        "operationId": "CreateRoute",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRouteCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Routes"
+        ],
+        "operationId": "UpdateRoute",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRouteCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/catalog/Routes/{id}": {
+      "delete": {
+        "tags": [
+          "Routes"
+        ],
+        "operationId": "DeleteRoute",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/catalog/WeatherForecasts": {
       "get": {
         "tags": [
@@ -115,6 +188,50 @@
   },
   "components": {
     "schemas": {
+      "CreateRouteCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "thumbnailImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "lengthInKm": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "UpdateRouteCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "thumbnailImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "lengthInKm": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
       "WeatherForecast": {
         "allOf": [
           {
