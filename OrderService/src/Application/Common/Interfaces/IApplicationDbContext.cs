@@ -4,6 +4,8 @@ namespace OrderService.Application.Common.Interfaces;
 
 public interface IApplicationDbContext
 {
-    DbSet<WeatherForecast> WeatherForecasts { get; }
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+    DbSet<PurchasedTicket> PurchasedTickets { get; }
+    DbSet<Cart> Carts { get; }
+    DbSet<Order> Orders { get;  }
+    DbSet<OrderDetail> OrderDetails { get; }
 }

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <RootNamespace>OrderService.Application</RootNamespace>
@@ -14,6 +14,12 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Domain\Domain.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Common\Interfaces\Repositories\" />
+      <Folder Include="WeatherForecasts\Commands\" />
+      <Folder Include="WeatherForecasts\Queries\" />
     </ItemGroup>
 
 </Project>

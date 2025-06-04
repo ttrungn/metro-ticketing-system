@@ -39,6 +39,10 @@
       <_ContentIncludedByDefault Remove="wwwroot\api\sample\specification.json" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Endpoints\" />
+    </ItemGroup>
+
 
     <!-- Auto-generated Open API specification and Angular TypeScript clients -->
     <PropertyGroup>
@@ -49,7 +53,7 @@
         <PropertyGroup>
           <NSwagEnv Condition="'$(Configuration)'=='Debug'">Development</NSwagEnv>
         </PropertyGroup>
-      
+
         <Exec ConsoleToMSBuild="true" ContinueOnError="true" WorkingDirectory="$(ProjectDir)" EnvironmentVariables="ASPNETCORE_ENVIRONMENT=$(NSwagEnv)" Command="$(NSwagExe_Net80) run config.nswag /variables:Configuration=$(Configuration)">
             <Output TaskParameter="ExitCode" PropertyName="NSwagExitCode"/>
             <Output TaskParameter="ConsoleOutput" PropertyName="NSwagOutput"/>
