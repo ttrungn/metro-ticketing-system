@@ -47,25 +47,5 @@ public class StationConfiguration : IEntityTypeConfiguration<Station>
             .WithOne(b => b.Station)
             .HasForeignKey(b => b.StationId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasMany(s => s.FromSegments)
-            .WithOne(ls => ls.FromStation)
-            .HasForeignKey(ls => ls.FromStationId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasMany(s => s.ToSegments)
-            .WithOne(ls => ls.ToStation)
-            .HasForeignKey(ls => ls.ToStationId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasMany(s => s.EntryLines)
-            .WithOne(l => l.EntryStation)
-            .HasForeignKey(l => l.EntryStationId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasMany(s => s.ExitLines)
-            .WithOne(l => l.ExitStation)
-            .HasForeignKey(l => l.ExitStationId)
-            .OnDelete(DeleteBehavior.Restrict);
     }
 }

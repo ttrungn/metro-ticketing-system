@@ -21,8 +21,6 @@ public class RouteConfiguration : IEntityTypeConfiguration<Route>
             .HasForeignKey(sr => sr.RouteId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(r => r.Line)
-            .WithOne(l => l.Route)
-            .HasForeignKey<Line>(l => l.RouteId);
+
     }
 }
