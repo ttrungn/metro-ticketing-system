@@ -11,8 +11,6 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Route> Routes => Set<Route>();
     public DbSet<Station> Stations => Set<Station>();
     public DbSet<StationRoute> StationRoutes => Set<StationRoute>();
-    public DbSet<LineSegment> LineSegments => Set<LineSegment>();
-    public DbSet<Line> Lines => Set<Line>();
     public DbSet<Bus> Buses => Set<Bus>();
     public DbSet<PriceRange> PriceRanges => Set<PriceRange>();
     public DbSet<TicketType> TicketTypes => Set<TicketType>();

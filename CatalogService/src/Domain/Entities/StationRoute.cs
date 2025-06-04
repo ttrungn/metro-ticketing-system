@@ -7,4 +7,15 @@ public class StationRoute
 
     public Guid RouteId { get; set; }
     public Route? Route { get; set; }
+    
+    public Guid EntryStationId { get; set; }
+    public Station? EntryStation { get; set; }
+    
+    public Guid DestinationStationId { get; set; }
+    public Station? DestinationStation { get; set; }
+    
+    public int Order { get; set; }
+    
+    
+    
 }
