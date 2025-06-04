@@ -23,7 +23,7 @@ public static class DependencyInjection
     {
         var connectionString = configuration.GetConnectionString("UserServiceWriteDb");
 
-        Guard.Against.Null(connectionString, message: "Connection string 'WriteDb' not found.");
+        Guard.Against.Null(connectionString, message: "Connection string 'UserServiceWriteDb' not found.");
         
         services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();
