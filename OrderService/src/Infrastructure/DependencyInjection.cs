@@ -1,12 +1,14 @@
-﻿using Marten;
+using Marten;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OrderService.Application.Common.Interfaces;
+using OrderService.Application.Common.Interfaces.Repositories;
 using OrderService.Application.Common.Interfaces.Services;
 using OrderService.Infrastructure.Data;
 using OrderService.Infrastructure.Data.Interceptors;
+using OrderService.Infrastructure.Repositories;
 using OrderService.Infrastructure.Services;
 
 namespace OrderService.Infrastructure;
@@ -18,8 +20,8 @@ public static class DependencyInjection
     {
         var writeDbConnectionString = configuration.GetConnectionString("OrderServiceWriteDb");
         var readDbConnectionString = configuration.GetConnectionString("OrderServiceReadDb");
-        Guard.Against.Null(writeDbConnectionString, message: "Connection string 'WriteDb' not found. Make sure you have configured the connection");
-        Guard.Against.Null(readDbConnectionString, message: "Connection string 'ReadDb' not found. Make sure you have configured the connection");
+        Guard.Against.Null(writeDbConnectionString, message: "Connection string 'OrderServiceWriteDb' not found. Make sure you have configured the connection");
+        Guard.Against.Null(readDbConnectionString, message: "Connection string 'OrderServiceReadDb' not found. Make sure you have configured the connection");
 
         services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();
@@ -45,6 +47,9 @@ public static class DependencyInjection
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<ApplicationDbContextInitialiser>();
 
+        services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        
         services.AddScoped(typeof(IMassTransitService<>), typeof(MassTransitService<>));
 
         services.AddSingleton(TimeProvider.System);

@@ -4,9 +4,11 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NotificationService.Application.Common.Interfaces;
+using NotificationService.Application.Common.Interfaces.Repositories;
 using NotificationService.Application.Common.Interfaces.Services;
 using NotificationService.Infrastructure.Data;
 using NotificationService.Infrastructure.Data.Interceptors;
+using NotificationService.Infrastructure.Repositories;
 using NotificationService.Infrastructure.Services;
 
 namespace NotificationService.Infrastructure;
@@ -18,8 +20,8 @@ public static class DependencyInjection
     {
         var writeDbConnectionString = configuration.GetConnectionString("NotificationServiceWriteDb");
         var readDbConnectionString = configuration.GetConnectionString("NotificationServiceReadDb");
-        Guard.Against.Null(writeDbConnectionString, message: "Connection string 'WriteDb' not found. Make sure you have configured the connection");
-        Guard.Against.Null(readDbConnectionString, message: "Connection string 'ReadDb' not found. Make sure you have configured the connection");
+        Guard.Against.Null(writeDbConnectionString, message: "Connection string 'NotificationServiceWriteDb' not found. Make sure you have configured the connection");
+        Guard.Against.Null(readDbConnectionString, message: "Connection string 'NotificationServiceReadDb' not found. Make sure you have configured the connection");
 
         services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();
@@ -45,6 +47,9 @@ public static class DependencyInjection
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<ApplicationDbContextInitialiser>();
 
+        services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        
         services.AddScoped<IWeatherForecastService, WeatherForecastService>();
         services.AddScoped(typeof(IMassTransitService<>), typeof(MassTransitService<>));
         

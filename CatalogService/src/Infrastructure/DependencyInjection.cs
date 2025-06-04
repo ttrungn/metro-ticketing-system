@@ -4,9 +4,11 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using CatalogService.Application.Common.Interfaces;
+using CatalogService.Application.Common.Interfaces.Repositories;
 using CatalogService.Application.Common.Interfaces.Services;
 using CatalogService.Infrastructure.Data;
 using CatalogService.Infrastructure.Data.Interceptors;
+using CatalogService.Infrastructure.Repositories;
 using CatalogService.Infrastructure.Services;
 
 namespace CatalogService.Infrastructure;
@@ -18,8 +20,8 @@ public static class DependencyInjection
     {
         var writeDbConnectionString = configuration.GetConnectionString("CatalogServiceWriteDb");
         var readDbConnectionString = configuration.GetConnectionString("CatalogServiceReadDb");
-        Guard.Against.Null(writeDbConnectionString, message: "Connection string 'WriteDb' not found. Make sure you have configured the connection");
-        Guard.Against.Null(readDbConnectionString, message: "Connection string 'ReadDb' not found. Make sure you have configured the connection");
+        Guard.Against.Null(writeDbConnectionString, message: "Connection string 'CatalogServiceWriteDb' not found. Make sure you have configured the connection");
+        Guard.Against.Null(readDbConnectionString, message: "Connection string 'CatalogServiceReadDb' not found. Make sure you have configured the connection");
 
         services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();
@@ -45,6 +47,9 @@ public static class DependencyInjection
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<ApplicationDbContextInitialiser>();
 
+        services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        
         services.AddScoped<IWeatherForecastService, WeatherForecastService>();
         services.AddScoped(typeof(IMassTransitService<>), typeof(MassTransitService<>));
         
