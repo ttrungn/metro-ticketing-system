@@ -39,13 +39,13 @@ public class IdentityService : IIdentityService
         var user = await _userManager.FindByEmailAsync(email);
         if (user is null)
         {
-            return (Result.Failure(["Invalid email or password."]), string.Empty, string.Empty, 0);
+            return (Result.Failure(["Email hoặc mật khẩu không chính xác!"]), string.Empty, string.Empty, 0);
         }
 
         var passwordValid = await _userManager.CheckPasswordAsync(user, password);
         if (!passwordValid)
         {
-            return (Result.Failure(["Invalid email or password."]), string.Empty, string.Empty, 0);
+            return (Result.Failure(["Email hoặc mật khẩu không chính xác!"]), string.Empty, string.Empty, 0);
         }
 
         var roles = await _userManager.GetRolesAsync(user);
