@@ -15,8 +15,4 @@ public class Station : BaseAuditableEntity<Guid>
     
     public ICollection<StationRoute> StationRoutes { get; set; } = new List<StationRoute>();
     public ICollection<Bus> Buses { get; set; } = new List<Bus>();
-    public ICollection<LineSegment> FromSegments { get; set; } = new List<LineSegment>();
-    public ICollection<LineSegment> ToSegments { get; set; } = new List<LineSegment>();
-    public ICollection<Line> EntryLines { get; set; } = new List<Line>();
-    public ICollection<Line> ExitLines { get; set; } = new List<Line>();
 }

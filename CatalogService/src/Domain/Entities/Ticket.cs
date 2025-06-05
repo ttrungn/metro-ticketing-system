@@ -8,7 +8,5 @@ public class Ticket : BaseAuditableEntity<Guid>
     
     public Guid TicketTypeId { get; set; }
     public TicketType? TicketType { get; set; }
-    public Guid LineId { get; set; }
-    public Line? Line { get; set; }
     
 }

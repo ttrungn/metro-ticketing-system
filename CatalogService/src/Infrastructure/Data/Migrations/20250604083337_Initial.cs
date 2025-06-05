@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CatalogService.Infrastructure.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCatalog : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -132,81 +132,14 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Line",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RouteId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    EntryStationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ExitStationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TotalLengthInKm = table.Column<double>(type: "float", nullable: false),
-                    Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    DeleteFlag = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    LastModifiedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    DeletedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Line", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Line_Route_RouteId",
-                        column: x => x.RouteId,
-                        principalTable: "Route",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Line_Station_EntryStationId",
-                        column: x => x.EntryStationId,
-                        principalTable: "Station",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Line_Station_ExitStationId",
-                        column: x => x.ExitStationId,
-                        principalTable: "Station",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "LineSegment",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FromStationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ToStationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    LengthInKm = table.Column<double>(type: "float", nullable: false),
-                    Order = table.Column<int>(type: "int", nullable: false),
-                    DeleteFlag = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    LastModifiedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    DeletedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_LineSegment", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_LineSegment_Station_FromStationId",
-                        column: x => x.FromStationId,
-                        principalTable: "Station",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_LineSegment_Station_ToStationId",
-                        column: x => x.ToStationId,
-                        principalTable: "Station",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "StationRoute",
                 columns: table => new
                 {
                     StationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RouteId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    RouteId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    EntryStationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DestinationStationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Order = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -217,6 +150,18 @@ namespace CatalogService.Infrastructure.Data.Migrations
                         principalTable: "Route",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_StationRoute_Station_DestinationStationId",
+                        column: x => x.DestinationStationId,
+                        principalTable: "Station",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_StationRoute_Station_EntryStationId",
+                        column: x => x.EntryStationId,
+                        principalTable: "Station",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_StationRoute_Station_StationId",
                         column: x => x.StationId,
@@ -232,7 +177,6 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     TicketTypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    LineId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DeleteFlag = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     LastModifiedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
@@ -241,12 +185,6 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Ticket", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Ticket_Line_LineId",
-                        column: x => x.LineId,
-                        principalTable: "Line",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Ticket_TicketType_TicketTypeId",
                         column: x => x.TicketTypeId,
@@ -261,40 +199,19 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 column: "StationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Line_EntryStationId",
-                table: "Line",
+                name: "IX_StationRoute_DestinationStationId",
+                table: "StationRoute",
+                column: "DestinationStationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StationRoute_EntryStationId",
+                table: "StationRoute",
                 column: "EntryStationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Line_ExitStationId",
-                table: "Line",
-                column: "ExitStationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Line_RouteId",
-                table: "Line",
-                column: "RouteId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_LineSegment_FromStationId",
-                table: "LineSegment",
-                column: "FromStationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_LineSegment_ToStationId",
-                table: "LineSegment",
-                column: "ToStationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_StationRoute_RouteId",
                 table: "StationRoute",
                 column: "RouteId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Ticket_LineId",
-                table: "Ticket",
-                column: "LineId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Ticket_TicketTypeId",
@@ -309,9 +226,6 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 name: "Bus");
 
             migrationBuilder.DropTable(
-                name: "LineSegment");
-
-            migrationBuilder.DropTable(
                 name: "PriceRange");
 
             migrationBuilder.DropTable(
@@ -324,16 +238,13 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 name: "WeatherForecast");
 
             migrationBuilder.DropTable(
-                name: "Line");
-
-            migrationBuilder.DropTable(
-                name: "TicketType");
-
-            migrationBuilder.DropTable(
                 name: "Route");
 
             migrationBuilder.DropTable(
                 name: "Station");
+
+            migrationBuilder.DropTable(
+                name: "TicketType");
         }
     }
 }

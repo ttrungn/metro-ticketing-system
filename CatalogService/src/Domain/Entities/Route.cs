@@ -10,5 +10,4 @@ public class Route : BaseAuditableEntity<Guid>
      public double LengthInKm { get; set; }
      
      public ICollection<StationRoute> StationRoutes { get; set; } = new List<StationRoute>();
-     public Line? Line { get; set; }
 }

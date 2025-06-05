@@ -23,5 +23,18 @@ public class StationRouteConfiguration : IEntityTypeConfiguration<StationRoute>
             .WithMany(r => r.StationRoutes)
             .HasForeignKey(sr => sr.RouteId)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        builder.HasOne(sr => sr.EntryStation)
+               .WithMany()
+               .HasForeignKey(sr => sr.EntryStationId)
+               .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.HasOne(sr => sr.DestinationStation)
+               .WithMany()
+               .HasForeignKey(sr => sr.DestinationStationId)
+               .OnDelete(DeleteBehavior.Restrict);
+        
+        
+        
     }
 }
