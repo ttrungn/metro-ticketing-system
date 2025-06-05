@@ -1,6 +1,9 @@
 ﻿using CatalogService.Application.Routes.Commands.CreateRoute;
 using CatalogService.Application.Routes.Commands.DeleteRoute;
 using CatalogService.Application.Routes.Commands.UpdateRoute;
+using CatalogService.Application.Routes.DTOs;
+using CatalogService.Application.Routes.Queries.GetRouteById;
+using CatalogService.Application.Routes.Queries.GetRoutes;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CatalogService.Web.Endpoints;
@@ -11,46 +14,76 @@ public class Routes : EndpointGroupBase
     {
         app.MapGroup(this)
             .MapPost(CreateRoute, "/")
-            .MapPut(UpdateRoute, "/")
-            .MapDelete(DeleteRoute, "/{id:guid}");
-
+            .MapPut(UpdateRoute, "/{id:guid}")
+            .MapDelete(DeleteRoute, "/{id:guid}")
+            .MapGet(GetRoutes, "/")
+            .MapGet(GetRouteById, "/{id:guid}");
     }
 
     private static async Task<IResult> CreateRoute(ISender sender, [FromBody] CreateRouteCommand command)
     {
-        var result = await sender.Send(command);
+        var response = await sender.Send(command);
 
-        if (result.Succeeded)
+        if (response.Succeeded)
         {
-            return TypedResults.Created($"/api/catalog/routes/{result.Data}", result);
+            return TypedResults.Created($"/api/catalog/routes/{response.Data}", response);
         }
 
-        return TypedResults.BadRequest(result);
+        return TypedResults.BadRequest(response);
     }
 
-    private static async Task<IResult> UpdateRoute(ISender sender, [FromBody] UpdateRouteCommand command)
+    private static async Task<IResult> UpdateRoute(ISender sender, [FromRoute] Guid id, [FromBody] UpdateRouteRequestDto requestBody)
     {
-        var result = await sender.Send(command);
-
-        if (result.Succeeded)
+        var command = new UpdateRouteCommand()
         {
-            return TypedResults.Ok(result);
+            Id = id,
+            Code = requestBody.Code,
+            Name = requestBody.Name,
+            ThumbnailImageUrl = requestBody.ThumbnailImageUrl,
+            LengthInKm = requestBody.LengthInKm
+        };
+
+        var response = await sender.Send(command);
+
+        if (response.Succeeded)
+        {
+            return TypedResults.Ok(response);
         }
 
-        return TypedResults.BadRequest(result);
+        return TypedResults.BadRequest(response);
     }
 
     private static async Task<IResult> DeleteRoute(ISender sender, [FromRoute] Guid id)
     {
         var command = new DeleteRouteCommand(id);
 
-        var result = await sender.Send(command);
+        var response = await sender.Send(command);
 
-        if (result.Succeeded)
+        if (response.Succeeded)
         {
             return TypedResults.NoContent();
         }
 
-        return TypedResults.BadRequest(result);
+        return TypedResults.BadRequest(response);
     }
+
+    private static async Task<IResult> GetRoutes(ISender sender, [FromQuery] int page = 0, [FromQuery] string? name = "")
+    {
+        var query = new GetRoutesQuery
+        {
+            Page = page,
+            Name = name
+        };
+
+        var response = await sender.Send(query);
+        return TypedResults.Ok(response);
+    }
+
+    private static async Task<IResult> GetRouteById(ISender sender, [FromRoute] Guid id)
+    {
+        var query = new GetRouteByIdQuery(id);
+        var response = await sender.Send(query);
+        return TypedResults.Ok(response);
+    }
+
 }

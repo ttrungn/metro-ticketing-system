@@ -18,6 +18,19 @@ public class UpdateRouteCommandValidator : AbstractValidator<UpdateRouteCommand>
 {
     public UpdateRouteCommandValidator()
     {
+        RuleFor(x => x.Code)
+            .NotEmpty().WithMessage("Xin vui lòng nhập code.")
+            .MinimumLength(6).WithMessage("Code yêu cầu 6 chữ số.")
+            .MaximumLength(6).WithMessage("Code yêu cầu 6 chữ số.");
+
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Xin vui lòng nhập tên tuyến.");
+
+        RuleFor(x => x.ThumbnailImageUrl)
+            .MaximumLength(200).WithMessage("Đường dẫn ảnh không được vượt quá 200 ký tự.");
+
+        RuleFor(x => x.LengthInKm)
+            .GreaterThan(0).WithMessage("Chiều dài tuyến phải lớn hơn 0.");
     }
 }
 

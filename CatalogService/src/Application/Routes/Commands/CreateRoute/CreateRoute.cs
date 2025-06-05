@@ -25,7 +25,7 @@ public class CreateRouteCommandValidator : AbstractValidator<CreateRouteCommand>
             .NotEmpty().WithMessage("Xin vui lòng nhập tên tuyến.");
 
         RuleFor(x => x.ThumbnailImageUrl)
-            .MaximumLength(200).WithMessage("Đường dẫn ảnh không được vượt quá 200 ký tự.");
+            .MaximumLength(200).WithMessage("Đường dẫn ảnh không được vượt quá 256 ký tự.");
 
         RuleFor(x => x.LengthInKm)
             .GreaterThan(0).WithMessage("Chiều dài tuyến phải lớn hơn 0.");

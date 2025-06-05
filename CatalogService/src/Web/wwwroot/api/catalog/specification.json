@@ -30,23 +30,33 @@
           }
         }
       },
-      "put": {
+      "get": {
         "tags": [
           "Routes"
         ],
-        "operationId": "UpdateRoute",
-        "requestBody": {
-          "x-name": "command",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateRouteCommand"
-              }
-            }
+        "operationId": "GetRoutes",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            },
+            "x-position": 1
           },
-          "required": true,
-          "x-position": 1
-        },
+          {
+            "name": "name",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "",
+              "nullable": true
+            },
+            "x-position": 2
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
@@ -55,11 +65,69 @@
       }
     },
     "/api/catalog/Routes/{id}": {
+      "put": {
+        "tags": [
+          "Routes"
+        ],
+        "operationId": "UpdateRoute",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "requestBody": {
+          "x-name": "requestBody",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRouteRequestDto"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 2
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
       "delete": {
         "tags": [
           "Routes"
         ],
         "operationId": "DeleteRoute",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Routes"
+        ],
+        "operationId": "GetRouteById",
         "parameters": [
           {
             "name": "id",
@@ -208,27 +276,32 @@
           }
         }
       },
-      "UpdateRouteCommand": {
+      "UpdateRouteRequestDto": {
         "type": "object",
         "additionalProperties": false,
+        "required": [
+          "code",
+          "name"
+        ],
         "properties": {
-          "id": {
-            "type": "string",
-            "format": "guid"
-          },
           "code": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 6,
+            "minLength": 6
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "thumbnailImageUrl": {
             "type": "string",
+            "maxLength": 200,
             "nullable": true
           },
           "lengthInKm": {
             "type": "number",
-            "format": "double"
+            "format": "double",
+            "minimum": 0.01
           }
         }
       },
