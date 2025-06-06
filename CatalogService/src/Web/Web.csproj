@@ -53,7 +53,7 @@
         <PropertyGroup>
           <NSwagEnv Condition="'$(Configuration)'=='Debug'">Development</NSwagEnv>
         </PropertyGroup>
-      
+
         <Exec ConsoleToMSBuild="true" ContinueOnError="true" WorkingDirectory="$(ProjectDir)" EnvironmentVariables="ASPNETCORE_ENVIRONMENT=$(NSwagEnv)" Command="$(NSwagExe_Net80) run config.nswag /variables:Configuration=$(Configuration)">
             <Output TaskParameter="ExitCode" PropertyName="NSwagExitCode"/>
             <Output TaskParameter="ConsoleOutput" PropertyName="NSwagOutput"/>
