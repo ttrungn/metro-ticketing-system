@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http;
 
 namespace CatalogService.Application.Routes.DTOs;
 
@@ -13,7 +12,7 @@ public class CreateRouteRequestDto
     public string Name { get; set; } = null!;
 
     [MaxLength(200, ErrorMessage = "Đường dẫn ảnh không được vượt quá 256 ký tự.")]
-    public IFormFile? ThumbnailImageUrl { get; set; }
+    public string? ThumbnailImageUrl { get; set; }
 
     [Range(0.01, double.MaxValue, ErrorMessage = "Chiều dài tuyến phải lớn hơn 0.")]
     public double LengthInKm { get; set; }

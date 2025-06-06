@@ -1,4 +1,5 @@
-﻿using Marten;
+﻿using Azure.Storage.Blobs;
+using Marten;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -52,6 +53,8 @@ public static class DependencyInjection
         
         services.AddScoped<IWeatherForecastService, WeatherForecastService>();
         services.AddScoped(typeof(IMassTransitService<>), typeof(MassTransitService<>));
+        services.AddSingleton(new BlobServiceClient(configuration["Azure:BlobStorage:ConnectionString"]));
+        services.AddScoped<IAzureBlobService, AzureBlobService>();
         
         services.AddSingleton(TimeProvider.System);
 
