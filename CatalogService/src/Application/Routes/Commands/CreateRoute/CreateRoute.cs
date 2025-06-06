@@ -46,9 +46,18 @@ public class CreateRouteCommandHandler : IRequestHandler<CreateRouteCommand, Ser
     public async Task<ServiceResponse<Guid>> Handle(CreateRouteCommand request, CancellationToken cancellationToken)
     {
         var routeId = await _routeService.CreateAsync(request, cancellationToken);
+        if (routeId == Guid.Empty)
+        {
+            _logger.LogWarning("Route with code {Code} already exists", request.Code);
+            return new ServiceResponse<Guid>()
+            {
+                Succeeded = false,
+                Message = "Tuyến đã tồn tại với mã này.",
+                Data = Guid.Empty
+            };
+        }
 
         _logger.LogInformation("Route created with ID: {RouteId}", routeId);
-
         return new ServiceResponse<Guid>()
         {
             Succeeded = true,

@@ -48,9 +48,18 @@ public class UpdateRouteCommandHandler : IRequestHandler<UpdateRouteCommand, Ser
     public async Task<ServiceResponse<Guid>> Handle(UpdateRouteCommand request, CancellationToken cancellationToken)
     {
         var routeId = await _routeService.UpdateAsync(request, cancellationToken);
+        if (routeId == Guid.Empty)
+        {
+            _logger.LogWarning("Route with ID {RouteId} not found or code already exists", request.Id);
+            return new ServiceResponse<Guid>()
+            {
+                Succeeded = false,
+                Message = "Tuyến không tồn tại hoặc mã đã tồn tại.",
+                Data = Guid.Empty
+            };
+        }
 
         _logger.LogInformation("Route updated with ID: {RouteId}", routeId);
-
         return new ServiceResponse<Guid>()
         {
             Succeeded = true,

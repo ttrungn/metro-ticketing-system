@@ -1,4 +1,4 @@
-﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs;
 using Marten;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -38,7 +38,7 @@ public static class DependencyInjection
         services.AddMarten(options =>
             {
                 options.DisableNpgsqlLogging = true;
-            
+
             // Establish the connection string to your Marten database
             options.Connection(readDbConnectionString);
 
@@ -46,13 +46,13 @@ public static class DependencyInjection
             options.UseSystemTextJsonForSerialization();
         })
         .UseLightweightSessions();
-        
+
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<ApplicationDbContextInitialiser>();
 
         services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        
+
         services.AddScoped<IWeatherForecastService, WeatherForecastService>();
         services.AddScoped(typeof(IMassTransitService<>), typeof(MassTransitService<>));
         services.AddSingleton(new BlobServiceClient(azureBlobStorageConnectionString));
