@@ -1,7 +1,6 @@
 ﻿using CatalogService.Application.Routes.Commands.CreateRoute;
 using CatalogService.Application.Routes.Commands.DeleteRoute;
 using CatalogService.Application.Routes.Commands.UpdateRoute;
-using CatalogService.Application.Routes.DTOs;
 using CatalogService.Application.Routes.Queries.GetRouteById;
 using CatalogService.Application.Routes.Queries.GetRoutes;
 using Microsoft.AspNetCore.Mvc;
@@ -13,15 +12,30 @@ public class Routes : EndpointGroupBase
     public override void Map(WebApplication app)
     {
         app.MapGroup(this)
+            .DisableAntiforgery()
             .MapPost(CreateRoute, "/")
-            .MapPut(UpdateRoute, "/{id:guid}")
+            .MapPut(UpdateRoute, "/")
             .MapDelete(DeleteRoute, "/{id:guid}")
-            .MapGet(GetRoutes, "/")
-            .MapGet(GetRouteById, "/{id:guid}");
+            .MapGet(GetRouteById, "/{id:guid}")
+            .MapGet(GetRoutes, "/");
     }
 
-    private static async Task<IResult> CreateRoute(ISender sender, [FromBody] CreateRouteCommand command)
+    private static async Task<IResult> CreateRoute(
+        ISender sender,
+        [FromForm] IFormFile? thumbnailImageUrl,
+        [FromQuery] string code,
+        [FromQuery] string name,
+        [FromQuery] double lengthInKm
+        )
     {
+        var command = new CreateRouteCommand()
+        {
+            Code = code,
+            Name = name,
+            ThumbnailImageUrl = thumbnailImageUrl?.FileName ?? "Empty",
+            LengthInKm = lengthInKm
+        };
+
         var response = await sender.Send(command);
 
         if (response.Succeeded)
@@ -32,19 +46,24 @@ public class Routes : EndpointGroupBase
         return TypedResults.BadRequest(response);
     }
 
-    private static async Task<IResult> UpdateRoute(ISender sender, [FromRoute] Guid id, [FromBody] UpdateRouteRequestDto requestBody)
+    private static async Task<IResult> UpdateRoute(
+        ISender sender,
+        [FromForm] IFormFile? file,
+        [FromQuery] Guid id,
+        [FromQuery] string code,
+        [FromQuery] string name,
+        [FromQuery] double lengthInKm)
     {
         var command = new UpdateRouteCommand()
         {
             Id = id,
-            Code = requestBody.Code,
-            Name = requestBody.Name,
-            ThumbnailImageUrl = requestBody.ThumbnailImageUrl,
-            LengthInKm = requestBody.LengthInKm
+            Code = code,
+            Name = name,
+            ThumbnailImageUrl = file?.FileName ?? "Empty",
+            LengthInKm = lengthInKm
         };
 
         var response = await sender.Send(command);
-
         if (response.Succeeded)
         {
             return TypedResults.Ok(response);
@@ -58,7 +77,6 @@ public class Routes : EndpointGroupBase
         var command = new DeleteRouteCommand(id);
 
         var response = await sender.Send(command);
-
         if (response.Succeeded)
         {
             return TypedResults.NoContent();
@@ -67,7 +85,10 @@ public class Routes : EndpointGroupBase
         return TypedResults.BadRequest(response);
     }
 
-    private static async Task<IResult> GetRoutes(ISender sender, [FromQuery] int page = 0, [FromQuery] string? name = "")
+    private static async Task<IResult> GetRoutes(
+        ISender sender,
+        [FromQuery] int page = 0,
+        [FromQuery] string? name = "")
     {
         var query = new GetRoutesQuery
         {
@@ -76,14 +97,25 @@ public class Routes : EndpointGroupBase
         };
 
         var response = await sender.Send(query);
-        return TypedResults.Ok(response);
+        if (response.Succeeded)
+        {
+            return TypedResults.Ok(response);
+        }
+
+        return TypedResults.BadRequest(response);
     }
 
     private static async Task<IResult> GetRouteById(ISender sender, [FromRoute] Guid id)
     {
         var query = new GetRouteByIdQuery(id);
+
         var response = await sender.Send(query);
-        return TypedResults.Ok(response);
+        if (response.Succeeded)
+        {
+            return TypedResults.Ok(response);
+        }
+
+        return TypedResults.BadRequest(response);
     }
 
 }

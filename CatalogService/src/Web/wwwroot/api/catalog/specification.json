@@ -12,17 +12,118 @@
           "Routes"
         ],
         "operationId": "CreateRoute",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 2
+          },
+          {
+            "name": "lengthInKm",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "x-position": 3
+          }
+        ],
         "requestBody": {
-          "x-name": "command",
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/CreateRouteCommand"
+                "type": "object",
+                "properties": {
+                  "thumbnailImageUrl": {
+                    "type": "string",
+                    "format": "binary",
+                    "nullable": true
+                  }
+                }
               }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Routes"
+        ],
+        "operationId": "UpdateRoute",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
           },
-          "required": true,
-          "x-position": 1
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 2
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 3
+          },
+          {
+            "name": "lengthInKm",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "x-position": 4
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
         },
         "responses": {
           "200": {
@@ -65,41 +166,6 @@
       }
     },
     "/api/catalog/Routes/{id}": {
-      "put": {
-        "tags": [
-          "Routes"
-        ],
-        "operationId": "UpdateRoute",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "guid"
-            },
-            "x-position": 1
-          }
-        ],
-        "requestBody": {
-          "x-name": "requestBody",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateRouteRequestDto"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 2
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        }
-      },
       "delete": {
         "tags": [
           "Routes"
@@ -256,55 +322,6 @@
   },
   "components": {
     "schemas": {
-      "CreateRouteCommand": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "thumbnailImageUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "lengthInKm": {
-            "type": "number",
-            "format": "double"
-          }
-        }
-      },
-      "UpdateRouteRequestDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "code",
-          "name"
-        ],
-        "properties": {
-          "code": {
-            "type": "string",
-            "maxLength": 6,
-            "minLength": 6
-          },
-          "name": {
-            "type": "string",
-            "minLength": 1
-          },
-          "thumbnailImageUrl": {
-            "type": "string",
-            "maxLength": 200,
-            "nullable": true
-          },
-          "lengthInKm": {
-            "type": "number",
-            "format": "double",
-            "minimum": 0.01
-          }
-        }
-      },
       "WeatherForecast": {
         "allOf": [
           {
