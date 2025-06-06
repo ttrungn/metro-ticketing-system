@@ -1,4 +1,7 @@
 ﻿using System.Text;
+using Azure.Storage.Blobs;
+using JasperFx;
+using Marten;
 using UserService.Application.Common.Interfaces;
 using UserService.Application.Common.Interfaces.Repositories;
 using UserService.Infrastructure.Data;
@@ -12,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using UserService.Application.Common.Interfaces.Services;
+using UserService.Infrastructure.Services;
 using UserService.Infrastructure.Services.Identity;
 
 namespace UserService.Infrastructure;
@@ -21,9 +25,12 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services,
         IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("UserServiceWriteDb");
-
-        Guard.Against.Null(connectionString, message: "Connection string 'UserServiceWriteDb' not found.");
+        var writeDbConnectionString = configuration.GetConnectionString("UserServiceWriteDb");
+        var readDbConnectionString = configuration.GetConnectionString("UserServiceReadDb");
+        var azureBlobStorageConnectionString = configuration["Azure:BlobStorageSettings:ConnectionString"];
+        Guard.Against.NullOrEmpty(writeDbConnectionString, message: "Connection string 'UserServiceWriteDb' not found.");
+        Guard.Against.NullOrEmpty(readDbConnectionString, message: "Connection string 'UserServiceReadDb' not found.");
+        Guard.Against.Null(azureBlobStorageConnectionString, message: "Azure Blob Storage connection string not found. Make sure you have configured the connection");
         
         services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();
@@ -32,13 +39,25 @@ public static class DependencyInjection
         {
             options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
 
-            options.UseSqlServer(connectionString);
+            options.UseSqlServer(writeDbConnectionString);
         });
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
-
+        
         services.AddScoped<ApplicationDbContextInitialiser>();
+        
+        services.AddMarten(options =>
+        {
+            options.DisableNpgsqlLogging = true;
 
+            options.Connection(readDbConnectionString);
+
+            options.AutoCreateSchemaObjects = AutoCreate.CreateOrUpdate;
+
+            options.UseSystemTextJsonForSerialization();
+        })
+        .UseLightweightSessions();
+        
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
@@ -79,6 +98,8 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         
         services.AddTransient<IIdentityService, IdentityService>();
+        services.AddSingleton(new BlobServiceClient(azureBlobStorageConnectionString));
+        services.AddScoped<IAzureBlobService, AzureBlobService>();
         
         services.AddSingleton(TimeProvider.System);
         
