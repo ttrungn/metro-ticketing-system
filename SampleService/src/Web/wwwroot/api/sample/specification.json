@@ -6,6 +6,19 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/sample/WeatherForecasts/antiforgery/token": {
+      "get": {
+        "tags": [
+          "WeatherForecasts"
+        ],
+        "operationId": "GetAntiforgeryToken",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/sample/WeatherForecasts": {
       "get": {
         "tags": [
@@ -34,16 +47,20 @@
         ],
         "operationId": "CreateWeatherForecast",
         "requestBody": {
-          "x-name": "command",
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/CreateWeatherForecastCommand"
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "nullable": true
+                  }
+                }
               }
             }
-          },
-          "required": true,
-          "x-position": 1
+          }
         },
         "responses": {
           "200": {
@@ -193,23 +210,6 @@
         "type": "object",
         "x-abstract": true,
         "additionalProperties": false
-      },
-      "CreateWeatherForecastCommand": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "date": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "temperatureC": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "summary": {
-            "type": "string"
-          }
-        }
       },
       "UpdateWeatherForecastCommand": {
         "type": "object",
