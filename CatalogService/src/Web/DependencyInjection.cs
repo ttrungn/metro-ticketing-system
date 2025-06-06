@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using CatalogService.Application.Common.Interfaces;
+using CatalogService.Application.Common.Interfaces.Services;
 using CatalogService.Infrastructure.Data;
+using CatalogService.Infrastructure.Services;
 using CatalogService.Web.Consumers;
 using CatalogService.Web.Services;
 
@@ -18,9 +20,10 @@ public static class DependencyInjection
         services.AddDatabaseDeveloperPageExceptionFilter();
 
         services.AddScoped<IUser, CurrentUser>();
+        services.AddScoped<IRouteService, RouteService>();
 
         services.AddHttpContextAccessor();
-        
+
         services.AddHealthChecks()
             .AddDbContextCheck<ApplicationDbContext>();
 
@@ -48,7 +51,7 @@ public static class DependencyInjection
 
             configure.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("JWT"));
         });
-        
+
         services.AddMassTransit(x =>
         {
             x.UsingInMemory();
@@ -66,9 +69,9 @@ public static class DependencyInjection
                         kc.RetryBackoff = TimeSpan.FromMilliseconds(
                             configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
                     });
-                
+
                 rider.AddConsumer<SampleConsumer>();
-                
+
                 rider.UsingKafka((context, k) =>
                 {
                     k.Host(configuration["KafkaSettings:Url"], h =>
@@ -90,7 +93,7 @@ public static class DependencyInjection
                             });
                         }
                     });
-                    
+
                     k.TopicEndpoint<SampleEvent>(
                         configuration["KafkaSettings:SampleEvents:Name"],
                         configuration["KafkaSettings:SampleEvents:Group"],
