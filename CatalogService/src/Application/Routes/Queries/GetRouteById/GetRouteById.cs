@@ -12,6 +12,10 @@ public class GetRouteByIdQueryValidator : AbstractValidator<GetRouteByIdQuery>
 {
     public GetRouteByIdQueryValidator()
     {
+        RuleFor(x => x.Id)
+            .NotEmpty().WithMessage("Xin vui lòng nhập ID tuyến.");
+        RuleFor(x => x.Id)
+            .Must(id => id != Guid.Empty).WithMessage("ID tuyến không được là Guid.Empty.");
     }
 }
 
