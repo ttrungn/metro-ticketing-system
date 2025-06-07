@@ -6,6 +6,7 @@ using CatalogService.Application.Routes.Commands.UpdateRoute;
 using CatalogService.Application.Routes.DTOs;
 using CatalogService.Application.Routes.Queries.GetRoutes;
 using CatalogService.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace CatalogService.Infrastructure.Services;
 
@@ -23,9 +24,13 @@ public class RouteService : IRouteService
     {
         var repo = _unitOfWork.GetRepository<Route, Guid>();
 
+        var availableRoute = await GetRouteByCodeAsync(command.Code, cancellationToken);
+        if (availableRoute != null)
+        {
+            return Guid.Empty;
+        }
+
         var routeId = Guid.NewGuid();
-
-
         var newRoute = new Route()
         {
             Id = routeId,
@@ -36,7 +41,6 @@ public class RouteService : IRouteService
         };
 
         await repo.AddAsync(newRoute, cancellationToken);
-
         await _unitOfWork.SaveChangesAsync();
 
         return routeId;
@@ -47,10 +51,14 @@ public class RouteService : IRouteService
     {
         var repo = _unitOfWork.GetRepository<Route, Guid>();
 
-
         var route = await repo.GetByIdAsync(command.Id, cancellationToken);
-
         if (route == null)
+        {
+            return Guid.Empty;
+        }
+
+        var availableRoute = await GetRouteByCodeAsync(command.Code, cancellationToken);
+        if (availableRoute != null  && availableRoute.Id != command.Id)
         {
             return Guid.Empty;
         }
@@ -61,7 +69,6 @@ public class RouteService : IRouteService
         route.LengthInKm = command.LengthInKm;
 
         await repo.UpdateAsync(route, cancellationToken);
-
         await _unitOfWork.SaveChangesAsync();
 
         return route.Id;
@@ -87,8 +94,10 @@ public class RouteService : IRouteService
         return route.Id;
     }
 
-    public async Task<(IEnumerable<RoutesResponseDto>, int)> GetAsync(GetRoutesQuery query,
-        int sizePerPage, CancellationToken cancellationToken = default)
+    public async Task<(IEnumerable<RoutesResponseDto>, int)> GetAsync(
+        GetRoutesQuery query,
+        int sizePerPage,
+        CancellationToken cancellationToken = default)
     {
         var repo = _unitOfWork.GetRepository<Route, Guid>();
 
@@ -132,6 +141,12 @@ public class RouteService : IRouteService
                     LengthInKm = route.LengthInKm
                 };
             }, cancellationToken);
+    }
+
+    private async Task<Route?> GetRouteByCodeAsync(string code, CancellationToken cancellationToken)
+    {
+        var repo = _unitOfWork.GetRepository<Route, Guid>();
+        return await repo.Query().FirstOrDefaultAsync(r => r.Code == code, cancellationToken);
     }
 
     #region Helper method

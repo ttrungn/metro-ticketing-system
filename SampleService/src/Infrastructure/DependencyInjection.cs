@@ -1,4 +1,5 @@
-﻿using Marten;
+﻿using JasperFx;
+using Marten;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -33,13 +34,13 @@ public static class DependencyInjection
         });
 
         services.AddMarten(options =>
-            {
-                options.DisableNpgsqlLogging = true;
-            
-            // Establish the connection string to your Marten database
+        {
+            options.DisableNpgsqlLogging = true;
+
             options.Connection(readDbConnectionString);
 
-            // Specify that we want to use STJ as our serializer
+            options.AutoCreateSchemaObjects = AutoCreate.CreateOrUpdate;
+
             options.UseSystemTextJsonForSerialization();
         })
         .UseLightweightSessions();
