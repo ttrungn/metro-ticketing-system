@@ -1,5 +1,6 @@
 using System.Collections;
 using BuildingBlocks.Domain.Common;
+using Marten;
 using UserService.Application.Common.Interfaces.Repositories;
 using UserService.Infrastructure.Data;
 
@@ -8,11 +9,13 @@ namespace UserService.Infrastructure.Repositories;
 public class UnitOfWork : IUnitOfWork
 {
     private readonly ApplicationDbContext _context;
+    private readonly IDocumentSession _session;
     private readonly Hashtable _repos = new();
 
-    public UnitOfWork(ApplicationDbContext context)
+    public UnitOfWork(ApplicationDbContext context, IDocumentSession session)
     {
         _context = context;
+        _session = session;
     }
 
     public IGenericRepository<T, TId> GetRepository<T, TId>()
@@ -28,6 +31,8 @@ public class UnitOfWork : IUnitOfWork
         return repoInstance;
     }
 
+    public IDocumentSession GetDocumentSession() => _session;
+    
     public async Task<int> SaveChangesAsync() =>
         await _context.SaveChangesAsync();
 

@@ -1,4 +1,4 @@
-﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs;
 using Marten;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -21,8 +21,10 @@ public static class DependencyInjection
     {
         var writeDbConnectionString = configuration.GetConnectionString("CatalogServiceWriteDb");
         var readDbConnectionString = configuration.GetConnectionString("CatalogServiceReadDb");
+        var azureBlobStorageConnectionString = configuration["Azure:BlobStorageSettings:ConnectionString"];
         Guard.Against.Null(writeDbConnectionString, message: "Connection string 'CatalogServiceWriteDb' not found. Make sure you have configured the connection");
         Guard.Against.Null(readDbConnectionString, message: "Connection string 'CatalogServiceReadDb' not found. Make sure you have configured the connection");
+        Guard.Against.Null(azureBlobStorageConnectionString, message: "Azure Blob Storage connection string not found. Make sure you have configured the connection");
 
         services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();
@@ -53,9 +55,9 @@ public static class DependencyInjection
 
         services.AddScoped<IWeatherForecastService, WeatherForecastService>();
         services.AddScoped(typeof(IMassTransitService<>), typeof(MassTransitService<>));
-        // services.AddSingleton(new BlobServiceClient(configuration["Azure:BlobStorage:ConnectionString"]));
-        // services.AddScoped<IAzureBlobService, AzureBlobService>();
-
+        services.AddSingleton(new BlobServiceClient(azureBlobStorageConnectionString));
+        services.AddScoped<IAzureBlobService, AzureBlobService>();
+        
         services.AddSingleton(TimeProvider.System);
 
         return services;

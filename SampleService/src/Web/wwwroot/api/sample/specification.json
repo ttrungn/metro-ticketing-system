@@ -6,19 +6,6 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/api/sample/WeatherForecasts/antiforgery/token": {
-      "get": {
-        "tags": [
-          "WeatherForecasts"
-        ],
-        "operationId": "GetAntiforgeryToken",
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        }
-      }
-    },
     "/api/sample/WeatherForecasts": {
       "get": {
         "tags": [
@@ -47,20 +34,16 @@
         ],
         "operationId": "CreateWeatherForecast",
         "requestBody": {
+          "x-name": "command",
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "file": {
-                    "type": "string",
-                    "format": "binary",
-                    "nullable": true
-                  }
-                }
+                "$ref": "#/components/schemas/CreateWeatherForecastCommand"
               }
             }
-          }
+          },
+          "required": true,
+          "x-position": 1
         },
         "responses": {
           "200": {
@@ -207,6 +190,73 @@
         }
       },
       "BaseEvent": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false
+      },
+      "CreateWeatherForecastCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "fileStream": {
+            "$ref": "#/components/schemas/Stream"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "temperatureC": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "summary": {
+            "type": "string"
+          }
+        }
+      },
+      "Stream": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MarshalByRefObject"
+          },
+          {
+            "type": "object",
+            "x-abstract": true,
+            "additionalProperties": false,
+            "properties": {
+              "canRead": {
+                "type": "boolean"
+              },
+              "canWrite": {
+                "type": "boolean"
+              },
+              "canSeek": {
+                "type": "boolean"
+              },
+              "canTimeout": {
+                "type": "boolean"
+              },
+              "length": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "position": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "readTimeout": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "writeTimeout": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          }
+        ]
+      },
+      "MarshalByRefObject": {
         "type": "object",
         "x-abstract": true,
         "additionalProperties": false

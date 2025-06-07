@@ -1,4 +1,4 @@
-namespace CatalogService.Application.Common.Interfaces.Services;
+namespace UserService.Application.Common.Interfaces.Services;
 
 public interface IAzureBlobService
 {
