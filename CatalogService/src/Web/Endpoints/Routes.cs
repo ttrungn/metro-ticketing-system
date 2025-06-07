@@ -82,7 +82,7 @@ public class Routes : EndpointGroupBase
             return TypedResults.NoContent();
         }
 
-        return TypedResults.BadRequest(response);
+        return TypedResults.NotFound(response);
     }
 
     private static async Task<IResult> GetRoutes(
@@ -115,7 +115,7 @@ public class Routes : EndpointGroupBase
             return TypedResults.Ok(response);
         }
 
-        return TypedResults.BadRequest(response);
+        return TypedResults.NotFound(response);
     }
 
 }

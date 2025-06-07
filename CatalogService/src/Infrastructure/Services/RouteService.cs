@@ -30,10 +30,10 @@ public class RouteService : IRouteService
             return Guid.Empty;
         }
 
-        var routeId = Guid.NewGuid();
+        var id = Guid.NewGuid();
         var newRoute = new Route()
         {
-            Id = routeId,
+            Id = id,
             Code = command.Code,
             Name = command.Name,
             ThumbnailImageUrl = command.ThumbnailImageUrl,
@@ -43,7 +43,7 @@ public class RouteService : IRouteService
         await repo.AddAsync(newRoute, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
 
-        return routeId;
+        return id;
     }
 
     public async Task<Guid> UpdateAsync(UpdateRouteCommand command,
@@ -88,7 +88,6 @@ public class RouteService : IRouteService
         route.DeleteFlag = true;
 
         await repo.UpdateAsync(route, cancellationToken);
-
         await _unitOfWork.SaveChangesAsync();
 
         return route.Id;
@@ -143,18 +142,21 @@ public class RouteService : IRouteService
             }, cancellationToken);
     }
 
-    private async Task<Route?> GetRouteByCodeAsync(string code, CancellationToken cancellationToken)
-    {
-        var repo = _unitOfWork.GetRepository<Route, Guid>();
-        return await repo.Query().FirstOrDefaultAsync(r => r.Code == code, cancellationToken);
-    }
+
 
     #region Helper method
 
     private Expression<Func<Route, bool>> GetFilter(GetRoutesQuery query)
     {
         return (r) =>
-            r.Name!.ToLower().Contains(query.Name!.ToLower() + "");
+            r.Name!.ToLower().Contains(query.Name!.ToLower() + "") &&
+            r.DeleteFlag == query.Status;
+    }
+
+    private async Task<Route?> GetRouteByCodeAsync(string code, CancellationToken cancellationToken)
+    {
+        var repo = _unitOfWork.GetRepository<Route, Guid>();
+        return await repo.Query().FirstOrDefaultAsync(r => r.Code == code, cancellationToken);
     }
 
     #endregion
