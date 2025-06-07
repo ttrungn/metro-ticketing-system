@@ -46,6 +46,7 @@ public class StudentRequestConfiguration : IEntityTypeConfiguration<StudentReque
 
         builder.HasOne(x => x.Staff)
             .WithMany()
+            .IsRequired(false)
             .HasForeignKey(x => x.StaffId)
             .OnDelete(DeleteBehavior.Restrict);
         
