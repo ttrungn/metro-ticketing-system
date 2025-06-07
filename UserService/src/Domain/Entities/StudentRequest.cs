@@ -8,7 +8,7 @@ public class StudentRequest : BaseAuditableEntity<Guid>
 {
     public Guid CustomerId { get; set; }
     public Customer Customer { get; set; } = null!;
-    public Guid StaffId { get; set; }
+    public Guid? StaffId { get; set; }
     public Staff? Staff { get; set; }
     public string StudentCode { get; set; } = null!;
     public string StudentEmail { get; set; } = null!;

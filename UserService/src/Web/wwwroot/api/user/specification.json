@@ -55,6 +55,190 @@
           }
         }
       }
+    },
+    "/api/user/StudentRequest": {
+      "get": {
+        "tags": [
+          "StudentRequest"
+        ],
+        "operationId": "GetStudentRequests",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            },
+            "x-position": 1
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "oneOf": [
+                {
+                  "nullable": true,
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/StudentRequestStatus"
+                    }
+                  ]
+                }
+              ]
+            },
+            "x-position": 2
+          },
+          {
+            "name": "searchEmail",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 3
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "StudentRequest"
+        ],
+        "operationId": "CreateStudentRequest",
+        "parameters": [
+          {
+            "name": "studentCode",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "studentEmail",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 2
+          },
+          {
+            "name": "firstName",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 3
+          },
+          {
+            "name": "lastName",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 4
+          },
+          {
+            "name": "dateOfBirth",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "x-position": 5
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/user/StudentRequest/{Id}": {
+      "get": {
+        "tags": [
+          "StudentRequest"
+        ],
+        "operationId": "GetStudentRequestById",
+        "parameters": [
+          {
+            "name": "Id",
+            "x-originalName": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "StudentRequest"
+        ],
+        "operationId": "UpdateStudentRequest",
+        "parameters": [
+          {
+            "name": "Id",
+            "x-originalName": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/StudentRequestStatus"
+            },
+            "x-position": 2
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
     }
   },
   "components": {
@@ -88,6 +272,20 @@
             "type": "string"
           }
         }
+      },
+      "StudentRequestStatus": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Pending",
+          "Approved",
+          "Declined"
+        ],
+        "enum": [
+          1,
+          2,
+          3
+        ]
       }
     },
     "securitySchemes": {
