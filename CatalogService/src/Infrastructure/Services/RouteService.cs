@@ -3,6 +3,7 @@ using CatalogService.Application.Common.Interfaces.Repositories;
 using CatalogService.Application.Common.Interfaces.Services;
 using CatalogService.Application.Routes.Commands.CreateRoute;
 using CatalogService.Application.Routes.Commands.UpdateRoute;
+using CatalogService.Application.Routes.Commands.UpsertRouteStation;
 using CatalogService.Application.Routes.DTOs;
 using CatalogService.Application.Routes.Queries.GetRoutes;
 using CatalogService.Domain.Entities;
@@ -12,10 +13,11 @@ namespace CatalogService.Infrastructure.Services;
 public class RouteService : IRouteService
 {
     private readonly IUnitOfWork _unitOfWork;
-
-    public RouteService(IUnitOfWork unitOfWork)
+    private readonly IStationRouteService _stationRouteService;
+    public RouteService(IUnitOfWork unitOfWork, IStationRouteService stationRouteService)
     {
         _unitOfWork = unitOfWork;
+        _stationRouteService = stationRouteService;
     }
 
     public async Task<Guid> CreateAsync(CreateRouteCommand command,
@@ -132,6 +134,38 @@ public class RouteService : IRouteService
                     LengthInKm = route.LengthInKm
                 };
             }, cancellationToken);
+    }
+
+
+    public async Task<Guid> UpsertRouteStationAsync(UpsertStationRouteCommand command, CancellationToken cancellationToken = default)
+    {
+        var repo = _unitOfWork.GetRepository<Route, Guid>();
+
+        //DEACTIVATE ALL ROUTE-STATIONS 
+        var routeId = await _stationRouteService.UpsertStationRouteByRouteIdAsync(command.Id,cancellationToken);
+
+        if (routeId == Guid.Empty)
+        {
+            return Guid.Empty;
+        }
+        //CREATE NEW ROUTE-STATION AND INSERT INTO DB
+
+        List<StationRouteDto> stationRouteDtos = command.StationRoutes.Select(st => new StationRouteDto
+        {
+            RouteId = routeId,
+            StationId = st.StationId,
+            EntryStationId = st.EntryStationId,
+            DestinationStationId = st.DestinationStationId,
+            Order = st.Order,
+        }).ToList();
+        await _stationRouteService.InsertStationRouteListAsync(stationRouteDtos, cancellationToken);
+
+
+        await _unitOfWork.SaveChangesAsync();
+
+
+        return Guid.Empty;
+
     }
 
     #region Helper method

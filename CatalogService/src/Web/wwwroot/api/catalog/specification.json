@@ -147,6 +147,31 @@
         }
       }
     },
+    "/api/catalog/Routes/station-route": {
+      "put": {
+        "tags": [
+          "Routes"
+        ],
+        "operationId": "UpsertStationRoute",
+        "requestBody": {
+          "x-name": "requestBody",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertStationRouteRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/catalog/WeatherForecasts": {
       "get": {
         "tags": [
@@ -302,6 +327,63 @@
             "type": "number",
             "format": "double",
             "minimum": 0.01
+          }
+        }
+      },
+      "UpsertStationRouteRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "route": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/RouteRequestDto"
+              }
+            ]
+          }
+        }
+      },
+      "RouteRequestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "routeId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "stationRoutes": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/StationRouteRequestDto"
+            }
+          }
+        }
+      },
+      "StationRouteRequestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "stationId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "routeId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "entryStationId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "destinationStationId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "order": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },

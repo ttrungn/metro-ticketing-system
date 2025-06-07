@@ -1,6 +1,8 @@
 ﻿using CatalogService.Application.Routes.Commands.CreateRoute;
 using CatalogService.Application.Routes.Commands.DeleteRoute;
 using CatalogService.Application.Routes.Commands.UpdateRoute;
+using CatalogService.Application.Routes.Commands.UpsertRouteStation;
+using CatalogService.Application.Routes.Commands.UpsertStationRoute;
 using CatalogService.Application.Routes.DTOs;
 using CatalogService.Application.Routes.Queries.GetRouteById;
 using CatalogService.Application.Routes.Queries.GetRoutes;
@@ -17,7 +19,8 @@ public class Routes : EndpointGroupBase
             .MapPut(UpdateRoute, "/{id:guid}")
             .MapDelete(DeleteRoute, "/{id:guid}")
             .MapGet(GetRoutes, "/")
-            .MapGet(GetRouteById, "/{id:guid}");
+            .MapGet(GetRouteById, "/{id:guid}")
+            .MapPut(UpsertStationRoute, "/station-route/");
     }
 
     private static async Task<IResult> CreateRoute(ISender sender, [FromBody] CreateRouteCommand command)
@@ -86,4 +89,32 @@ public class Routes : EndpointGroupBase
         return TypedResults.Ok(response);
     }
 
+
+    private static async Task<IResult> UpsertStationRoute(ISender sender, [FromBody] UpsertStationRouteRequest requestBody)
+    {
+        if (requestBody?.Route?.StationRoutes == null)
+        {
+            return TypedResults.BadRequest("Route or StationRoutes cannot be null.");
+        }
+
+        var command = new UpsertStationRouteCommand
+        {
+            Id = requestBody.Route.RouteId,
+            StationRoutes = requestBody.Route.StationRoutes.Select(s => new StationRouteDto
+            {
+                StationId = s.StationId,
+                RouteId = s.RouteId,
+                DestinationStationId = s.DestinationStationId,
+                EntryStationId = s.EntryStationId,
+                Order = s.Order,
+            }).ToList()
+        };
+
+        var response = await sender.Send(command);
+        if (response.Succeeded)
+        {
+            return TypedResults.Ok(response);
+        }
+        return TypedResults.BadRequest(response);
+    }
 }

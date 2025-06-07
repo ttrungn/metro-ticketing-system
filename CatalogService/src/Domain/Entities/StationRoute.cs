@@ -1,6 +1,8 @@
-﻿namespace CatalogService.Domain.Entities;
+﻿using BuildingBlocks.Domain.Common;
 
-public class StationRoute
+namespace CatalogService.Domain.Entities;
+
+public class StationRoute : BaseAuditableEntity<Guid>
 {
     public Guid StationId { get; set; }
     public Station? Station { get; set; }
@@ -15,7 +17,5 @@ public class StationRoute
     public Station? DestinationStation { get; set; }
     
     public int Order { get; set; }
-    
-    
     
 }
