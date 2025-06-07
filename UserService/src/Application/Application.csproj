@@ -9,6 +9,7 @@
         <PackageReference Include="Ardalis.GuardClauses"/>
         <PackageReference Include="AutoMapper"/>
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions"/>
+        <PackageReference Include="Marten" />
         <PackageReference Include="Microsoft.EntityFrameworkCore"/>
     </ItemGroup>
 

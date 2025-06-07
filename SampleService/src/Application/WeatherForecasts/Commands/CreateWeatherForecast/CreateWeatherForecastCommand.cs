@@ -6,9 +6,10 @@ using SampleService.Application.Common.Security;
 
 namespace SampleService.Application.WeatherForecasts.Commands.CreateWeatherForecast;
 
-[Authorize(Roles = Roles.Administrator)]
+// [Authorize(Roles = Roles.Administrator)]
 public record CreateWeatherForecastCommand : IRequest<Guid>
 {
+    public Stream FileStream { get; init; } = null!;
     public required DateTime Date { get; init; }
     public required int TemperatureC { get; init; }
     public required string Summary { get; init; }

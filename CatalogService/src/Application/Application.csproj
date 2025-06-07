@@ -9,11 +9,18 @@
         <PackageReference Include="Ardalis.GuardClauses"/>
         <PackageReference Include="AutoMapper"/>
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions"/>
+        <PackageReference Include="Marten" />
         <PackageReference Include="Microsoft.EntityFrameworkCore"/>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Domain\Domain.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Microsoft.AspNetCore.Http.Features">
+        <HintPath>C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App\8.0.16\Microsoft.AspNetCore.Http.Features.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

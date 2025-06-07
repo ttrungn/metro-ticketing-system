@@ -1,4 +1,5 @@
-﻿using Marten;
+using Azure.Storage.Blobs;
+using Marten;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -20,8 +21,10 @@ public static class DependencyInjection
     {
         var writeDbConnectionString = configuration.GetConnectionString("CatalogServiceWriteDb");
         var readDbConnectionString = configuration.GetConnectionString("CatalogServiceReadDb");
+        var azureBlobStorageConnectionString = configuration["Azure:BlobStorageSettings:ConnectionString"];
         Guard.Against.Null(writeDbConnectionString, message: "Connection string 'CatalogServiceWriteDb' not found. Make sure you have configured the connection");
         Guard.Against.Null(readDbConnectionString, message: "Connection string 'CatalogServiceReadDb' not found. Make sure you have configured the connection");
+        Guard.Against.Null(azureBlobStorageConnectionString, message: "Azure Blob Storage connection string not found. Make sure you have configured the connection");
 
         services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();
@@ -35,7 +38,7 @@ public static class DependencyInjection
         services.AddMarten(options =>
             {
                 options.DisableNpgsqlLogging = true;
-            
+
             // Establish the connection string to your Marten database
             options.Connection(readDbConnectionString);
 
@@ -43,15 +46,17 @@ public static class DependencyInjection
             options.UseSystemTextJsonForSerialization();
         })
         .UseLightweightSessions();
-        
+
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<ApplicationDbContextInitialiser>();
 
         services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        
+
         services.AddScoped<IWeatherForecastService, WeatherForecastService>();
         services.AddScoped(typeof(IMassTransitService<>), typeof(MassTransitService<>));
+        services.AddSingleton(new BlobServiceClient(azureBlobStorageConnectionString));
+        services.AddScoped<IAzureBlobService, AzureBlobService>();
         
         services.AddSingleton(TimeProvider.System);
 
