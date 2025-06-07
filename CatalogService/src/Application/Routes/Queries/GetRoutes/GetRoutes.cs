@@ -7,8 +7,9 @@ namespace CatalogService.Application.Routes.Queries.GetRoutes;
 
 public record GetRoutesQuery : IRequest<ServiceResponse<GetRoutesResponseDto>>
 {
-    public int Page { get; set; } = 0;
-    public string? Name { get; set; } = string.Empty;
+    public int Page { get; init; } = 0;
+    public string? Name { get; init; } = string.Empty;
+    public bool? Status { get; init; } = false;
 }
 
 public class GetRoutesQueryHandler : IRequestHandler<GetRoutesQuery, ServiceResponse<GetRoutesResponseDto>>
