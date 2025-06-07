@@ -24,6 +24,9 @@ public class StudentRequest : EndpointGroupBase
         [FromQuery] StudentRequestStatus? status = null,
         [FromQuery] string searchEmail = null!)
     {
+        if (status.HasValue && !Enum.IsDefined(typeof(StudentRequestStatus), status.Value))
+            return TypedResults.BadRequest(new { message = "Trạng thái yêu cầu không hợp lệ. Vui lòng kiểm tra lại." });
+        
         var query = new GetStudentRequestQuery
         {
             Page = page,
@@ -50,13 +53,12 @@ public class StudentRequest : EndpointGroupBase
         {
             return TypedResults.Ok(response);
         }
-
         return TypedResults.NotFound(response);
     }
 
     
     private static async Task<IResult> CreateStudentRequest(
-        [FromForm] IFormFile file, 
+        [FromForm] IFormFile? file, 
         [FromQuery] string studentCode, 
         [FromQuery] string studentEmail, 
         [FromQuery] string firstName,
@@ -64,6 +66,10 @@ public class StudentRequest : EndpointGroupBase
         [FromQuery] DateTimeOffset dateOfBirth, 
         ISender sender)
     {
+        if (file == null)
+        {
+            return TypedResults.BadRequest(new { message = "Vui lòng tải lên ảnh thẻ sinh viên." });
+        }
         var request = new CreateStudentRequestCommand
         {
             StudentCode = studentCode,

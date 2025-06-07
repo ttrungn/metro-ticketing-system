@@ -1,10 +1,12 @@
-﻿using BuildingBlocks.Response;
+﻿using BuildingBlocks.Domain.Constants;
+using BuildingBlocks.Response;
 using UserService.Application.Common.Interfaces.Services;
+using UserService.Application.Common.Security;
 using UserService.Application.Users.DTOs;
 using UserService.Domain.Enums;
 
 namespace UserService.Application.Users.Queries;
-
+// [Authorize(Roles = Roles.Staff)]
 public record GetStudentRequestQuery : IRequest<ServiceResponse<GetStudentRequestResponseDto>>
 {
     public int Page { get; init; } = 0;
@@ -16,7 +18,7 @@ public class GetStudentRequestQueryHandler : IRequestHandler<GetStudentRequestQu
                                                             ServiceResponse<GetStudentRequestResponseDto>>
 {
     private readonly IStudentRequestService _studentRequestService;
-    private const int DefaultPageSize = 1;
+    private const int DefaultPageSize = 8;
     
     public GetStudentRequestQueryHandler(IStudentRequestService studentRequestService)
     {

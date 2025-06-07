@@ -1,12 +1,14 @@
-﻿using BuildingBlocks.Response;
+﻿using BuildingBlocks.Domain.Constants;
+using BuildingBlocks.Response;
 using Microsoft.Extensions.Logging;
 using UserService.Application.Common.Interfaces;
 using UserService.Application.Common.Interfaces.Services;
+using UserService.Application.Common.Security;
 using UserService.Application.Users.Queries;
 using UserService.Domain.Enums;
 
 namespace UserService.Application.Users.Commands.StudentRequest;
-
+// [Authorize(Roles = Roles.Staff)]
 public record UpdateStudentRequestCommand : IRequest<ServiceResponse<Guid>>
 {
     public Guid Id { get; init; }

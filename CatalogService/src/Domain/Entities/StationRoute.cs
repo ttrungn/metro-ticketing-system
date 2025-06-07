@@ -16,6 +16,7 @@ public class StationRoute
     
     public int Order { get; set; }
     
+    public double Length { get; set; }
     
     
 }

@@ -1,9 +1,11 @@
-﻿using BuildingBlocks.Response;
+﻿using BuildingBlocks.Domain.Constants;
+using BuildingBlocks.Response;
 using UserService.Application.Common.Interfaces.Services;
+using UserService.Application.Common.Security;
 using UserService.Application.Users.DTOs;
 
 namespace UserService.Application.Users.Queries;
-
+// [Authorize(Roles = Roles.Staff)]
 public record GetStudentRequestByIdQuery(Guid Id) : IRequest<ServiceResponse<StudentRequestResponseDto>>;
 
 public class GetStudentRequestByIdQueryValidator : AbstractValidator<GetStudentRequestByIdQuery>
