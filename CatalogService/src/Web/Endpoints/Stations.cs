@@ -20,25 +20,30 @@ public class Stations : EndpointGroupBase
             .MapGet(GetStationById, "/{id:guid}");
     }
 
-    private static async Task<IResult> CreateStation(
-        ISender sender,
-        [FromForm] IFormFile? thumbnailImageUrl,
-        [FromQuery] string name,
-        [FromQuery] string? streetNumber ,
-        [FromQuery] string? street,
-        [FromQuery] string? ward,
-        [FromQuery] string? district,
-        [FromQuery] string? city)
+    private static async Task<IResult> CreateStation(ISender sender, HttpRequest request)
     {
+        var form = await request.ReadFormAsync();
+
+        var thumbnailImage = form.Files.GetFile("thumbnailImage");
+        Stream? thumbnailImageStream = null;
+        string? thumbnailImageFileName = null;
+
+        if (thumbnailImage is { Length: > 0 })
+        {
+            thumbnailImageStream = thumbnailImage.OpenReadStream();
+            thumbnailImageFileName = thumbnailImage.FileName;
+        }
+
         var command = new CreateStationCommand()
         {
-            Name = name,
-            StreetNumber = streetNumber,
-            Street = street,
-            Ward = ward,
-            District = district,
-            City = city,
-            ThumbnailImageUrl = thumbnailImageUrl?.FileName ?? "Empty"
+            Name = form["name"].ToString(),
+            StreetNumber = form["streetNumber"].ToString(),
+            Street = form["street"].ToString(),
+            Ward = form["ward"].ToString(),
+            District = form["district"].ToString(),
+            City = form["city"].ToString(),
+            ThumbnailImageStream = thumbnailImageStream,
+            ThumbnailImageFileName = thumbnailImageFileName
         };
 
         var response = await sender.Send(command);

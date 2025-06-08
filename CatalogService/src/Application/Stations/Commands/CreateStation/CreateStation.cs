@@ -12,7 +12,8 @@ public record CreateStationCommand : IRequest<ServiceResponse<Guid>>
     public string? Ward { get; init; }
     public string? District { get; init; }
     public string? City { get; init; }
-    public string? ThumbnailImageUrl { get; init; }
+    public Stream? ThumbnailImageStream { get; init; }
+    public string? ThumbnailImageFileName{ get; init; }
 }
 
 public class CreateStationCommandValidator : AbstractValidator<CreateStationCommand>
@@ -36,9 +37,6 @@ public class CreateStationCommandValidator : AbstractValidator<CreateStationComm
 
         RuleFor(s => s.City)
             .MaximumLength(256).WithMessage("Tỉnh/Thành phố không được vượt quá 256 ký tự!");
-
-        RuleFor(c => c.ThumbnailImageUrl)
-            .MaximumLength(256).WithMessage("Đường dẫn ảnh không được vượt quá 256 ký tự!");
     }
 }
 

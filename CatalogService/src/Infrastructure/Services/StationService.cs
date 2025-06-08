@@ -7,26 +7,46 @@ using CatalogService.Application.Stations.DTOs;
 using CatalogService.Application.Stations.Queries.GetStations;
 using CatalogService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace CatalogService.Infrastructure.Services;
 
 public class StationService : IStationService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAzureBlobService _azureBlobService;
+    private readonly IConfiguration _configuration;
 
-    public StationService(IUnitOfWork unitOfWork)
+    public StationService(IUnitOfWork unitOfWork, IAzureBlobService azureBlobService, IConfiguration configuration)
     {
         _unitOfWork = unitOfWork;
+        _azureBlobService = azureBlobService;
+        _configuration = configuration;
     }
 
-    public async Task<Guid> CreateAsync(CreateStationCommand command, CancellationToken cancellationToken = default)
+    public async Task<Guid> CreateAsync(
+        CreateStationCommand command,
+        CancellationToken cancellationToken = default)
     {
+        var id = Guid.NewGuid();
+
         var repo = _unitOfWork.GetRepository<Station, Guid>();
 
         var count = repo.Query().Count();
         var code = GenerateCode(count);
 
-        var id = Guid.NewGuid();
+        var thumbnailImageUrl = "empty";
+        if (command.ThumbnailImageStream != null && command.ThumbnailImageFileName != null)
+        {
+            var blobName = id + GetFileType(command.ThumbnailImageFileName);
+            var containerName = _configuration["Azure:BlobStorageSettings:StationImagesContainerName"] ?? "station-images";
+            var blobUrl = await _azureBlobService.UploadAsync(
+                command.ThumbnailImageStream,
+                blobName,
+                containerName);
+            thumbnailImageUrl = blobUrl;
+        }
+
         var station = new Station()
         {
             Id = id,
@@ -37,7 +57,7 @@ public class StationService : IStationService
             Ward = command.Ward,
             District = command.District,
             City = command.City,
-            ThumbnailImageUrl = command.ThumbnailImageUrl
+            ThumbnailImageUrl = thumbnailImageUrl
         };
 
         await repo.AddAsync(station, cancellationToken);
@@ -159,6 +179,11 @@ public class StationService : IStationService
     {
         var nextCode = count + 1;
         return nextCode.ToString($"D{digits}");
+    }
+
+    private string GetFileType(string fileName)
+    {
+        return Path.GetExtension(fileName);
     }
 
     #endregion

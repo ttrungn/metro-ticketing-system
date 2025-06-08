@@ -7,7 +7,8 @@ namespace CatalogService.Application.Routes.Commands.CreateRoute;
 public record CreateRouteCommand : IRequest<ServiceResponse<Guid>>
 {
     public string Name { get; init; } = null!;
-    public string? ThumbnailImageUrl { get; init; }
+    public Stream? ThumbnailImageStream { get; init; }
+    public string? ThumbnailImageFileName{ get; init; }
     public double LengthInKm { get; init; }
 }
 
@@ -17,9 +18,6 @@ public class CreateRouteCommandValidator : AbstractValidator<CreateRouteCommand>
     {
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Xin vui lòng nhập tên tuyến!");
-
-        RuleFor(x => x.ThumbnailImageUrl)
-            .MaximumLength(200).WithMessage("Đường dẫn ảnh không được vượt quá 256 ký tự!");
 
         RuleFor(x => x.LengthInKm)
             .GreaterThan(0).WithMessage("Chiều dài tuyến phải lớn hơn 0!");
@@ -40,16 +38,6 @@ public class CreateRouteCommandHandler : IRequestHandler<CreateRouteCommand, Ser
     public async Task<ServiceResponse<Guid>> Handle(CreateRouteCommand request, CancellationToken cancellationToken)
     {
         var routeId = await _routeService.CreateAsync(request, cancellationToken);
-        // if (routeId == Guid.Empty)
-        // {
-        //     _logger.LogWarning("Route with code {Code} already exists", request.Code);
-        //     return new ServiceResponse<Guid>()
-        //     {
-        //         Succeeded = false,
-        //         Message = "Mã đã tồn tại!",
-        //         Data = Guid.Empty
-        //     };
-        // }
 
         _logger.LogInformation("Route created with ID: {RouteId}", routeId);
         return new ServiceResponse<Guid>()

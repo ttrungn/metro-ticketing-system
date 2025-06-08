@@ -6,34 +6,52 @@ using CatalogService.Application.Routes.Commands.UpdateRoute;
 using CatalogService.Application.Routes.DTOs;
 using CatalogService.Application.Routes.Queries.GetRoutes;
 using CatalogService.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace CatalogService.Infrastructure.Services;
 
 public class RouteService : IRouteService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAzureBlobService _azureBlobService;
+    private readonly IConfiguration _configuration;
 
-    public RouteService(IUnitOfWork unitOfWork)
+    public RouteService(IUnitOfWork unitOfWork, IAzureBlobService azureBlobService, IConfiguration configuration)
     {
         _unitOfWork = unitOfWork;
+        _azureBlobService = azureBlobService;
+        _configuration = configuration;
     }
 
-    public async Task<Guid> CreateAsync(CreateRouteCommand command,
+    public async Task<Guid> CreateAsync(
+        CreateRouteCommand command,
         CancellationToken cancellationToken = default)
     {
+        var id = Guid.NewGuid();
+
         var repo = _unitOfWork.GetRepository<Route, Guid>();
 
         var count = repo.Query().Count();
         var code = GenerateCode(count);
 
-        var id = Guid.NewGuid();
+        var thumbnailImageUrl = "empty";
+        if (command.ThumbnailImageStream != null && command.ThumbnailImageFileName != null)
+        {
+            var blobName = id + GetFileType(command.ThumbnailImageFileName);
+            var containerName = _configuration["Azure:BlobStorageSettings:RouteImagesContainerName"] ?? "route-images";
+            var blobUrl = await _azureBlobService.UploadAsync(
+                command.ThumbnailImageStream,
+                blobName,
+                containerName);
+            thumbnailImageUrl = blobUrl;
+        }
+
         var newRoute = new Route()
         {
             Id = id,
             Code = code,
             Name = command.Name,
-            ThumbnailImageUrl = command.ThumbnailImageUrl,
+            ThumbnailImageUrl = thumbnailImageUrl,
             LengthInKm = command.LengthInKm,
         };
 
@@ -147,6 +165,11 @@ public class RouteService : IRouteService
     {
         var nextCode = count + 1;
         return nextCode.ToString($"D{digits}");
+    }
+
+    private string GetFileType(string fileName)
+    {
+        return Path.GetExtension(fileName);
     }
 
     #endregion
