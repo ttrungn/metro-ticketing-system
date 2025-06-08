@@ -22,6 +22,7 @@ public static class DependencyInjection
         services.AddScoped<IUser, CurrentUser>();
         services.AddScoped<IRouteService, RouteService>();
         services.AddScoped<IStationRouteService, StationRouteService>();    
+        services.AddScoped<IStationService, StationService>();
 
         services.AddHttpContextAccessor();
 

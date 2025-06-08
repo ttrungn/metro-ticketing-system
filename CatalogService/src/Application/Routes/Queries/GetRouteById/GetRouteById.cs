@@ -1,5 +1,4 @@
 ﻿using BuildingBlocks.Response;
-using CatalogService.Application.Common.Interfaces;
 using CatalogService.Application.Common.Interfaces.Services;
 using CatalogService.Application.Routes.DTOs;
 using Microsoft.Extensions.Logging;
@@ -12,6 +11,10 @@ public class GetRouteByIdQueryValidator : AbstractValidator<GetRouteByIdQuery>
 {
     public GetRouteByIdQueryValidator()
     {
+        RuleFor(x => x.Id)
+            .NotEmpty().WithMessage("Xin vui lòng nhập ID tuyến!");
+        RuleFor(x => x.Id)
+            .Must(id => id != Guid.Empty).WithMessage("ID tuyến không được là Guid.Empty!");
     }
 }
 
@@ -35,8 +38,9 @@ public class GetRouteByIdQueryHandler : IRequestHandler<GetRouteByIdQuery, Servi
             _logger.LogWarning("Route with ID {RouteId} not found", request.Id);
             return new ServiceResponse<RoutesResponseDto>
             {
-                Succeeded = true,
-                Message = "Tuyến không tồn tại"
+                Succeeded = false,
+                Message = "Không tìm thấy tuyến!",
+                Data = null
             };
         }
 
@@ -45,7 +49,7 @@ public class GetRouteByIdQueryHandler : IRequestHandler<GetRouteByIdQuery, Servi
         return new ServiceResponse<RoutesResponseDto>
         {
             Succeeded = true,
-            Message = "Lấy thông tin tuyến thành công",
+            Message = "Lấy thông tin tuyến thành công!",
             Data = route
         };
     }

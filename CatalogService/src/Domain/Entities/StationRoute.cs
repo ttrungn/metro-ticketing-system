@@ -2,7 +2,7 @@
 
 namespace CatalogService.Domain.Entities;
 
-public class StationRoute : BaseAuditableEntity<Guid>
+public class StationRoute : BaseAuditableEntity<(Guid StationId, Guid RouteId)>
 {
     public Guid StationId { get; set; }
     public Station? Station { get; set; }
@@ -17,5 +17,7 @@ public class StationRoute : BaseAuditableEntity<Guid>
     public Station? DestinationStation { get; set; }
     
     public int Order { get; set; }
+    
+    public double Length { get; set; }
     
 }

@@ -53,6 +53,7 @@ public class CustomExceptionHandler : IExceptionHandler
             Status = StatusCodes.Status500InternalServerError,
             Title = "An unexpected error occurred.",
             Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+            Detail = ex.Message
         });
     }
     private async Task HandleInternalServerError(HttpContext httpContext, Exception ex)

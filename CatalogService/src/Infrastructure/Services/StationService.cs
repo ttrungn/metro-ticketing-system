@@ -1,0 +1,175 @@
+﻿using System.Linq.Expressions;
+using CatalogService.Application.Common.Interfaces.Repositories;
+using CatalogService.Application.Common.Interfaces.Services;
+using CatalogService.Application.Stations.Commands.CreateStation;
+using CatalogService.Application.Stations.Commands.UpdateStation;
+using CatalogService.Application.Stations.DTOs;
+using CatalogService.Application.Stations.Queries.GetStations;
+using CatalogService.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace CatalogService.Infrastructure.Services;
+
+public class StationService : IStationService
+{
+    private readonly IUnitOfWork _unitOfWork;
+
+    public StationService(IUnitOfWork unitOfWork)
+    {
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<Guid> CreateAsync(CreateStationCommand command, CancellationToken cancellationToken = default)
+    {
+        var repo = _unitOfWork.GetRepository<Station, Guid>();
+
+        var availableStation = await GetStationByCodeAsync(command.Code, cancellationToken);
+        if (availableStation != null)
+        {
+            return Guid.NewGuid();
+        }
+
+        var id = Guid.NewGuid();
+        var station = new Station()
+        {
+            Id = id,
+            Code = command.Code,
+            Name = command.Name,
+            StreetNumber = command.StreetNumber,
+            Street = command.Street,
+            Ward = command.Ward,
+            District = command.District,
+            City = command.City,
+            ThumbnailImageUrl = command.ThumbnailImageUrl
+        };
+
+        await repo.AddAsync(station, cancellationToken);
+        await _unitOfWork.SaveChangesAsync();
+
+        return id;
+    }
+
+    public async Task<Guid> UpdateAsync(UpdateStationCommand command, CancellationToken cancellationToken)
+    {
+        var repo = _unitOfWork.GetRepository<Station, Guid>();
+
+        var route = await repo.GetByIdAsync(command.Id, cancellationToken);
+        if (route == null)
+        {
+            return Guid.Empty;
+        }
+
+        var availableStation = await GetStationByCodeAsync(command.Code, cancellationToken);
+        if (availableStation != null && availableStation.Id != command.Id)
+        {
+            return Guid.Empty;
+        }
+
+        route.Code = command.Code;
+        route.Name = command.Name;
+        route.StreetNumber = command.StreetNumber;
+        route.Street = command.Street;
+        route.Ward = command.Ward;
+        route.District = command.District;
+        route.City = command.City;
+        route.ThumbnailImageUrl = command.ThumbnailImageUrl;
+
+        await repo.UpdateAsync(route, cancellationToken);
+        await _unitOfWork.SaveChangesAsync();
+
+        return route.Id;
+    }
+
+    public async Task<Guid> DeleteAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var repo = _unitOfWork.GetRepository<Station, Guid>();
+
+        var route = await repo.GetByIdAsync(id, cancellationToken);
+        if (route == null)
+        {
+            return Guid.Empty;
+        }
+
+        route.DeleteFlag = true;
+
+        await repo.UpdateAsync(route, cancellationToken);
+        await _unitOfWork.SaveChangesAsync();
+
+        return route.Id;
+    }
+
+    public async Task<(IEnumerable<StationsResponseDto>, int)> GetAsync(
+        GetStationsQuery query,
+        int sizePerPage,
+        CancellationToken cancellationToken)
+    {
+        var repo = _unitOfWork.GetRepository<Station, Guid>();
+
+        Expression<Func<Station, bool>> filter = GetFilter(query);
+
+        var stations = await repo.GetPagedAsync(
+            skip: query.Page * sizePerPage,
+            take: sizePerPage,
+            filters: [filter],
+            cancellationToken: cancellationToken);
+
+        var totalPages = await repo.GetTotalPagesAsync(sizePerPage, [filter], cancellationToken);
+
+        return (
+            stations.Select(s => new StationsResponseDto
+            {
+                Id = s.Id,
+                Code = s.Code,
+                Name = s.Name,
+                StreetNumber = s.StreetNumber,
+                Street = s.Street,
+                Ward = s.Ward,
+                District = s.District,
+                City = s.City,
+                ThumbnailImageUrl = s.ThumbnailImageUrl
+            }), totalPages);
+
+    }
+
+    public async Task<StationsResponseDto?> GetByIdAsync(Guid queryId, CancellationToken cancellationToken = default)
+    {
+        var repo = _unitOfWork.GetRepository<Station, Guid>();
+
+        return await repo.GetByIdAsync(queryId, cancellationToken)
+            .ContinueWith(task =>
+            {
+                var station = task.Result;
+                if (station == null) return null;
+
+                return new StationsResponseDto
+                {
+                    Id = station.Id,
+                    Code = station.Code,
+                    Name = station.Name,
+                    StreetNumber = station.StreetNumber,
+                    Street = station.Street,
+                    Ward = station.Ward,
+                    District = station.District,
+                    City = station.City,
+                    ThumbnailImageUrl = station.ThumbnailImageUrl
+                };
+            }, cancellationToken);
+    }
+
+    private async Task<Station?> GetStationByCodeAsync(string? code, CancellationToken cancellationToken)
+    {
+        var repo = _unitOfWork.GetRepository<Station, Guid>();
+        return await repo.Query().FirstOrDefaultAsync(r => r.Code == code, cancellationToken);
+    }
+
+    #region Helper method
+
+    private Expression<Func<Station, bool>> GetFilter(GetStationsQuery query)
+    {
+        return (s) =>
+            s.Name!.ToLower().Contains(query.Name!.ToLower() + "") &&
+            s.DeleteFlag == query.Status;
+    }
+
+    #endregion
+}

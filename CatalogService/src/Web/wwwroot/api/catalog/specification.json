@@ -12,17 +12,118 @@
           "Routes"
         ],
         "operationId": "CreateRoute",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 2
+          },
+          {
+            "name": "lengthInKm",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "x-position": 3
+          }
+        ],
         "requestBody": {
-          "x-name": "command",
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/CreateRouteCommand"
+                "type": "object",
+                "properties": {
+                  "thumbnailImageUrl": {
+                    "type": "string",
+                    "format": "binary",
+                    "nullable": true
+                  }
+                }
               }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Routes"
+        ],
+        "operationId": "UpdateRoute",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
           },
-          "required": true,
-          "x-position": 1
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 2
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 3
+          },
+          {
+            "name": "lengthInKm",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "x-position": 4
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
         },
         "responses": {
           "200": {
@@ -65,41 +166,6 @@
       }
     },
     "/api/catalog/Routes/{id}": {
-      "put": {
-        "tags": [
-          "Routes"
-        ],
-        "operationId": "UpdateRoute",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "guid"
-            },
-            "x-position": 1
-          }
-        ],
-        "requestBody": {
-          "x-name": "requestBody",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateRouteRequestDto"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 2
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        }
-      },
       "delete": {
         "tags": [
           "Routes"
@@ -149,21 +215,18 @@
     },
     "/api/catalog/Routes/station-route": {
       "put": {
-        "tags": [
-          "Routes"
-        ],
+        "tags": ["Routes"],
         "operationId": "UpsertStationRoute",
         "requestBody": {
-          "x-name": "requestBody",
+          "required": true,
+          "x-position": 1,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UpsertStationRouteRequest"
               }
             }
-          },
-          "required": true,
-          "x-position": 1
+          }
         },
         "responses": {
           "200": {
@@ -172,6 +235,43 @@
         }
       }
     },
+    "/api/catalog/Stations": {
+      "post": {
+        "tags": ["Stations"],
+        "operationId": "CreateStation",
+        "parameters": [
+          { "name": "code", "in": "query", "required": true, "schema": { "type": "string" }, "x-position": 1 },
+          { "name": "name", "in": "query", "required": true, "schema": { "type": "string" }, "x-position": 2 },
+          { "name": "streetNumber", "in": "query", "schema": { "type": "string", "nullable": true }, "x-position": 3 },
+          { "name": "street", "in": "query", "schema": { "type": "string", "nullable": true }, "x-position": 4 },
+          { "name": "ward", "in": "query", "schema": { "type": "string", "nullable": true }, "x-position": 5 },
+          { "name": "district", "in": "query", "schema": { "type": "string", "nullable": true }, "x-position": 6 },
+          { "name": "city", "in": "query", "schema": { "type": "string", "nullable": true }, "x-position": 7 }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "thumbnailImageUrl": {
+                    "type": "string",
+                    "format": "binary",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+
     "/api/catalog/WeatherForecasts": {
       "get": {
         "tags": [

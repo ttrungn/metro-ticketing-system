@@ -211,11 +211,11 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     b.Property<Guid>("EntryStationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTimeOffset>("LastModifiedAt")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<double>("Length")
+                        .HasColumnType("float");
 
                     b.Property<int>("Order")
                         .HasColumnType("int");
@@ -366,7 +366,7 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     b.HasOne("CatalogService.Domain.Entities.Station", "Station")
                         .WithMany("StationRoutes")
                         .HasForeignKey("StationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("DestinationStation");
