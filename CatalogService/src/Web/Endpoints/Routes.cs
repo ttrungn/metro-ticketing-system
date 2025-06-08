@@ -27,7 +27,6 @@ public class Routes : EndpointGroupBase
         var thumbnailImage = form.Files.GetFile("thumbnailImage");
         Stream? thumbnailImageStream = null;
         string? thumbnailImageFileName = null;
-
         if (thumbnailImage is { Length: > 0 })
         {
             thumbnailImageStream = thumbnailImage.OpenReadStream();
@@ -39,7 +38,7 @@ public class Routes : EndpointGroupBase
             Name = form["name"].ToString(),
             ThumbnailImageStream = thumbnailImageStream,
             ThumbnailImageFileName = thumbnailImageFileName,
-            LengthInKm = double.TryParse(form["lengthInKm"], out var parsedLength) ? parsedLength : 0.1
+            LengthInKm = double.TryParse(form["lengthInKm"], out var parsedLength) ? parsedLength : 0.0
         };
 
         var response = await sender.Send(command);
@@ -51,19 +50,26 @@ public class Routes : EndpointGroupBase
         return TypedResults.BadRequest(response);
     }
 
-    private static async Task<IResult> UpdateRoute(
-        ISender sender,
-        [FromForm] IFormFile? file,
-        [FromQuery] Guid id,
-        [FromQuery] string name,
-        [FromQuery] double lengthInKm)
+    private static async Task<IResult> UpdateRoute(ISender sender, HttpRequest request)
     {
+        var form = await request.ReadFormAsync();
+
+        var thumbnailImage = form.Files.GetFile("thumbnailImage");
+        Stream? thumbnailImageStream = null;
+        string? thumbnailImageFileName = null;
+        if (thumbnailImage is { Length: > 0 })
+        {
+            thumbnailImageStream = thumbnailImage.OpenReadStream();
+            thumbnailImageFileName = thumbnailImage.FileName;
+        }
+
         var command = new UpdateRouteCommand()
         {
-            Id = id,
-            Name = name,
-            ThumbnailImageUrl = file?.FileName ?? "Empty",
-            LengthInKm = lengthInKm
+            Id = Guid.TryParse(form["id"].ToString(), out var parsedId) ? parsedId : Guid.Empty,
+            Name = form["name"].ToString(),
+            ThumbnailImageStream = thumbnailImageStream,
+            ThumbnailImageFileName = thumbnailImageFileName,
+            LengthInKm = double.TryParse(form["lengthInKm"], out var parsedLength) ? parsedLength : 0.1
         };
 
         var response = await sender.Send(command);

@@ -76,13 +76,23 @@ public class StationService : IStationService
             return Guid.Empty;
         }
 
+        if (command.ThumbnailImageStream != null && command.ThumbnailImageFileName != null)
+        {
+            var blobName = route.Id + GetFileType(command.ThumbnailImageFileName);
+            var containerName = _configuration["Azure:BlobStorageSettings:StationImagesContainerName"] ?? "station-images";
+            var blobUrl = await _azureBlobService.UploadAsync(
+                command.ThumbnailImageStream,
+                blobName,
+                containerName);
+            route.ThumbnailImageUrl = blobUrl;
+        }
+
         route.Name = command.Name;
         route.StreetNumber = command.StreetNumber;
         route.Street = command.Street;
         route.Ward = command.Ward;
         route.District = command.District;
         route.City = command.City;
-        route.ThumbnailImageUrl = command.ThumbnailImageUrl;
 
         await repo.UpdateAsync(route, cancellationToken);
         await _unitOfWork.SaveChangesAsync();

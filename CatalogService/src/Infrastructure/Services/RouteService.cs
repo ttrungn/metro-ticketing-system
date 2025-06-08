@@ -72,9 +72,22 @@ public class RouteService : IRouteService
             return Guid.Empty;
         }
 
+        if (command.ThumbnailImageStream != null && command.ThumbnailImageFileName != null)
+        {
+            var blobName = route.Id + GetFileType(command.ThumbnailImageFileName);
+            var containerName = _configuration["Azure:BlobStorageSettings:RouteImagesContainerName"] ?? "route-images";
+            var blobUrl = await _azureBlobService.UploadAsync(
+                command.ThumbnailImageStream,
+                blobName,
+                containerName);
+            route.ThumbnailImageUrl = blobUrl;
+        }
+
         route.Name = command.Name;
-        route.ThumbnailImageUrl = command.ThumbnailImageUrl;
-        route.LengthInKm = command.LengthInKm;
+        if (command.LengthInKm <= 0.1)
+        {
+            route.LengthInKm = (double)command.LengthInKm!;
+        }
 
         await repo.UpdateAsync(route, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
