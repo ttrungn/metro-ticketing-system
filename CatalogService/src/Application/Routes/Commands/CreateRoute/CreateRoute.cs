@@ -7,9 +7,9 @@ namespace CatalogService.Application.Routes.Commands.CreateRoute;
 public record CreateRouteCommand : IRequest<ServiceResponse<Guid>>
 {
     public string Name { get; init; } = null!;
+    public double LengthInKm { get; init; }
     public Stream? ThumbnailImageStream { get; init; }
     public string? ThumbnailImageFileName{ get; init; }
-    public double LengthInKm { get; init; }
 }
 
 public class CreateRouteCommandValidator : AbstractValidator<CreateRouteCommand>
