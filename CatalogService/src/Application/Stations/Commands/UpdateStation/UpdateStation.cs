@@ -7,7 +7,6 @@ namespace CatalogService.Application.Stations.Commands.UpdateStation;
 public record UpdateStationCommand : IRequest<ServiceResponse<Guid>>
 {
     public Guid Id { get; init; } = Guid.Empty;
-    public string Code { get; init; } = null!;
     public string Name { get; init; } = null!;
     public string? StreetNumber { get; init; }
     public string? Street { get; init; }
@@ -23,11 +22,6 @@ public class UpdateStationCommandValidator : AbstractValidator<UpdateStationComm
     {
         RuleFor(s => s.Id)
             .NotEmpty().WithMessage("Xin vui lòng nhập ID trạm!");
-
-        RuleFor(s => s.Code)
-            .NotEmpty().WithMessage("Xin vui lòng nhập code!")
-            .MinimumLength(6).WithMessage("Code yêu cầu 6 chữ số!")
-            .MaximumLength(6).WithMessage("Code yêu cầu 6 chữ số!");
 
         RuleFor(s => s.Name)
             .NotEmpty().WithMessage("Xin vui lòng nhập tên trạm!");
@@ -68,11 +62,11 @@ public class UpdateStationCommandHandler : IRequestHandler<UpdateStationCommand,
         var stationId = await _stationService.UpdateAsync(command, cancellationToken);
         if (stationId == Guid.Empty)
         {
-            _logger.LogWarning("Station with ID {StationId} not found or code already exists", command.Id);
+            _logger.LogWarning("Station with ID {StationId} not found.", command.Id);
             return new ServiceResponse<Guid>()
             {
                 Succeeded = false,
-                Message = "Không tìm thấy trạm hoặc mã đã tồn tại.",
+                Message = "Không tìm thấy trạm!",
                 Data = Guid.Empty
             };
         }

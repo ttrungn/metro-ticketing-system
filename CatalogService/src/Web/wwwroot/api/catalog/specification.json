@@ -14,22 +14,13 @@
         "operationId": "CreateRoute",
         "parameters": [
           {
-            "name": "code",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "x-position": 1
-          },
-          {
             "name": "name",
             "in": "query",
             "required": true,
             "schema": {
               "type": "string"
             },
-            "x-position": 2
+            "x-position": 1
           },
           {
             "name": "lengthInKm",
@@ -39,7 +30,7 @@
               "type": "number",
               "format": "double"
             },
-            "x-position": 3
+            "x-position": 2
           }
         ],
         "requestBody": {
@@ -81,22 +72,13 @@
             "x-position": 1
           },
           {
-            "name": "code",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "x-position": 2
-          },
-          {
             "name": "name",
             "in": "query",
             "required": true,
             "schema": {
               "type": "string"
             },
-            "x-position": 3
+            "x-position": 2
           },
           {
             "name": "lengthInKm",
@@ -106,7 +88,7 @@
               "type": "number",
               "format": "double"
             },
-            "x-position": 4
+            "x-position": 3
           }
         ],
         "requestBody": {
@@ -221,7 +203,7 @@
         "operationId": "CreateStation",
         "parameters": [
           {
-            "name": "code",
+            "name": "name",
             "in": "query",
             "required": true,
             "schema": {
@@ -230,22 +212,13 @@
             "x-position": 1
           },
           {
-            "name": "name",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "x-position": 2
-          },
-          {
             "name": "streetNumber",
             "in": "query",
             "schema": {
               "type": "string",
               "nullable": true
             },
-            "x-position": 3
+            "x-position": 2
           },
           {
             "name": "street",
@@ -254,7 +227,7 @@
               "type": "string",
               "nullable": true
             },
-            "x-position": 4
+            "x-position": 3
           },
           {
             "name": "ward",
@@ -263,7 +236,7 @@
               "type": "string",
               "nullable": true
             },
-            "x-position": 5
+            "x-position": 4
           },
           {
             "name": "district",
@@ -272,7 +245,7 @@
               "type": "string",
               "nullable": true
             },
-            "x-position": 6
+            "x-position": 5
           },
           {
             "name": "city",
@@ -281,7 +254,7 @@
               "type": "string",
               "nullable": true
             },
-            "x-position": 7
+            "x-position": 6
           }
         ],
         "requestBody": {
@@ -323,7 +296,7 @@
             "x-position": 1
           },
           {
-            "name": "code",
+            "name": "name",
             "in": "query",
             "required": true,
             "schema": {
@@ -332,22 +305,13 @@
             "x-position": 2
           },
           {
-            "name": "name",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "x-position": 3
-          },
-          {
             "name": "streetNumber",
             "in": "query",
             "schema": {
               "type": "string",
               "nullable": true
             },
-            "x-position": 4
+            "x-position": 3
           },
           {
             "name": "street",
@@ -356,7 +320,7 @@
               "type": "string",
               "nullable": true
             },
-            "x-position": 5
+            "x-position": 4
           },
           {
             "name": "ward",
@@ -365,7 +329,7 @@
               "type": "string",
               "nullable": true
             },
-            "x-position": 6
+            "x-position": 5
           },
           {
             "name": "district",
@@ -374,7 +338,7 @@
               "type": "string",
               "nullable": true
             },
-            "x-position": 7
+            "x-position": 6
           },
           {
             "name": "city",
@@ -383,7 +347,7 @@
               "type": "string",
               "nullable": true
             },
-            "x-position": 8
+            "x-position": 7
           }
         ],
         "requestBody": {

@@ -23,14 +23,12 @@ public class Routes : EndpointGroupBase
     private static async Task<IResult> CreateRoute(
         ISender sender,
         [FromForm] IFormFile? thumbnailImageUrl,
-        [FromQuery] string code,
         [FromQuery] string name,
         [FromQuery] double lengthInKm
         )
     {
         var command = new CreateRouteCommand()
         {
-            Code = code,
             Name = name,
             ThumbnailImageUrl = thumbnailImageUrl?.FileName ?? "Empty",
             LengthInKm = lengthInKm
@@ -50,14 +48,12 @@ public class Routes : EndpointGroupBase
         ISender sender,
         [FromForm] IFormFile? file,
         [FromQuery] Guid id,
-        [FromQuery] string code,
         [FromQuery] string name,
         [FromQuery] double lengthInKm)
     {
         var command = new UpdateRouteCommand()
         {
             Id = id,
-            Code = code,
             Name = name,
             ThumbnailImageUrl = file?.FileName ?? "Empty",
             LengthInKm = lengthInKm

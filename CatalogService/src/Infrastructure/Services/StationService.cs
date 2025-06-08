@@ -23,17 +23,14 @@ public class StationService : IStationService
     {
         var repo = _unitOfWork.GetRepository<Station, Guid>();
 
-        var availableStation = await GetStationByCodeAsync(command.Code, cancellationToken);
-        if (availableStation != null)
-        {
-            return Guid.NewGuid();
-        }
+        var count = repo.Query().Count();
+        var code = GenerateCode(count);
 
         var id = Guid.NewGuid();
         var station = new Station()
         {
             Id = id,
-            Code = command.Code,
+            Code = code,
             Name = command.Name,
             StreetNumber = command.StreetNumber,
             Street = command.Street,
@@ -59,13 +56,6 @@ public class StationService : IStationService
             return Guid.Empty;
         }
 
-        var availableStation = await GetStationByCodeAsync(command.Code, cancellationToken);
-        if (availableStation != null && availableStation.Id != command.Id)
-        {
-            return Guid.Empty;
-        }
-
-        route.Code = command.Code;
         route.Name = command.Name;
         route.StreetNumber = command.StreetNumber;
         route.Street = command.Street;
@@ -156,12 +146,6 @@ public class StationService : IStationService
             }, cancellationToken);
     }
 
-    private async Task<Station?> GetStationByCodeAsync(string? code, CancellationToken cancellationToken)
-    {
-        var repo = _unitOfWork.GetRepository<Station, Guid>();
-        return await repo.Query().FirstOrDefaultAsync(r => r.Code == code, cancellationToken);
-    }
-
     #region Helper method
 
     private Expression<Func<Station, bool>> GetFilter(GetStationsQuery query)
@@ -169,6 +153,12 @@ public class StationService : IStationService
         return (s) =>
             s.Name!.ToLower().Contains(query.Name!.ToLower() + "") &&
             s.DeleteFlag == query.Status;
+    }
+
+    private string GenerateCode(int count, int digits = 6)
+    {
+        var nextCode = count + 1;
+        return nextCode.ToString($"D{digits}");
     }
 
     #endregion

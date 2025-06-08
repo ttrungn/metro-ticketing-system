@@ -23,7 +23,6 @@ public class Stations : EndpointGroupBase
     private static async Task<IResult> CreateStation(
         ISender sender,
         [FromForm] IFormFile? thumbnailImageUrl,
-        [FromQuery] string code,
         [FromQuery] string name,
         [FromQuery] string? streetNumber ,
         [FromQuery] string? street,
@@ -33,7 +32,6 @@ public class Stations : EndpointGroupBase
     {
         var command = new CreateStationCommand()
         {
-            Code = code,
             Name = name,
             StreetNumber = streetNumber,
             Street = street,
@@ -56,7 +54,6 @@ public class Stations : EndpointGroupBase
         ISender sender,
         [FromForm] IFormFile? thumbnailImageUrl,
         [FromQuery] Guid id,
-        [FromQuery] string code,
         [FromQuery] string name,
         [FromQuery] string? streetNumber ,
         [FromQuery] string? street,
@@ -67,7 +64,6 @@ public class Stations : EndpointGroupBase
         var command = new UpdateStationCommand()
         {
             Id = id,
-            Code = code,
             Name = name,
             StreetNumber = streetNumber,
             Street = street,

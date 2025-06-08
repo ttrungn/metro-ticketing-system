@@ -6,7 +6,6 @@ namespace CatalogService.Application.Stations.Commands.CreateStation;
 
 public record CreateStationCommand : IRequest<ServiceResponse<Guid>>
 {
-    public string Code { get; init; } = null!;
     public string Name { get; init; } = null!;
     public string? StreetNumber { get; init; }
     public string? Street { get; init; }
@@ -20,11 +19,6 @@ public class CreateStationCommandValidator : AbstractValidator<CreateStationComm
 {
     public CreateStationCommandValidator()
     {
-        RuleFor(s => s.Code)
-            .NotEmpty().WithMessage("Xin vui lòng nhập code!")
-            .MinimumLength(6).WithMessage("Code yêu cầu 6 chữ số!")
-            .MaximumLength(6).WithMessage("Code yêu cầu 6 chữ số!");
-
         RuleFor(s => s.Name)
             .NotEmpty().WithMessage("Xin vui lòng nhập tên trạm!");
 
@@ -62,16 +56,6 @@ public class CreateStationCommandHandler : IRequestHandler<CreateStationCommand,
     public async Task<ServiceResponse<Guid>> Handle(CreateStationCommand command, CancellationToken cancellationToken)
     {
         var stationId = await _stationService.CreateAsync(command, cancellationToken);
-        if (stationId == Guid.Empty)
-        {
-            _logger.LogWarning("Station with code {Code} already exists", command.Code);
-            return new ServiceResponse<Guid>()
-            {
-                Succeeded = false,
-                Message = "Mã đã tồn tại!",
-                Data = Guid.Empty
-            };
-        }
 
         _logger.LogInformation("Station created with ID: {StationId}", stationId);
         return new ServiceResponse<Guid>()

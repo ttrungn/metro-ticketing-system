@@ -24,17 +24,14 @@ public class RouteService : IRouteService
     {
         var repo = _unitOfWork.GetRepository<Route, Guid>();
 
-        var availableRoute = await GetRouteByCodeAsync(command.Code, cancellationToken);
-        if (availableRoute != null)
-        {
-            return Guid.Empty;
-        }
+        var count = repo.Query().Count();
+        var code = GenerateCode(count);
 
         var id = Guid.NewGuid();
         var newRoute = new Route()
         {
             Id = id,
-            Code = command.Code,
+            Code = code,
             Name = command.Name,
             ThumbnailImageUrl = command.ThumbnailImageUrl,
             LengthInKm = command.LengthInKm,
@@ -57,13 +54,6 @@ public class RouteService : IRouteService
             return Guid.Empty;
         }
 
-        var availableRoute = await GetRouteByCodeAsync(command.Code, cancellationToken);
-        if (availableRoute != null  && availableRoute.Id != command.Id)
-        {
-            return Guid.Empty;
-        }
-
-        route.Code = command.Code;
         route.Name = command.Name;
         route.ThumbnailImageUrl = command.ThumbnailImageUrl;
         route.LengthInKm = command.LengthInKm;
@@ -153,10 +143,10 @@ public class RouteService : IRouteService
             r.DeleteFlag == query.Status;
     }
 
-    private async Task<Route?> GetRouteByCodeAsync(string code, CancellationToken cancellationToken)
+    private string GenerateCode(int count, int digits = 6)
     {
-        var repo = _unitOfWork.GetRepository<Route, Guid>();
-        return await repo.Query().FirstOrDefaultAsync(r => r.Code == code, cancellationToken);
+        var nextCode = count + 1;
+        return nextCode.ToString($"D{digits}");
     }
 
     #endregion
