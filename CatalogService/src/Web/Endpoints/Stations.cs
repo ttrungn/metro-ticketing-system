@@ -20,27 +20,30 @@ public class Stations : EndpointGroupBase
             .MapGet(GetStationById, "/{id:guid}");
     }
 
-    private static async Task<IResult> CreateStation(
-        ISender sender,
-        [FromForm] IFormFile? thumbnailImageUrl,
-        [FromQuery] string code,
-        [FromQuery] string name,
-        [FromQuery] string? streetNumber ,
-        [FromQuery] string? street,
-        [FromQuery] string? ward,
-        [FromQuery] string? district,
-        [FromQuery] string? city)
+    private static async Task<IResult> CreateStation(ISender sender, HttpRequest request)
     {
+        var form = await request.ReadFormAsync();
+
+        var thumbnailImage = form.Files.GetFile("thumbnailImage");
+        Stream? thumbnailImageStream = null;
+        string? thumbnailImageFileName = null;
+
+        if (thumbnailImage is { Length: > 0 })
+        {
+            thumbnailImageStream = thumbnailImage.OpenReadStream();
+            thumbnailImageFileName = thumbnailImage.FileName;
+        }
+
         var command = new CreateStationCommand()
         {
-            Code = code,
-            Name = name,
-            StreetNumber = streetNumber,
-            Street = street,
-            Ward = ward,
-            District = district,
-            City = city,
-            ThumbnailImageUrl = thumbnailImageUrl?.FileName ?? "Empty"
+            Name = form["name"].ToString(),
+            StreetNumber = form["streetNumber"].ToString(),
+            Street = form["street"].ToString(),
+            Ward = form["ward"].ToString(),
+            District = form["district"].ToString(),
+            City = form["city"].ToString(),
+            ThumbnailImageStream = thumbnailImageStream,
+            ThumbnailImageFileName = thumbnailImageFileName
         };
 
         var response = await sender.Send(command);
@@ -52,29 +55,31 @@ public class Stations : EndpointGroupBase
         return TypedResults.BadRequest(response);
     }
 
-    private static async Task<IResult> UpdateStation(
-        ISender sender,
-        [FromForm] IFormFile? thumbnailImageUrl,
-        [FromQuery] Guid id,
-        [FromQuery] string code,
-        [FromQuery] string name,
-        [FromQuery] string? streetNumber ,
-        [FromQuery] string? street,
-        [FromQuery] string? ward,
-        [FromQuery] string? district,
-        [FromQuery] string? city)
+    private static async Task<IResult> UpdateStation(ISender sender, HttpRequest request)
+
     {
+        var form = await request.ReadFormAsync();
+
+        var thumbnailImage = form.Files.GetFile("thumbnailImage");
+        Stream? thumbnailImageStream = null;
+        string? thumbnailImageFileName = null;
+        if (thumbnailImage is { Length: > 0 })
+        {
+            thumbnailImageStream = thumbnailImage.OpenReadStream();
+            thumbnailImageFileName = thumbnailImage.FileName;
+        }
+
         var command = new UpdateStationCommand()
         {
-            Id = id,
-            Code = code,
-            Name = name,
-            StreetNumber = streetNumber,
-            Street = street,
-            Ward = ward,
-            District = district,
-            City = city,
-            ThumbnailImageUrl = thumbnailImageUrl?.FileName ?? "Empty"
+            Id = Guid.TryParse(form["id"].ToString(), out var parsedId) ? parsedId : Guid.Empty,
+            Name = form["name"].ToString(),
+            StreetNumber = form["streetNumber"].ToString(),
+            Street = form["street"].ToString(),
+            Ward = form["ward"].ToString(),
+            District = form["district"].ToString(),
+            City = form["city"].ToString(),
+            ThumbnailImageStream = thumbnailImageStream,
+            ThumbnailImageFileName = thumbnailImageFileName
         };
 
         var response = await sender.Send(command);
