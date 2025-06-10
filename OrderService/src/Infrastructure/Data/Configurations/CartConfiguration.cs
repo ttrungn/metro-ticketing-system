@@ -11,6 +11,8 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
     {
         builder.ToTable("Cart");
 
+        builder.Ignore(c => c.Id);
+
         builder.HasKey(c => new { c.CustomerId, c.TicketId });
 
         builder.Property(c => c.CustomerId)
@@ -18,5 +20,7 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
 
         builder.Property(c => c.TicketId)
             .IsRequired();
+
+        builder.ConfigureAuditableProperties();
     }
 }

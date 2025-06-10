@@ -9,6 +9,8 @@ public class OrderDetailConfiguration : IEntityTypeConfiguration<OrderDetail>
 {
     public void Configure(EntityTypeBuilder<OrderDetail> builder)
     {
+        builder.Ignore(od => od.Id);
+
         builder.HasKey(od => new { od.OrderId, od.PurchaseTicketId });
 
         builder.ToTable("OrderDetail");
@@ -24,5 +26,7 @@ public class OrderDetailConfiguration : IEntityTypeConfiguration<OrderDetail>
         builder.HasOne(od => od.PurchasedTicket)
             .WithMany(pt => pt.OrderDetails)
             .HasForeignKey(od => od.PurchaseTicketId);
+
+        builder.ConfigureAuditableProperties();
     }
 }

@@ -2,7 +2,7 @@
 
 namespace OrderService.Domain.Entities;
 
-public class OrderDetail
+public class OrderDetail : BaseAuditableEntity<(Guid OrderId, Guid PurchaseTicketId)>
 {
     public Guid OrderId { get; set; }
     public Guid PurchaseTicketId { get; set; }
