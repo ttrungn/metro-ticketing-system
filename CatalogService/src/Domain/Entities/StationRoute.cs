@@ -9,15 +9,9 @@ public class StationRoute : BaseAuditableEntity<(Guid StationId, Guid RouteId)>
 
     public Guid RouteId { get; set; }
     public Route? Route { get; set; }
-    
-    public Guid EntryStationId { get; set; }
-    public Station? EntryStation { get; set; }
-    
-    public Guid DestinationStationId { get; set; }
-    public Station? DestinationStation { get; set; }
-    
+
     public int Order { get; set; }
     
-    public double Length { get; set; }
+    public double DistanceToNext  { get; set; }
     
 }
