@@ -7,7 +7,6 @@ namespace OrderService.Infrastructure.Data;
 
 public class ApplicationDbContext : DbContext, IApplicationDbContext
 {
-    public DbSet<PurchasedTicket> PurchasedTickets => Set<PurchasedTicket>();
     public DbSet<Cart> Carts => Set<Cart>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderDetail> OrderDetails => Set<OrderDetail>();
