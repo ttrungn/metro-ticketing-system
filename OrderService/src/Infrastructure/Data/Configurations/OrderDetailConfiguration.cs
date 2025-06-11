@@ -9,9 +9,7 @@ public class OrderDetailConfiguration : IEntityTypeConfiguration<OrderDetail>
 {
     public void Configure(EntityTypeBuilder<OrderDetail> builder)
     {
-        builder.Ignore(od => od.Id);
-
-        builder.HasKey(od => new { od.OrderId, od.PurchaseTicketId });
+        builder.HasKey(od => od.Id);
 
         builder.ToTable("OrderDetail");
 
@@ -19,13 +17,23 @@ public class OrderDetailConfiguration : IEntityTypeConfiguration<OrderDetail>
 
         builder.Property(o => o.BoughtPrice).IsRequired();
 
+        builder.Property(o => o.ActiveAt).IsRequired();
+
+        builder.Property(o => o.ExpiredAt).IsRequired();
+
+        builder.Property(o => o.Status).IsRequired();
+
+        builder.Property(o => o.EntryStationId)
+            .IsRequired()
+            .HasMaxLength(50);
+
+        builder.Property(o => o.DestinationStationId)
+            .IsRequired()
+            .HasMaxLength(50);
+
         builder.HasOne(od => od.Order)
             .WithMany(o => o.OrderDetails)
             .HasForeignKey(od => od.OrderId);
-
-        builder.HasOne(od => od.PurchasedTicket)
-            .WithMany(pt => pt.OrderDetails)
-            .HasForeignKey(od => od.PurchaseTicketId);
 
         builder.ConfigureAuditableProperties();
     }

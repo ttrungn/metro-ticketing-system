@@ -39,11 +39,27 @@ namespace OrderService.Infrastructure.Data.Migrations
                     b.Property<DateTimeOffset>("DeletedAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("DestinationStationId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("EntryStationId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<DateTimeOffset>("LastModifiedAt")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<int>("Quantity")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.Property<string>("RouteId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("CustomerId", "TicketId");
 
@@ -89,11 +105,12 @@ namespace OrderService.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("OrderService.Domain.Entities.OrderDetail", b =>
                 {
-                    b.Property<Guid>("OrderId")
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("PurchaseTicketId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<DateTimeOffset>("ActiveAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<decimal>("BoughtPrice")
                         .HasColumnType("decimal(18,2)");
@@ -107,34 +124,15 @@ namespace OrderService.Infrastructure.Data.Migrations
                     b.Property<DateTimeOffset>("DeletedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset>("LastModifiedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.HasKey("OrderId", "PurchaseTicketId");
-
-                    b.HasIndex("PurchaseTicketId");
-
-                    b.ToTable("OrderDetail", (string)null);
-                });
-
-            modelBuilder.Entity("OrderService.Domain.Entities.PurchasedTicket", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("CustomerId")
+                    b.Property<string>("DestinationStationId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.Property<bool>("DeleteFlag")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset>("DeletedAt")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<string>("EntryStationId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTimeOffset>("ExpiredAt")
                         .HasColumnType("datetimeoffset");
@@ -142,19 +140,20 @@ namespace OrderService.Infrastructure.Data.Migrations
                     b.Property<DateTimeOffset>("LastModifiedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("OrderStatus")
-                        .HasColumnType("int");
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<string>("TicketId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid>("TicketId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.ToTable("PurchasedTicket", (string)null);
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderDetail", (string)null);
                 });
 
             modelBuilder.Entity("OrderService.Domain.Entities.OrderDetail", b =>
@@ -165,23 +164,10 @@ namespace OrderService.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OrderService.Domain.Entities.PurchasedTicket", "PurchasedTicket")
-                        .WithMany("OrderDetails")
-                        .HasForeignKey("PurchaseTicketId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Order");
-
-                    b.Navigation("PurchasedTicket");
                 });
 
             modelBuilder.Entity("OrderService.Domain.Entities.Order", b =>
-                {
-                    b.Navigation("OrderDetails");
-                });
-
-            modelBuilder.Entity("OrderService.Domain.Entities.PurchasedTicket", b =>
                 {
                     b.Navigation("OrderDetails");
                 });
