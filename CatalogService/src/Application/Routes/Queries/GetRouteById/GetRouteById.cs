@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CatalogService.Application.Routes.Queries.GetRouteById;
 
-public record GetRouteByIdQuery(Guid Id) : IRequest<ServiceResponse<RoutesResponseDto>>;
+public record GetRouteByIdQuery(Guid Id) : IRequest<ServiceResponse<StationRouteResponseDto>>;
 
 public class GetRouteByIdQueryValidator : AbstractValidator<GetRouteByIdQuery>
 {
@@ -18,7 +18,7 @@ public class GetRouteByIdQueryValidator : AbstractValidator<GetRouteByIdQuery>
     }
 }
 
-public class GetRouteByIdQueryHandler : IRequestHandler<GetRouteByIdQuery, ServiceResponse<RoutesResponseDto>>
+public class GetRouteByIdQueryHandler : IRequestHandler<GetRouteByIdQuery, ServiceResponse<StationRouteResponseDto>>
 {
     private readonly IRouteService _routeService;
     private readonly ILogger<GetRouteByIdQueryHandler> _logger;
@@ -29,14 +29,14 @@ public class GetRouteByIdQueryHandler : IRequestHandler<GetRouteByIdQuery, Servi
         _logger = logger;
     }
 
-    public async Task<ServiceResponse<RoutesResponseDto>> Handle(GetRouteByIdQuery request, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<StationRouteResponseDto>> Handle(GetRouteByIdQuery request, CancellationToken cancellationToken)
     {
         var route = await _routeService.GetByIdAsync(request.Id, cancellationToken);
 
         if (route == null)
         {
             _logger.LogWarning("Route with ID {RouteId} not found", request.Id);
-            return new ServiceResponse<RoutesResponseDto>
+            return new ServiceResponse<StationRouteResponseDto>
             {
                 Succeeded = false,
                 Message = "Không tìm thấy tuyến!",
@@ -46,7 +46,7 @@ public class GetRouteByIdQueryHandler : IRequestHandler<GetRouteByIdQuery, Servi
 
         _logger.LogInformation("Route with ID {RouteId} retrieved successfully", request.Id);
 
-        return new ServiceResponse<RoutesResponseDto>
+        return new ServiceResponse<StationRouteResponseDto>
         {
             Succeeded = true,
             Message = "Lấy thông tin tuyến thành công!",
