@@ -6,6 +6,7 @@ using CatalogService.Application.Routes.Commands.UpdateRoute;
 using CatalogService.Application.Routes.DTOs;
 using CatalogService.Application.Routes.Queries.GetRoutes;
 using CatalogService.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace CatalogService.Infrastructure.Services;
@@ -16,7 +17,8 @@ public class RouteService : IRouteService
     private readonly IAzureBlobService _azureBlobService;
     private readonly IConfiguration _configuration;
 
-    public RouteService(IUnitOfWork unitOfWork, IAzureBlobService azureBlobService, IConfiguration configuration)
+    public RouteService(IUnitOfWork unitOfWork, IAzureBlobService azureBlobService,
+        IConfiguration configuration)
     {
         _unitOfWork = unitOfWork;
         _azureBlobService = azureBlobService;
@@ -38,7 +40,9 @@ public class RouteService : IRouteService
         if (command.ThumbnailImageStream != null && command.ThumbnailImageFileName != null)
         {
             var blobName = id + GetFileType(command.ThumbnailImageFileName);
-            var containerName = _configuration["Azure:BlobStorageSettings:RouteImagesContainerName"] ?? "route-images";
+            var containerName =
+                _configuration["Azure:BlobStorageSettings:RouteImagesContainerName"] ??
+                "route-images";
             var blobUrl = await _azureBlobService.UploadAsync(
                 command.ThumbnailImageStream,
                 blobName,
@@ -75,7 +79,9 @@ public class RouteService : IRouteService
         if (command.ThumbnailImageStream != null && command.ThumbnailImageFileName != null)
         {
             var blobName = route.Id + GetFileType(command.ThumbnailImageFileName);
-            var containerName = _configuration["Azure:BlobStorageSettings:RouteImagesContainerName"] ?? "route-images";
+            var containerName =
+                _configuration["Azure:BlobStorageSettings:RouteImagesContainerName"] ??
+                "route-images";
             var blobUrl = await _azureBlobService.UploadAsync(
                 command.ThumbnailImageStream,
                 blobName,
@@ -142,27 +148,45 @@ public class RouteService : IRouteService
             }), totalPages);
     }
 
-    public async Task<RoutesResponseDto?> GetByIdAsync(Guid requestId, CancellationToken cancellationToken = default)
+    public async Task<StationRouteResponseDto?> GetByIdAsync(Guid requestId,
+        CancellationToken cancellationToken = default)
     {
         var repo = _unitOfWork.GetRepository<Route, Guid>();
 
-        return await repo.GetByIdAsync(requestId, cancellationToken)
-            .ContinueWith(task =>
-            {
-                var route = task.Result;
-                if (route == null) return null;
+        var route = await repo.Query().Include(r => r.StationRoutes).ThenInclude(r => r.Station)
+            .FirstOrDefaultAsync(r => r.Id == requestId, cancellationToken);
+        if (route == null)
+        {
+            return null;
+        }
 
-                return new RoutesResponseDto
-                {
-                    Id = route.Id,
-                    Code = route.Code,
-                    Name = route.Name,
-                    ThumbnailImageUrl = route.ThumbnailImageUrl,
-                    LengthInKm = route.LengthInKm
-                };
-            }, cancellationToken);
+        var stationRoutes = route.StationRoutes.Select(sr => new StationResponseDto()
+        {
+            Id = sr.StationId,
+            Name = sr.Station?.Name,
+            Code = sr.Station?.Code,
+            StreetNumber = sr.Station?.StreetNumber,
+            Street = sr.Station?.Street,
+            Ward = sr.Station?.Ward,
+            District = sr.Station?.District,
+            City = sr.Station?.City,
+            ThumbnailImageUrl = sr.Station?.ThumbnailImageUrl,
+            Order = sr.Order,
+            DistanceToNext = sr.DistanceToNext,
+        }).ToList();
+
+        var response = new StationRouteResponseDto()
+        {
+            Id = route.Id,
+            Name = route.Name,
+            Code = route.Code,
+            LengthInKm = route.LengthInKm,
+            ThumbnailImageUrl = route.ThumbnailImageUrl,
+            Stations = stationRoutes
+        };
+
+        return response;
     }
-
 
 
     #region Helper method
