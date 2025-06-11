@@ -142,11 +142,11 @@ public class RouteService : IRouteService
             }), totalPages);
     }
 
-    public Task<RoutesResponseDto?> GetByIdAsync(Guid requestId, CancellationToken cancellationToken = default)
+    public async Task<RoutesResponseDto?> GetByIdAsync(Guid requestId, CancellationToken cancellationToken = default)
     {
         var repo = _unitOfWork.GetRepository<Route, Guid>();
 
-        return repo.GetByIdAsync(requestId, cancellationToken)
+        return await repo.GetByIdAsync(requestId, cancellationToken)
             .ContinueWith(task =>
             {
                 var route = task.Result;
