@@ -16,10 +16,8 @@ public static class StationRouteMappingExtensions
         {
             RouteId = stationRouteDto.RouteId,
             StationId = stationRouteDto.StationId,
-            EntryStationId = stationRouteDto.EntryStationId,
-            DestinationStationId = stationRouteDto.DestinationStationId,
             Order = stationRouteDto.Order,
-            Length = stationRouteDto.Length,
+            DistanceToNext = stationRouteDto.DistanceToNext,
         };
     }
 

@@ -146,10 +146,8 @@ public class Routes : EndpointGroupBase
             {
                 StationId = s.StationId,
                 RouteId = s.RouteId,
-                DestinationStationId = s.DestinationStationId,
-                EntryStationId = s.EntryStationId,
                 Order = s.Order,
-                Length = s.Length,
+                DistanceToNext = s.Length,
             }).ToList()
         };
 

@@ -24,16 +24,12 @@ public class UpsertStationRouteCommandValidator : AbstractValidator<UpsertStatio
 {
     public UpsertStationRouteCommandValidator()
     {
-        //RuleFor(x => x.Code)
-        //    .NotEmpty().WithMessage("Code is required.")
-        //    .MaximumLength(50).WithMessage("Code must not exceed 50 characters.");
-        //RuleFor(x => x.Name)
-        //    .NotEmpty().WithMessage("Name is required.")
-        //    .MaximumLength(100).WithMessage("Name must not exceed 100 characters.");
-        //RuleFor(x => x.ThumbnailImageUrl)
-        //    .MaximumLength(200).WithMessage("ThumbnailImageUrl must not exceed 200 characters.");
-        //RuleFor(x => x.LengthInKm)
-        //    .GreaterThan(0).WithMessage("LengthInKm must be greater than zero.");
+        RuleFor(x => x.Id)
+            .NotEmpty().WithMessage("Route Id is required.");
+        RuleFor(x => x.StationRoutes)
+            .NotEmpty().WithMessage("At least one station route is required.")
+            .Must(routes => routes.All(route => route.StationId != Guid.Empty && route.RouteId != Guid.Empty))
+            .WithMessage("Each station route must have a valid StationId and RouteId.");
     }
 }
 
@@ -55,6 +51,40 @@ public class UpdateStationRouteCommandHandler : IRequestHandler<UpsertStationRou
         _logger.LogInformation("Upsert route id " + command.Id);
 
         var routeId = await _routeService.UpsertRouteStationAsync(command, cancellationToken);
+
+
+        //Check for duplicates in the station routes
+        var duplicates = command.StationRoutes.GroupBy(sr => sr.StationId).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+
+        if (duplicates.Any())
+        {
+            _logger.LogWarning("Duplicate station routes found for stations: {Duplicates}", string.Join(", ", duplicates));
+            return new ServiceResponse<Guid>
+            {
+                Succeeded = false,
+                Message = "Duplicate station routes found.",
+                Data = Guid.Empty,
+            };
+        }
+
+        var sortedOrders = command.StationRoutes
+            .Select(sr => sr.Order)
+            .Distinct()
+            .OrderBy(order => order)
+            .ToList();
+        bool isContiguous = sortedOrders.First() == 1 && sortedOrders.SequenceEqual(Enumerable.Range(1, sortedOrders.Count));
+
+
+        if(!isContiguous)
+        {
+            _logger.LogWarning("Station route orders are not contiguous.");
+            return new ServiceResponse<Guid>
+            {
+                Succeeded = false,
+                Message = "Station route orders must be contiguous starting from 1.",
+                Data = Guid.Empty,
+            };
+        }
 
         if (routeId == Guid.Empty)
         {

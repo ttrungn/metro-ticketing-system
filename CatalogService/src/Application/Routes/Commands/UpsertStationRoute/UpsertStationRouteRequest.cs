@@ -25,10 +25,6 @@ public class StationRouteRequestDto
 
     public Guid RouteId { get; set; }
 
-    public Guid EntryStationId { get; set; }
-
-    public Guid DestinationStationId { get; set; }
-
     public int Order { get; set; }
 
     public double Length { get; set; }
