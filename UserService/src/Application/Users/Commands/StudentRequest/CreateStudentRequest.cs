@@ -17,8 +17,8 @@ public record CreateStudentRequestCommand : IRequest<ServiceResponse<Guid>>
     public string StudentEmail { get; init; } = null!;
     public FullName FullName { get; init; } = null!;
     public DateTimeOffset DateOfBirth { get; init; } 
-    [JsonIgnore]
-    public string StudentCardImageUrl { get; set; } = null!;
+    public Stream? StudentCardImageStream { get; init; }
+    public string? StudentCardImageName { get; init; }
 }
 public class StudentRequestResult
 {
@@ -62,7 +62,7 @@ public class StudentRequestCommandHandler : IRequestHandler<CreateStudentRequest
     public async Task<ServiceResponse<Guid>> Handle(CreateStudentRequestCommand request, CancellationToken cancellationToken)
     {
          var userId = _currentUser.Id;
-        if (string.IsNullOrEmpty(request.StudentCardImageUrl))
+        if (request.StudentCardImageName == null || request.StudentCardImageStream == null)
         {
             return new ServiceResponse<Guid>()
             {
@@ -76,7 +76,7 @@ public class StudentRequestCommandHandler : IRequestHandler<CreateStudentRequest
         return new ServiceResponse<Guid>
         {
             Succeeded = true,
-            Message = "Created student request successfully.",
+            Message = "Tao yêu cầu thành công.",
             Data = studentRequestId
         };
     }

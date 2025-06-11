@@ -110,70 +110,6 @@
           "StudentRequest"
         ],
         "operationId": "CreateStudentRequest",
-        "parameters": [
-          {
-            "name": "studentCode",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "x-position": 1
-          },
-          {
-            "name": "studentEmail",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "x-position": 2
-          },
-          {
-            "name": "firstName",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "x-position": 3
-          },
-          {
-            "name": "lastName",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "x-position": 4
-          },
-          {
-            "name": "dateOfBirth",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            },
-            "x-position": 5
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "file": {
-                    "type": "string",
-                    "format": "binary",
-                    "nullable": true
-                  }
-                }
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": ""
@@ -205,12 +141,14 @@
             "description": ""
           }
         }
-      },
+      }
+    },
+    "/api/user/StudentRequest/Approve/{Id}": {
       "put": {
         "tags": [
           "StudentRequest"
         ],
-        "operationId": "UpdateStudentRequest",
+        "operationId": "ApproveStudentRequest",
         "parameters": [
           {
             "name": "Id",
@@ -222,15 +160,32 @@
               "format": "guid"
             },
             "x-position": 1
-          },
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/user/StudentRequest/Declined/{Id}": {
+      "put": {
+        "tags": [
+          "StudentRequest"
+        ],
+        "operationId": "DeclinedStudentRequest",
+        "parameters": [
           {
-            "name": "status",
-            "in": "query",
+            "name": "Id",
+            "x-originalName": "id",
+            "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/StudentRequestStatus"
+              "type": "string",
+              "format": "guid"
             },
-            "x-position": 2
+            "x-position": 1
           }
         ],
         "responses": {
