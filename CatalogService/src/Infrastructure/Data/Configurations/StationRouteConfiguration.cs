@@ -10,35 +10,20 @@ public class StationRouteConfiguration : IEntityTypeConfiguration<StationRoute>
     {
         builder.Ignore(sr => sr.Id);
         builder.ToTable("StationRoute");
-        // 1. Composite PK on (StationId, RouteId)
         builder
-            .HasKey(sr => new { sr.StationId, sr.RouteId ,sr.EntryStationId, sr.DestinationStationId});
-
-        // 2. Relationships
+            .HasKey(sr => new { sr.StationId, sr.RouteId });
+        
         builder
             .HasOne(sr => sr.Station)
-            .WithMany(s => s.StationRoutes)      // you'll need ICollection<StationRoute> on Station
+            .WithMany(s => s.StationRoutes)    
             .HasForeignKey(sr => sr.StationId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
             .HasOne(sr => sr.Route)
-            .WithMany(r => r.StationRoutes)      // and ICollection<StationRoute> on Route
+            .WithMany(r => r.StationRoutes)     
             .HasForeignKey(sr => sr.RouteId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        // 3. Additional station links
-        builder
-            .HasOne(sr => sr.EntryStation)
-            .WithMany()                          // no back-ref
-            .HasForeignKey(sr => sr.EntryStationId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder
-            .HasOne(sr => sr.DestinationStation)
-            .WithMany()                          // no back-ref
-            .HasForeignKey(sr => sr.DestinationStationId)
-            .OnDelete(DeleteBehavior.Restrict);
         
         builder.ConfigureAuditableProperties();
     }

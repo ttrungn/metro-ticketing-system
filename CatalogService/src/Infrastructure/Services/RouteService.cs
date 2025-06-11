@@ -8,37 +8,55 @@ using CatalogService.Application.Routes.DTOs;
 using CatalogService.Application.Routes.Queries.GetRoutes;
 using CatalogService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace CatalogService.Infrastructure.Services;
 
 public class RouteService : IRouteService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IStationRouteService _stationRouteService;
-    public RouteService(IUnitOfWork unitOfWork, IStationRouteService stationRouteService)
+    private readonly IAzureBlobService _azureBlobService;
+    private readonly IConfiguration _configuration;
+
+    public RouteService(IUnitOfWork unitOfWork, IAzureBlobService azureBlobService,
+        IConfiguration configuration)
     {
         _unitOfWork = unitOfWork;
-        _stationRouteService = stationRouteService;
+        _azureBlobService = azureBlobService;
+        _configuration = configuration;
     }
 
-    public async Task<Guid> CreateAsync(CreateRouteCommand command,
+    public async Task<Guid> CreateAsync(
+        CreateRouteCommand command,
         CancellationToken cancellationToken = default)
     {
+        var id = Guid.NewGuid();
+
         var repo = _unitOfWork.GetRepository<Route, Guid>();
 
-        var availableRoute = await GetRouteByCodeAsync(command.Code, cancellationToken);
-        if (availableRoute != null)
+        var count = repo.Query().Count();
+        var code = GenerateCode(count);
+
+        var thumbnailImageUrl = "empty";
+        if (command.ThumbnailImageStream != null && command.ThumbnailImageFileName != null)
         {
-            return Guid.Empty;
+            var blobName = id + GetFileType(command.ThumbnailImageFileName);
+            var containerName =
+                _configuration["Azure:BlobStorageSettings:RouteImagesContainerName"] ??
+                "route-images";
+            var blobUrl = await _azureBlobService.UploadAsync(
+                command.ThumbnailImageStream,
+                blobName,
+                containerName);
+            thumbnailImageUrl = blobUrl;
         }
 
-        var id = Guid.NewGuid();
         var newRoute = new Route()
         {
             Id = id,
-            Code = command.Code,
+            Code = code,
             Name = command.Name,
-            ThumbnailImageUrl = command.ThumbnailImageUrl,
+            ThumbnailImageUrl = thumbnailImageUrl,
             LengthInKm = command.LengthInKm,
         };
 
@@ -59,16 +77,24 @@ public class RouteService : IRouteService
             return Guid.Empty;
         }
 
-        var availableRoute = await GetRouteByCodeAsync(command.Code, cancellationToken);
-        if (availableRoute != null  && availableRoute.Id != command.Id)
+        if (command.ThumbnailImageStream != null && command.ThumbnailImageFileName != null)
         {
-            return Guid.Empty;
+            var blobName = route.Id + GetFileType(command.ThumbnailImageFileName);
+            var containerName =
+                _configuration["Azure:BlobStorageSettings:RouteImagesContainerName"] ??
+                "route-images";
+            var blobUrl = await _azureBlobService.UploadAsync(
+                command.ThumbnailImageStream,
+                blobName,
+                containerName);
+            route.ThumbnailImageUrl = blobUrl;
         }
 
-        route.Code = command.Code;
         route.Name = command.Name;
-        route.ThumbnailImageUrl = command.ThumbnailImageUrl;
-        route.LengthInKm = command.LengthInKm;
+        if (command.LengthInKm > 0.1)
+        {
+            route.LengthInKm = (double)command.LengthInKm!;
+        }
 
         await repo.UpdateAsync(route, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
@@ -123,28 +149,48 @@ public class RouteService : IRouteService
             }), totalPages);
     }
 
-    public Task<RoutesResponseDto?> GetByIdAsync(Guid requestId, CancellationToken cancellationToken = default)
+    public async Task<StationRouteResponseDto?> GetByIdAsync(Guid requestId,
+        CancellationToken cancellationToken = default)
     {
         var repo = _unitOfWork.GetRepository<Route, Guid>();
 
-        return repo.GetByIdAsync(requestId, cancellationToken)
-            .ContinueWith(task =>
-            {
-                var route = task.Result;
-                if (route == null) return null;
+        var route = await repo.Query().Include(r => r.StationRoutes).ThenInclude(r => r.Station)
+            .FirstOrDefaultAsync(r => r.Id == requestId, cancellationToken);
+        if (route == null)
+        {
+            return null;
+        }
 
-                return new RoutesResponseDto
-                {
-                    Id = route.Id,
-                    Code = route.Code,
-                    Name = route.Name,
-                    ThumbnailImageUrl = route.ThumbnailImageUrl,
-                    LengthInKm = route.LengthInKm
-                };
-            }, cancellationToken);
+        var stationRoutes = route.StationRoutes.Select(sr => new StationResponseDto()
+        {
+            Id = sr.StationId,
+            Name = sr.Station?.Name,
+            Code = sr.Station?.Code,
+            StreetNumber = sr.Station?.StreetNumber,
+            Street = sr.Station?.Street,
+            Ward = sr.Station?.Ward,
+            District = sr.Station?.District,
+            City = sr.Station?.City,
+            ThumbnailImageUrl = sr.Station?.ThumbnailImageUrl,
+            Order = sr.Order,
+            DistanceToNext = sr.DistanceToNext,
+        }).ToList();
+
+        var response = new StationRouteResponseDto()
+        {
+            Id = route.Id,
+            Name = route.Name,
+            Code = route.Code,
+            LengthInKm = route.LengthInKm,
+            ThumbnailImageUrl = route.ThumbnailImageUrl,
+            Stations = stationRoutes
+        };
+
+        return response;
     }
 
 
+<<<<<<< HEAD
     public async Task<Guid> UpsertRouteStationAsync(UpsertStationRouteCommand command, CancellationToken cancellationToken = default)
     {
         var repo = _unitOfWork.GetRepository<Route, Guid>();
@@ -186,6 +232,8 @@ public class RouteService : IRouteService
 
     }
 
+=======
+>>>>>>> b27a84cbd5b82d55cb5bc0e7a4f4278287fbad8e
     #region Helper method
 
     private Expression<Func<Route, bool>> GetFilter(GetRoutesQuery query)
@@ -195,10 +243,15 @@ public class RouteService : IRouteService
             r.DeleteFlag == query.Status;
     }
 
-    private async Task<Route?> GetRouteByCodeAsync(string code, CancellationToken cancellationToken)
+    private string GenerateCode(int count, int digits = 6)
     {
-        var repo = _unitOfWork.GetRepository<Route, Guid>();
-        return await repo.Query().FirstOrDefaultAsync(r => r.Code == code, cancellationToken);
+        var nextCode = count + 1;
+        return nextCode.ToString($"D{digits}");
+    }
+
+    private string GetFileType(string fileName)
+    {
+        return Path.GetExtension(fileName);
     }
 
     #endregion

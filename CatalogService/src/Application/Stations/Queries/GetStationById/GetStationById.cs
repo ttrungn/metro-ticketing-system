@@ -36,7 +36,7 @@ public class GetStationByIdQueryHandler : IRequestHandler<GetStationByIdQuery, S
 
         if (station == null)
         {
-            _logger.LogWarning("Station with ID {RouteId} not found", query.Id);
+            _logger.LogWarning("Station with ID {RouteId} not found.", query.Id);
             return new ServiceResponse<StationsResponseDto>
             {
                 Succeeded = false,
@@ -45,7 +45,7 @@ public class GetStationByIdQueryHandler : IRequestHandler<GetStationByIdQuery, S
             };
         }
 
-        _logger.LogInformation("Route with ID {RouteId} retrieved successfully", query.Id);
+        _logger.LogInformation("Route with ID {RouteId} retrieved successfully.", query.Id);
 
         return new ServiceResponse<StationsResponseDto>
         {

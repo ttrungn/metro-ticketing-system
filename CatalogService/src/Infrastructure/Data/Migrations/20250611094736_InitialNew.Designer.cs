@@ -4,6 +4,7 @@ using CatalogService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CatalogService.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250611094736_InitialNew")]
+    partial class InitialNew
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -196,12 +199,6 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     b.Property<Guid>("RouteId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("EntryStationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("DestinationStationId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -220,7 +217,7 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     b.Property<int>("Order")
                         .HasColumnType("int");
 
-                    b.HasKey("StationId", "RouteId", "EntryStationId", "DestinationStationId");
+                    b.HasKey("StationId", "RouteId");
 
                     b.HasIndex("RouteId");
 
