@@ -140,6 +140,7 @@ public class Routes : EndpointGroupBase
                 DestinationStationId = s.DestinationStationId,
                 EntryStationId = s.EntryStationId,
                 Order = s.Order,
+                Length = s.Length,
             }).ToList()
         };
 

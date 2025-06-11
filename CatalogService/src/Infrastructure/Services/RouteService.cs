@@ -149,30 +149,40 @@ public class RouteService : IRouteService
     {
         var repo = _unitOfWork.GetRepository<Route, Guid>();
 
-        //DEACTIVATE ALL ROUTE-STATIONS 
-        var routeId = await _stationRouteService.UpsertStationRouteByRouteIdAsync(command.Id,cancellationToken);
+        var stationRoute = _unitOfWork.GetRepository<StationRoute, (Guid, Guid)>();
 
-        if (routeId == Guid.Empty)
-        {
+        var route = await repo.GetByIdAsync(command.Id, cancellationToken);
+
+        if (route == null)
             return Guid.Empty;
-        }
-        //CREATE NEW ROUTE-STATION AND INSERT INTO DB
 
-        List<StationRouteDto> stationRouteDtos = command.StationRoutes.Select(st => new StationRouteDto
+
+
+        List<StationRoute> stationRoutes = new List<StationRoute>();
+
+        var existingDic = route.StationRoutes.ToDictionary(
+                st => (st.RouteId, st.StationId),
+                st => st
+            );
+       
+        foreach (var dto in command.StationRoutes)
         {
-            RouteId = routeId,
-            StationId = st.StationId,
-            EntryStationId = st.EntryStationId,
-            DestinationStationId = st.DestinationStationId,
-            Order = st.Order,
-        }).ToList();
-        await _stationRouteService.InsertStationRouteListAsync(stationRouteDtos, cancellationToken);
+            var key = (dto.RouteId, dto.StationId);
 
+            if (existingDic.TryGetValue(key, out var existingStationRoute))
+            {
+                
+            }else
+            {
+
+            }
+        }
 
         await _unitOfWork.SaveChangesAsync();
 
 
-        return Guid.Empty;
+
+        return command.Id;
 
     }
 

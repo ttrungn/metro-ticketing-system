@@ -1,5 +1,6 @@
 using BuildingBlocks.Domain.Common;
 using Marten;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace CatalogService.Application.Common.Interfaces.Repositories;
 
@@ -12,4 +13,6 @@ public interface IUnitOfWork : IDisposable
     IDocumentSession GetDocumentSession();
     
     Task<int> SaveChangesAsync();
+
+    Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken);
 }

@@ -12,7 +12,7 @@ public class StationRouteConfiguration : IEntityTypeConfiguration<StationRoute>
         builder.ToTable("StationRoute");
         // 1. Composite PK on (StationId, RouteId)
         builder
-            .HasKey(sr => new { sr.StationId, sr.RouteId });
+            .HasKey(sr => new { sr.StationId, sr.RouteId ,sr.EntryStationId, sr.DestinationStationId});
 
         // 2. Relationships
         builder

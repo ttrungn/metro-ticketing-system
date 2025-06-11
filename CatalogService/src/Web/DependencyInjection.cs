@@ -73,7 +73,6 @@ public static class DependencyInjection
                     });
 
                 rider.AddConsumer<SampleConsumer>();
-
                 rider.UsingKafka((context, k) =>
                 {
                     k.Host(configuration["KafkaSettings:Url"], h =>
