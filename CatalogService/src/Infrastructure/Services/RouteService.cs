@@ -155,7 +155,7 @@ public class RouteService : IRouteService
     {
         var repo = _unitOfWork.GetRepository<Route, Guid>();
 
-        var route = await repo.Query().Include(r => r.StationRoutes).ThenInclude(r => r.Station)
+        var route = await repo.Query().Include(r => r.StationRoutes.Where(sr => sr.DeleteFlag == false)).ThenInclude(r => r.Station)
             .FirstOrDefaultAsync(r => r.Id == requestId, cancellationToken);
         if (route == null)
         {
@@ -205,7 +205,7 @@ public class RouteService : IRouteService
 
         double routeLength = 0;
 
-        var existingDict = route.StationRoutes.ToDictionary(
+        var existingDict = route.StationRoutes.Where(sr => sr.DeleteFlag == false).ToDictionary(
             sr => (sr.StationId, sr.RouteId),
             sr => sr);
 

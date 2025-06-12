@@ -19,6 +19,11 @@ public class StationRouteService : IStationRouteService
         _unitOfWork = unitOfWork;
     }
 
+    public Task<StationRoute> GetAllActiveStationRouteByRouteIdAsync(Guid routeId, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<StationRoute> GetAllStationRouteAsync(Guid routeId, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();

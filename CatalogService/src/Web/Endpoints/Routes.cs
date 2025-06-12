@@ -6,6 +6,7 @@ using CatalogService.Application.Routes.Commands.UpsertStationRoute;
 using CatalogService.Application.Routes.DTOs;
 using CatalogService.Application.Routes.Queries.GetRouteById;
 using CatalogService.Application.Routes.Queries.GetRoutes;
+using CatalogService.Application.Stations.Queries.GeAllActiveStationByName;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CatalogService.Web.Endpoints;
@@ -158,4 +159,6 @@ public class Routes : EndpointGroupBase
         }
         return TypedResults.BadRequest(response);
     }
-}
+
+
+} 

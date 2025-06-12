@@ -400,6 +400,30 @@
         }
       }
     },
+    "/api/catalog/Stations/search": {
+      "get": {
+        "tags": [
+          "Stations"
+        ],
+        "operationId": "GetAllActiveStationsByName",
+        "parameters": [
+          {
+            "name": "searchString",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/catalog/WeatherForecasts": {
       "get": {
         "tags": [
