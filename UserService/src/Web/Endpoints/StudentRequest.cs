@@ -75,6 +75,7 @@ public class StudentRequest : EndpointGroupBase
         {
             StudentCode = form["studentCode"].ToString(),
             StudentEmail = form["studentEmail"].ToString(),
+            SchoolName = form["schoolName"].ToString(),
             FullName = new FullName(form["firstName"].ToString(), form["lastName"].ToString()),
             DateOfBirth = DateTimeOffset.Parse(form["dateOfBirth"]!),
             StudentCardImageStream = studentCardImageStream,

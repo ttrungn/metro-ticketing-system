@@ -54,6 +54,7 @@ public class StudentRequestServiceService : IStudentRequestService
             CustomerId = customer.Id,
             StudentCode = command.StudentCode,
             StudentEmail = command.StudentEmail,
+            SchoolName = command.SchoolName,
             FullName = command.FullName,
             DateOfBirth = command.DateOfBirth,
             StudentCardImageUrl = studentCardImageUrl
@@ -84,6 +85,7 @@ public class StudentRequestServiceService : IStudentRequestService
             FullName = sr.FullName,
             StudentCode = sr.StudentCode,
             StudentEmail = sr.StudentEmail,
+            SchoolName = sr.SchoolName,
             DateOfBirth = sr.DateOfBirth,
             CustomerId = sr.CustomerId,
             StudentCardImageUrl = sr.StudentCardImageUrl,
@@ -109,6 +111,7 @@ public class StudentRequestServiceService : IStudentRequestService
                         FullName = studentRequest.FullName,
                         StudentCode = studentRequest.StudentCode,
                         StudentEmail = studentRequest.StudentEmail,
+                        SchoolName = studentRequest.SchoolName,
                         DateOfBirth = studentRequest.DateOfBirth, 
                         CustomerId = studentRequest.CustomerId,
                         StudentCardImageUrl = studentRequest.StudentCardImageUrl,

@@ -12,6 +12,8 @@ public class StudentRequest : BaseAuditableEntity<Guid>
     public Staff? Staff { get; set; }
     public string StudentCode { get; set; } = null!;
     public string StudentEmail { get; set; } = null!;
+    
+    public string SchoolName { get; set; } = null!;
     public FullName FullName { get; set; } = null!;
     public DateTimeOffset DateOfBirth { get; set; }
     public string StudentCardImageUrl { get; set; } = null!;

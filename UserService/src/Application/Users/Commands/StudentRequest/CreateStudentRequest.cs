@@ -15,6 +15,7 @@ public record CreateStudentRequestCommand : IRequest<ServiceResponse<Guid>>
 {
     public string StudentCode { get; init; } = null!;
     public string StudentEmail { get; init; } = null!;
+    public string SchoolName { get; init; } = null!;
     public FullName FullName { get; init; } = null!;
     public DateTimeOffset DateOfBirth { get; init; } 
     public Stream? StudentCardImageStream { get; init; }
@@ -36,7 +37,8 @@ public class StudentRequestCommandValidator : AbstractValidator<CreateStudentReq
         RuleFor(x => x.StudentEmail)
             .NotEmpty().WithMessage("Vui lòng nhập email sinh viên.")
             .EmailAddress().WithMessage("Email không hợp lệ.");
-        
+        RuleFor(x => x.SchoolName)
+            .NotEmpty().WithMessage("Vui lòng nhập tên trường.");
         RuleFor(x => x.FullName)
             .NotEmpty().WithMessage("Họ và tên là bắt buộc.");
         
