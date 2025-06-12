@@ -112,6 +112,19 @@ public class StationService : IStationService
 
         route.DeleteFlag = true;
 
+        var stationRouteRepo =
+            _unitOfWork.GetRepository<StationRoute, (Guid StationId, Guid RouteId)>();
+
+        var stationRoutes = await stationRouteRepo.Query().Where(r => r.StationId == id).ToListAsync(cancellationToken);
+        if (stationRoutes.Count != 0)
+        {
+            foreach (var stationRoute in stationRoutes)
+            {
+                stationRoute.DeleteFlag = true;
+                await stationRouteRepo.UpdateAsync(stationRoute, cancellationToken);
+            }
+        }
+
         await repo.UpdateAsync(route, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
 
