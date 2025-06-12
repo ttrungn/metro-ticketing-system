@@ -50,7 +50,7 @@ public class GetRouteByIdQueryHandler : IRequestHandler<GetRouteByIdQuery, Servi
         {
             Succeeded = true,
             Message = "Lấy thông tin tuyến thành công!",
-            Data = null
+            Data = route
         };
     }
 }
