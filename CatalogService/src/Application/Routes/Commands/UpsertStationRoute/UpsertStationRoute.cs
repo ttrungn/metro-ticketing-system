@@ -50,7 +50,6 @@ public class UpdateStationRouteCommandHandler : IRequestHandler<UpsertStationRou
     {
         _logger.LogInformation("Upsert route id " + command.Id);
 
-        var routeId = await _routeService.UpsertRouteStationAsync(command, cancellationToken);
 
 
         //Check for duplicates in the station routes
@@ -74,7 +73,6 @@ public class UpdateStationRouteCommandHandler : IRequestHandler<UpsertStationRou
             .ToList();
         bool isContiguous = sortedOrders.First() == 1 && sortedOrders.SequenceEqual(Enumerable.Range(1, sortedOrders.Count));
 
-
         if(!isContiguous)
         {
             _logger.LogWarning("Station route orders are not contiguous.");
@@ -85,6 +83,25 @@ public class UpdateStationRouteCommandHandler : IRequestHandler<UpsertStationRou
                 Data = Guid.Empty,
             };
         }
+        var sortedRoutes = command.StationRoutes
+        .OrderBy(sr => sr.Order)
+        .ToList();
+
+
+        var lastStation = sortedRoutes.Last();
+        if (lastStation.DistanceToNext != 0)
+        {
+            _logger.LogWarning("Last station must have distanceToNext equal to 0.");
+            return new ServiceResponse<Guid>
+            {
+                Succeeded = false,
+                Message = "Last station must have distanceToNext set to 0.",
+                Data = Guid.Empty
+            };
+        }
+
+        var routeId = await _routeService.UpsertRouteStationAsync(command, cancellationToken);
+
 
         if (routeId == Guid.Empty)
         {

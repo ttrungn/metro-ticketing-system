@@ -592,12 +592,12 @@
             "type": "array",
             "nullable": true,
             "items": {
-              "$ref": "#/components/schemas/StationRouteRequestDto"
+              "$ref": "#/components/schemas/StationRouteDto"
             }
           }
         }
       },
-      "StationRouteRequestDto": {
+      "StationRouteDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -613,7 +613,7 @@
             "type": "integer",
             "format": "int32"
           },
-          "length": {
+          "distanceToNext": {
             "type": "number",
             "format": "double"
           }

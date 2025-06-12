@@ -40,6 +40,4 @@ public class UnitOfWork : IUnitOfWork
     public void Dispose() =>
         _context.Dispose();
 
-    public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
-   => await _context.Database.BeginTransactionAsync(cancellationToken);
 }

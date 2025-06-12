@@ -2,7 +2,6 @@
 using CatalogService.Application.Routes.Commands.DeleteRoute;
 using CatalogService.Application.Routes.Commands.UpdateRoute;
 using CatalogService.Application.Routes.Commands.UpsertRouteStation;
-using CatalogService.Application.Routes.Commands.UpsertStationRoute;
 using CatalogService.Application.Routes.DTOs;
 using CatalogService.Application.Routes.Queries.GetRouteById;
 using CatalogService.Application.Routes.Queries.GetRoutes;
@@ -148,7 +147,7 @@ public class Routes : EndpointGroupBase
                 StationId = s.StationId,
                 RouteId = s.RouteId,
                 Order = s.Order,
-                DistanceToNext = s.Length,
+                DistanceToNext = s.DistanceToNext,
             }).ToList()
         };
 

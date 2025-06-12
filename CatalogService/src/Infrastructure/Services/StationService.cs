@@ -196,7 +196,7 @@ public class StationService : IStationService
         return Path.GetExtension(fileName);
     }
 
-    private bool compareNameAndCodeOfStation(string searchString, string? stationName)
+    private bool compareStationName(string searchString, string? stationName)
     {
         if(stationName  == null) return false;
 
@@ -235,7 +235,7 @@ public class StationService : IStationService
 
 
         stationList = rawStations
-        .Where(s => compareNameAndCodeOfStation(normalizedSearch, s.Name))
+        .Where(s => compareStationName(normalizedSearch, s.Name))
         .ToList();
 
         response.Stations = stationList.Select(s => s.togGetNameStationResponseDto()).ToList();
