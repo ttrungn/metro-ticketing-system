@@ -114,6 +114,19 @@ public class RouteService : IRouteService
             return Guid.Empty;
         }
 
+        var stationRouteRepo =
+            _unitOfWork.GetRepository<StationRoute, (Guid StationId, Guid RouteId)>();
+
+        var stationRoutes = await stationRouteRepo.Query().Where(r => r.RouteId == id).ToListAsync(cancellationToken);
+        if (stationRoutes.Count != 0)
+        {
+            foreach (var stationRoute in stationRoutes)
+            {
+                stationRoute.DeleteFlag = true;
+                await stationRouteRepo.UpdateAsync(stationRoute, cancellationToken);
+            }
+        }
+
         route.DeleteFlag = true;
 
         await repo.UpdateAsync(route, cancellationToken);
@@ -124,7 +137,6 @@ public class RouteService : IRouteService
 
     public async Task<(IEnumerable<RoutesResponseDto>, int)> GetAsync(
         GetRoutesQuery query,
-        int sizePerPage,
         CancellationToken cancellationToken = default)
     {
         var repo = _unitOfWork.GetRepository<Route, Guid>();
@@ -132,12 +144,12 @@ public class RouteService : IRouteService
         Expression<Func<Route, bool>> filter = GetFilter(query);
 
         var routes = await repo.GetPagedAsync(
-            skip: query.Page * sizePerPage,
-            take: sizePerPage,
+            skip: query.Page * query.PageSize,
+            take: query.PageSize,
             filters: [filter],
             cancellationToken: cancellationToken);
 
-        var totalPages = await repo.GetTotalPagesAsync(sizePerPage, [filter], cancellationToken);
+        var totalPages = await repo.GetTotalPagesAsync(query.PageSize, [filter], cancellationToken);
 
         return (
             routes.Select(r => new RoutesResponseDto
