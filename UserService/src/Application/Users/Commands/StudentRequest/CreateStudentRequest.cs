@@ -15,10 +15,11 @@ public record CreateStudentRequestCommand : IRequest<ServiceResponse<Guid>>
 {
     public string StudentCode { get; init; } = null!;
     public string StudentEmail { get; init; } = null!;
+    public string SchoolName { get; init; } = null!;
     public FullName FullName { get; init; } = null!;
     public DateTimeOffset DateOfBirth { get; init; } 
-    [JsonIgnore]
-    public string StudentCardImageUrl { get; set; } = null!;
+    public Stream? StudentCardImageStream { get; init; }
+    public string? StudentCardImageName { get; init; }
 }
 public class StudentRequestResult
 {
@@ -36,7 +37,8 @@ public class StudentRequestCommandValidator : AbstractValidator<CreateStudentReq
         RuleFor(x => x.StudentEmail)
             .NotEmpty().WithMessage("Vui lòng nhập email sinh viên.")
             .EmailAddress().WithMessage("Email không hợp lệ.");
-        
+        RuleFor(x => x.SchoolName)
+            .NotEmpty().WithMessage("Vui lòng nhập tên trường.");
         RuleFor(x => x.FullName)
             .NotEmpty().WithMessage("Họ và tên là bắt buộc.");
         
@@ -62,7 +64,7 @@ public class StudentRequestCommandHandler : IRequestHandler<CreateStudentRequest
     public async Task<ServiceResponse<Guid>> Handle(CreateStudentRequestCommand request, CancellationToken cancellationToken)
     {
          var userId = _currentUser.Id;
-        if (string.IsNullOrEmpty(request.StudentCardImageUrl))
+        if (request.StudentCardImageName == null || request.StudentCardImageStream == null)
         {
             return new ServiceResponse<Guid>()
             {
@@ -76,7 +78,7 @@ public class StudentRequestCommandHandler : IRequestHandler<CreateStudentRequest
         return new ServiceResponse<Guid>
         {
             Succeeded = true,
-            Message = "Created student request successfully.",
+            Message = "Tao yêu cầu thành công.",
             Data = studentRequestId
         };
     }
