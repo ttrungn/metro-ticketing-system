@@ -101,11 +101,13 @@ public class Routes : EndpointGroupBase
     private static async Task<IResult> GetRoutes(
         ISender sender,
         [FromQuery] int page = 0,
+        [FromQuery] int pageSize = 8,
         [FromQuery] string? name = "")
     {
         var query = new GetRoutesQuery
         {
             Page = page,
+            PageSize = pageSize,
             Name = name
         };
 

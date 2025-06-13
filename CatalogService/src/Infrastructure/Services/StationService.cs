@@ -112,6 +112,30 @@ public class StationService : IStationService
 
         route.DeleteFlag = true;
 
+        var stationRouteRepo =
+            _unitOfWork.GetRepository<StationRoute, (Guid StationId, Guid RouteId)>();
+
+        var stationRoutes = await stationRouteRepo.Query().Where(r => r.StationId == id).ToListAsync(cancellationToken);
+        if (stationRoutes.Count != 0)
+        {
+            foreach (var stationRoute in stationRoutes)
+            {
+                stationRoute.DeleteFlag = true;
+                await stationRouteRepo.UpdateAsync(stationRoute, cancellationToken);
+            }
+        }
+
+        var busRepo = _unitOfWork.GetRepository<Bus, Guid>();
+        var buses = await busRepo.Query().Where(b => b.StationId == id).ToListAsync(cancellationToken);
+        if (buses.Count != 0)
+        {
+            foreach (var bus in buses)
+            {
+                bus.DeleteFlag = true;
+                await busRepo.UpdateAsync(bus, cancellationToken);
+            }
+        }
+
         await repo.UpdateAsync(route, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
 
@@ -120,7 +144,6 @@ public class StationService : IStationService
 
     public async Task<(IEnumerable<StationsResponseDto>, int)> GetAsync(
         GetStationsQuery query,
-        int sizePerPage,
         CancellationToken cancellationToken)
     {
         var repo = _unitOfWork.GetRepository<Station, Guid>();
@@ -128,12 +151,12 @@ public class StationService : IStationService
         Expression<Func<Station, bool>> filter = GetFilter(query);
 
         var stations = await repo.GetPagedAsync(
-            skip: query.Page * sizePerPage,
-            take: sizePerPage,
+            skip: query.Page * query.PageSize,
+            take: query.PageSize,
             filters: [filter],
             cancellationToken: cancellationToken);
 
-        var totalPages = await repo.GetTotalPagesAsync(sizePerPage, [filter], cancellationToken);
+        var totalPages = await repo.GetTotalPagesAsync(query.PageSize, [filter], cancellationToken);
 
         return (
             stations.Select(s => new StationsResponseDto

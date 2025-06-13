@@ -56,6 +56,31 @@
         }
       }
     },
+    "/api/user/Profiles": {
+      "post": {
+        "tags": [
+          "Profiles"
+        ],
+        "operationId": "GetUserByEmailAsync",
+        "requestBody": {
+          "x-name": "query",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetUserQuery"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/user/StudentRequest": {
       "get": {
         "tags": [
@@ -227,6 +252,10 @@
             "type": "string"
           }
         }
+      },
+      "GetUserQuery": {
+        "type": "object",
+        "additionalProperties": false
       },
       "StudentRequestStatus": {
         "type": "integer",
