@@ -14,7 +14,8 @@ public class StudentRequest : EndpointGroupBase
             .DisableAntiforgery()
             .MapGet(GetStudentRequests, "/")
             .MapGet(GetStudentRequestById, "/{Id:guid}")
-            .MapPut(UpdateStudentRequest, "/{Id:guid}")
+            .MapPut(ApproveStudentRequest, "/Approve/{Id:guid}")
+            .MapPut(DeclinedStudentRequest, "/Declined/{Id:guid}")
             .MapPost(CreateStudentRequest, "/");
             
     }
@@ -57,29 +58,31 @@ public class StudentRequest : EndpointGroupBase
     }
 
     
-    private static async Task<IResult> CreateStudentRequest(
-        [FromForm] IFormFile? file, 
-        [FromQuery] string studentCode, 
-        [FromQuery] string studentEmail, 
-        [FromQuery] string firstName,
-        [FromQuery] string lastName,
-        [FromQuery] DateTimeOffset dateOfBirth, 
-        ISender sender)
+    private static async Task<IResult> CreateStudentRequest(ISender sender, HttpRequest request)
     {
-        if (file == null)
+        var form = await request.ReadFormAsync();
+        var studentCardImage = form.Files.GetFile("studentCardImage");
+        Stream? studentCardImageStream = null;
+        string? studentCardImageName = null;
+        
+        if (studentCardImage is {Length: > 0})
         {
-            return TypedResults.BadRequest(new { message = "Vui lòng tải lên ảnh thẻ sinh viên." });
+            studentCardImageStream = studentCardImage.OpenReadStream();
+            studentCardImageName = studentCardImage.FileName;
         }
-        var request = new CreateStudentRequestCommand
+        
+        var command = new CreateStudentRequestCommand
         {
-            StudentCode = studentCode,
-            StudentEmail = studentEmail,
-            FullName = new FullName(firstName, lastName),
-            DateOfBirth = dateOfBirth,
-            StudentCardImageUrl = file.FileName 
+            StudentCode = form["studentCode"].ToString(),
+            StudentEmail = form["studentEmail"].ToString(),
+            SchoolName = form["schoolName"].ToString(),
+            FullName = new FullName(form["firstName"].ToString(), form["lastName"].ToString()),
+            DateOfBirth = DateTimeOffset.Parse(form["dateOfBirth"]!),
+            StudentCardImageStream = studentCardImageStream,
+            StudentCardImageName = studentCardImageName
         };
-
-        var response = await sender.Send(request);
+        
+        var response = await sender.Send(command);
 
         if (response.Succeeded)
         {
@@ -88,15 +91,32 @@ public class StudentRequest : EndpointGroupBase
 
         return TypedResults.BadRequest(response);
     }
-    private static async Task<IResult> UpdateStudentRequest(
+    private static async Task<IResult> ApproveStudentRequest(
         [FromRoute] Guid id, 
-        [FromQuery] StudentRequestStatus status,
         ISender sender)
     {
         var command = new UpdateStudentRequestCommand
         {
             Id = id,
-            Status = status
+            Status = StudentRequestStatus.Approved
+        };
+        var response = await sender.Send(command);
+        
+        if (response.Succeeded)
+        {
+            return TypedResults.Created($"/api/user/StudentRequest/{response.Data}", response);
+        }
+
+        return TypedResults.BadRequest(response);
+    }
+    private static async Task<IResult> DeclinedStudentRequest(
+        [FromRoute] Guid id, 
+        ISender sender)
+    {
+        var command = new UpdateStudentRequestCommand
+        {
+            Id = id,
+            Status = StudentRequestStatus.Declined
         };
         var response = await sender.Send(command);
         

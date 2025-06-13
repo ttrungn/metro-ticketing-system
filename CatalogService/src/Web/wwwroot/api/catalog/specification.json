@@ -260,6 +260,31 @@
         }
       }
     },
+    "/api/catalog/Routes/station-route": {
+      "put": {
+        "tags": [
+          "Routes"
+        ],
+        "operationId": "UpsertStationRoute",
+        "requestBody": {
+          "x-name": "requestBody",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertStationRouteRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/catalog/Stations": {
       "post": {
         "tags": [
@@ -364,6 +389,30 @@
             "schema": {
               "type": "string",
               "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/catalog/Stations/search": {
+      "get": {
+        "tags": [
+          "Stations"
+        ],
+        "operationId": "GetAllActiveStationsByName",
+        "parameters": [
+          {
+            "name": "searchString",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
             },
             "x-position": 1
           }
@@ -493,8 +542,7 @@
             "format": "guid"
           },
           "destinationName": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         }
       },
@@ -512,8 +560,60 @@
             "nullable": true
           },
           "destinationName": {
+            "type": "string"
+          }
+        }
+      },
+      "UpsertStationRouteRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "route": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/RouteRequestDto"
+              }
+            ]
+          }
+        }
+      },
+      "RouteRequestDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "routeId": {
             "type": "string",
-            "nullable": true
+            "format": "guid"
+          },
+          "stationRoutes": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/StationRouteDto"
+            }
+          }
+        }
+      },
+      "StationRouteDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "stationId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "routeId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "order": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "distanceToNext": {
+            "type": "number",
+            "format": "double"
           }
         }
       },

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CatalogService.Infrastructure.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialNew : Migration
+    public partial class _11 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -39,6 +39,18 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 name: "Length",
                 table: "StationRoute",
                 newName: "DistanceToNext");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "DestinationName",
+                table: "Bus",
+                type: "nvarchar(200)",
+                maxLength: 200,
+                nullable: false,
+                defaultValue: "",
+                oldClrType: typeof(string),
+                oldType: "nvarchar(200)",
+                oldMaxLength: 200,
+                oldNullable: true);
         }
 
         /// <inheritdoc />
@@ -62,6 +74,16 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 type: "uniqueidentifier",
                 nullable: false,
                 defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+
+            migrationBuilder.AlterColumn<string>(
+                name: "DestinationName",
+                table: "Bus",
+                type: "nvarchar(200)",
+                maxLength: 200,
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "nvarchar(200)",
+                oldMaxLength: 200);
 
             migrationBuilder.CreateIndex(
                 name: "IX_StationRoute_DestinationStationId",

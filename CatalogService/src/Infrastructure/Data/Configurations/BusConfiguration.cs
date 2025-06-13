@@ -18,11 +18,13 @@ public class BusConfiguration : IEntityTypeConfiguration<Bus>
             .HasMaxLength(50);
 
         builder.Property(b => b.DestinationName)
+            .IsRequired()
             .HasMaxLength(200);
 
         builder.HasOne(b => b.Station)
             .WithMany(s => s.Buses)
             .HasForeignKey(b => b.StationId)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

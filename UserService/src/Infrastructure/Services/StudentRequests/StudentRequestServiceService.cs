@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using UserService.Application.Common.Interfaces.Repositories;
 using UserService.Application.Common.Interfaces.Services;
 using UserService.Application.Common.Models;
@@ -15,17 +16,17 @@ namespace UserService.Infrastructure.Services.StudentRequests;
 
 public class StudentRequestServiceService : IStudentRequestService
 {   private readonly IUnitOfWork _unitOfWork;
-    private readonly UserManager<ApplicationUser> _userManager;
-    
-    public StudentRequestServiceService(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
+    private readonly IConfiguration _configuration;
+    private readonly IAzureBlobService _azureBlobService;
+    public StudentRequestServiceService(IUnitOfWork unitOfWork, IConfiguration configuration, IAzureBlobService azureBlobService)
     {
         _unitOfWork = unitOfWork;
-        _userManager = userManager;
+        _configuration = configuration;
+        _azureBlobService = azureBlobService;
     }
     
-    public async Task<Guid> StudentRequestAsync(CreateStudentRequestCommand studentRequestCommand, string userId)
+    public async Task<Guid> StudentRequestAsync(CreateStudentRequestCommand command, string userId)
     {
-        var studentRequestRepo = _unitOfWork.GetRepository<StudentRequest, Guid>();
         var customerRepo = _unitOfWork.GetRepository<Customer, Guid>();
         var customer = customerRepo.Query()
             .FirstOrDefault(c => c.ApplicationUserId == userId);
@@ -33,21 +34,34 @@ public class StudentRequestServiceService : IStudentRequestService
         if (customer == null)
             return Guid.Empty;
         
-        var newStudentRequestId = Guid.NewGuid();
-     
+        var id = Guid.NewGuid();
+        var studentRequestRepo = _unitOfWork.GetRepository<StudentRequest, Guid>();
+        var studentCardImageUrl = "empty";
+        
+        if (command.StudentCardImageStream != null && command.StudentCardImageName != null)
+        {
+            var blobName = id + GetFileType(command.StudentCardImageName);
+            var containerName = _configuration["Azure:BlobStorageSettings:StudentVerificationImagesContainerName"] ?? "student-verification-images";
+            var blobUrl = await _azureBlobService.UploadAsync(
+                command.StudentCardImageStream,
+                blobName,
+                containerName);
+            studentCardImageUrl = blobUrl;
+        }
         var studentRequest = new StudentRequest
         {
-            Id = newStudentRequestId,
+            Id = id,
             CustomerId = customer.Id,
-            StudentCode = studentRequestCommand.StudentCode,
-            StudentEmail = studentRequestCommand.StudentEmail,
-            FullName = studentRequestCommand.FullName,
-            DateOfBirth = studentRequestCommand.DateOfBirth,
-            StudentCardImageUrl = studentRequestCommand.StudentCardImageUrl
+            StudentCode = command.StudentCode,
+            StudentEmail = command.StudentEmail,
+            SchoolName = command.SchoolName,
+            FullName = command.FullName,
+            DateOfBirth = command.DateOfBirth,
+            StudentCardImageUrl = studentCardImageUrl
         };
         await studentRequestRepo.AddAsync(studentRequest);
         await _unitOfWork.SaveChangesAsync();
-        return newStudentRequestId;
+        return id;
     }
 
     public async Task<(IEnumerable<StudentRequestResponseDto>, int)> GetAsync(
@@ -71,6 +85,7 @@ public class StudentRequestServiceService : IStudentRequestService
             FullName = sr.FullName,
             StudentCode = sr.StudentCode,
             StudentEmail = sr.StudentEmail,
+            SchoolName = sr.SchoolName,
             DateOfBirth = sr.DateOfBirth,
             CustomerId = sr.CustomerId,
             StudentCardImageUrl = sr.StudentCardImageUrl,
@@ -96,6 +111,7 @@ public class StudentRequestServiceService : IStudentRequestService
                         FullName = studentRequest.FullName,
                         StudentCode = studentRequest.StudentCode,
                         StudentEmail = studentRequest.StudentEmail,
+                        SchoolName = studentRequest.SchoolName,
                         DateOfBirth = studentRequest.DateOfBirth, 
                         CustomerId = studentRequest.CustomerId,
                         StudentCardImageUrl = studentRequest.StudentCardImageUrl,
@@ -123,7 +139,10 @@ public class StudentRequestServiceService : IStudentRequestService
         return studentRequest.Id;
     }
     #region Helper Methods
-
+    private string GetFileType(string fileName)
+    {
+        return Path.GetExtension(fileName);
+    }
     private Expression<Func<StudentRequest, bool>> GetFilter(GetStudentRequestQuery query)
     {
         return st =>

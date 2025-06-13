@@ -3,6 +3,7 @@ using BuildingBlocks.Domain.Common;
 using CatalogService.Application.Common.Interfaces.Repositories;
 using CatalogService.Infrastructure.Data;
 using Marten;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace CatalogService.Infrastructure.Repositories;
 
@@ -38,4 +39,5 @@ public class UnitOfWork : IUnitOfWork
 
     public void Dispose() =>
         _context.Dispose();
+
 }
