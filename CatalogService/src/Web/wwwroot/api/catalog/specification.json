@@ -542,8 +542,7 @@
             "format": "guid"
           },
           "destinationName": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         }
       },
@@ -561,8 +560,7 @@
             "nullable": true
           },
           "destinationName": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         }
       },
