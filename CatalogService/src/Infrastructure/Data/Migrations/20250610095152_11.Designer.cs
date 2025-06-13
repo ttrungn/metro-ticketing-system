@@ -4,6 +4,7 @@ using CatalogService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CatalogService.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250610095152_11")]
+    partial class _11
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -237,12 +240,6 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     b.Property<DateTimeOffset>("DeletedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("ExpirationInDay")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsOneWay")
-                        .HasColumnType("bit");
-
                     b.Property<DateTimeOffset>("LastModifiedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -251,15 +248,48 @@ namespace CatalogService.Infrastructure.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<Guid>("TicketTypeId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("TicketTypeId");
+
                     b.ToTable("Ticket", (string)null);
+                });
+
+            modelBuilder.Entity("CatalogService.Domain.Entities.TicketType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("DeleteFlag")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset>("DeletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("ExpirationInDays")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("LastModifiedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TicketType", (string)null);
                 });
 
             modelBuilder.Entity("CatalogService.Domain.Entities.WeatherForecast", b =>
@@ -301,7 +331,8 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     b.HasOne("CatalogService.Domain.Entities.Station", "Station")
                         .WithMany("Buses")
                         .HasForeignKey("StationId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Station");
                 });
@@ -325,6 +356,17 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     b.Navigation("Station");
                 });
 
+            modelBuilder.Entity("CatalogService.Domain.Entities.Ticket", b =>
+                {
+                    b.HasOne("CatalogService.Domain.Entities.TicketType", "TicketType")
+                        .WithMany("Tickets")
+                        .HasForeignKey("TicketTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TicketType");
+                });
+
             modelBuilder.Entity("CatalogService.Domain.Entities.Route", b =>
                 {
                     b.Navigation("StationRoutes");
@@ -335,6 +377,11 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     b.Navigation("Buses");
 
                     b.Navigation("StationRoutes");
+                });
+
+            modelBuilder.Entity("CatalogService.Domain.Entities.TicketType", b =>
+                {
+                    b.Navigation("Tickets");
                 });
 #pragma warning restore 612, 618
         }

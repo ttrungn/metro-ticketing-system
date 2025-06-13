@@ -9,7 +9,7 @@ public record UpdateBusCommand : IRequest<ServiceResponse<Guid>>
 {
     public Guid Id { get; init; }
     public Guid? StationId { get; init; }
-    public string? DestinationName { get; init; }
+    public string DestinationName { get; init; } = null!;
 }
 
 public class UpdateBusCommandValidator : AbstractValidator<UpdateBusCommand>

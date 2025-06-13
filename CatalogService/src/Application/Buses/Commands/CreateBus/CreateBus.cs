@@ -7,7 +7,7 @@ namespace CatalogService.Application.Buses.Commands.CreateBus;
 public record CreateBusCommand : IRequest<ServiceResponse<Guid>>
 {
     public Guid StationId { get; init; }
-    public string? DestinationName { get; init; }
+    public string DestinationName { get; init; } = null!;
 }
 
 public class CreateBusCommandValidator : AbstractValidator<CreateBusCommand>

@@ -219,5 +219,50 @@ public class StationService : IStationService
         return Path.GetExtension(fileName);
     }
 
+    private bool compareStationName(string searchString, string? stationName)
+    {
+        if(stationName  == null) return false;
+
+        return stationName.RemoveDiacritics().Contains(searchString, StringComparison.OrdinalIgnoreCase);
+  
+    }
+
+
     #endregion
+
+
+
+    public async Task<StationListResponseDto> GetAllActiveStationsByName(string searchString, CancellationToken cancellationToken)
+    {
+        var repo = _unitOfWork.GetRepository<Station, Guid>();
+        StationListResponseDto response = new StationListResponseDto();
+
+        
+
+        List<Station> stationList;
+        if (string.IsNullOrEmpty(searchString))
+        {
+            stationList = await repo.Query()
+                .Where(s => s.DeleteFlag == false).ToListAsync(cancellationToken);
+
+            response.Stations = stationList.Select(s => s.togGetNameStationResponseDto()).ToList();
+
+            return response;
+        }
+        var normalizedSearch = searchString.Trim().RemoveDiacritics();
+
+
+        var rawStations = await repo.Query()
+            .Where(s => s.DeleteFlag == false && s.Name != null)
+            .ToListAsync(cancellationToken);
+
+
+        stationList = rawStations
+        .Where(s => compareStationName(normalizedSearch, s.Name))
+        .ToList();
+
+        response.Stations = stationList.Select(s => s.togGetNameStationResponseDto()).ToList();
+
+        return response;
+    }
 }

@@ -20,7 +20,9 @@ public class StudentRequestConfiguration : IEntityTypeConfiguration<StudentReque
         builder.Property(x => x.StudentEmail)
             .IsRequired()
             .HasMaxLength(100);
-
+        builder.Property(x => x.SchoolName)
+            .IsRequired()
+            .HasMaxLength(100);
         builder.Property(x => x.StudentCardImageUrl)
             .IsRequired()
             .HasMaxLength(500);

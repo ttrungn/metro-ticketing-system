@@ -1,8 +1,10 @@
-﻿using System.Linq.Expressions;
+﻿using System.Linq;
+using System.Linq.Expressions;
 using CatalogService.Application.Common.Interfaces.Repositories;
 using CatalogService.Application.Common.Interfaces.Services;
 using CatalogService.Application.Routes.Commands.CreateRoute;
 using CatalogService.Application.Routes.Commands.UpdateRoute;
+using CatalogService.Application.Routes.Commands.UpsertRouteStation;
 using CatalogService.Application.Routes.DTOs;
 using CatalogService.Application.Routes.Queries.GetRoutes;
 using CatalogService.Domain.Entities;
@@ -165,7 +167,7 @@ public class RouteService : IRouteService
     {
         var repo = _unitOfWork.GetRepository<Route, Guid>();
 
-        var route = await repo.Query().Include(r => r.StationRoutes).ThenInclude(r => r.Station)
+        var route = await repo.Query().Include(r => r.StationRoutes.Where(sr => sr.DeleteFlag == false)).ThenInclude(r => r.Station)
             .FirstOrDefaultAsync(r => r.Id == requestId, cancellationToken);
         if (route == null)
         {
@@ -201,6 +203,75 @@ public class RouteService : IRouteService
     }
 
 
+    public async Task<Guid> UpsertRouteStationAsync(UpsertStationRouteCommand command, CancellationToken cancellationToken = default)
+    {
+        var repo = _unitOfWork.GetRepository<Route, Guid>();
+
+        var stationRouteRepo = _unitOfWork.GetRepository<StationRoute, (Guid, Guid)>();
+
+        var route = await repo.Query().Include(r => r.StationRoutes).FirstOrDefaultAsync(r => r.Id == command.Id);
+
+        if (route == null)
+            return Guid.Empty;
+
+        double routeLength = 0;
+
+        var existingList = route.StationRoutes.Where(sr => sr.DeleteFlag == false);
+
+        foreach (var stationRouteDto in command.StationRoutes)
+        {
+            //If existing station route is found in both existingDict and command, update it
+
+            
+            var stationRoute = route.StationRoutes
+        .FirstOrDefault(sr => sr.StationId == stationRouteDto.StationId);
+            if (stationRoute != null)
+            {
+                routeLength += stationRouteDto.DistanceToNext;
+                stationRoute.Order = stationRouteDto.Order;
+                stationRoute.DistanceToNext = stationRouteDto.DistanceToNext;
+                stationRoute.DeleteFlag = false; 
+                await stationRouteRepo.UpdateAsync(stationRoute, cancellationToken);
+            }
+            else
+            {
+                routeLength += stationRouteDto.DistanceToNext;
+                // Create new station route
+                var newStationRoute = new StationRoute
+                {
+                    RouteId = command.Id,
+                    StationId = stationRouteDto.StationId,
+                    Order = stationRouteDto.Order,
+                    DistanceToNext = stationRouteDto.DistanceToNext
+                };
+                await stationRouteRepo.AddAsync(newStationRoute, cancellationToken);
+            }
+        }
+        foreach (var existingStationRoute in existingList)
+        {
+            if (existingStationRoute.DeleteFlag == false && !command.StationRoutes.Any(sr => sr.StationId == existingStationRoute.StationId))
+            {
+                // Delete station route if it is not in the command
+                await stationRouteRepo.RemoveAsync(existingStationRoute, cancellationToken);
+            }
+
+        }
+        // Update route length
+
+        route.LengthInKm = routeLength;
+
+
+        await repo.UpdateAsync(route, cancellationToken);
+
+
+        await _unitOfWork.SaveChangesAsync();
+
+
+
+        return command.Id;
+
+    }
+
     #region Helper method
 
     private Expression<Func<Route, bool>> GetFilter(GetRoutesQuery query)
@@ -220,6 +291,8 @@ public class RouteService : IRouteService
     {
         return Path.GetExtension(fileName);
     }
+
+
 
     #endregion
 }
