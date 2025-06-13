@@ -107,12 +107,14 @@ public class Stations : EndpointGroupBase
     private static async Task<IResult> GetStations(
         ISender sender,
         [FromQuery] int page = 0,
+        [FromQuery] int pageSize = 8,
         [FromQuery] string? name = "",
         [FromQuery] bool? status = false)
     {
         var query = new GetStationsQuery()
         {
             Page = page,
+            PageSize = pageSize,
             Name = name,
             Status = status
         };

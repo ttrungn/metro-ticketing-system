@@ -69,6 +69,7 @@ public class Buses : EndpointGroupBase
     private static async Task<IResult> GetBuses(
         ISender sender,
         [FromQuery] int page = 0,
+        [FromQuery] int pageSize = 8,
         [FromQuery] Guid? stationId = null,
         [FromQuery] string? destinationName = "",
         [FromQuery] bool? status = false)
@@ -76,6 +77,7 @@ public class Buses : EndpointGroupBase
         var query = new GetBusesQuery()
         {
             Page = page,
+            PageSize = pageSize,
             StationId = stationId ?? Guid.Empty,
             DestinationName = destinationName ?? string.Empty,
             Status = status ?? false

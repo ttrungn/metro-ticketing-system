@@ -144,7 +144,6 @@ public class StationService : IStationService
 
     public async Task<(IEnumerable<StationsResponseDto>, int)> GetAsync(
         GetStationsQuery query,
-        int sizePerPage,
         CancellationToken cancellationToken)
     {
         var repo = _unitOfWork.GetRepository<Station, Guid>();
@@ -152,12 +151,12 @@ public class StationService : IStationService
         Expression<Func<Station, bool>> filter = GetFilter(query);
 
         var stations = await repo.GetPagedAsync(
-            skip: query.Page * sizePerPage,
-            take: sizePerPage,
+            skip: query.Page * query.PageSize,
+            take: query.PageSize,
             filters: [filter],
             cancellationToken: cancellationToken);
 
-        var totalPages = await repo.GetTotalPagesAsync(sizePerPage, [filter], cancellationToken);
+        var totalPages = await repo.GetTotalPagesAsync(query.PageSize, [filter], cancellationToken);
 
         return (
             stations.Select(s => new StationsResponseDto

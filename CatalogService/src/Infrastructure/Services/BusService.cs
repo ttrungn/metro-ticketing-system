@@ -113,7 +113,6 @@ public class BusService : IBusService
 
     public async Task<(IEnumerable<BusResponseDto>, int)> GetAsync(
         GetBusesQuery request,
-        int sizePerPage,
         CancellationToken cancellationToken)
     {
         var repo = _unitOfWork.GetRepository<Bus, Guid>();
@@ -121,12 +120,12 @@ public class BusService : IBusService
         Expression<Func<Bus, bool>> filter = GetFilter(request);
 
         var buses = await repo.GetPagedAsync(
-            skip: request.Page * sizePerPage,
-            take: sizePerPage,
+            skip: request.Page * request.PageSize,
+            take: request.PageSize,
             filters: [filter],
             cancellationToken: cancellationToken);
 
-        var totalPages = await repo.GetTotalPagesAsync(sizePerPage, [filter], cancellationToken);
+        var totalPages = await repo.GetTotalPagesAsync(request.PageSize, [filter], cancellationToken);
 
         return (
             buses.Select(b => new BusResponseDto

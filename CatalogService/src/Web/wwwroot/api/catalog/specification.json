@@ -70,6 +70,16 @@
             "x-position": 1
           },
           {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 8
+            },
+            "x-position": 2
+          },
+          {
             "name": "stationId",
             "in": "query",
             "schema": {
@@ -77,7 +87,7 @@
               "format": "guid",
               "nullable": true
             },
-            "x-position": 2
+            "x-position": 3
           },
           {
             "name": "destinationName",
@@ -87,7 +97,7 @@
               "default": "",
               "nullable": true
             },
-            "x-position": 3
+            "x-position": 4
           },
           {
             "name": "status",
@@ -97,7 +107,7 @@
               "default": false,
               "nullable": true
             },
-            "x-position": 4
+            "x-position": 5
           }
         ],
         "responses": {
@@ -195,6 +205,16 @@
             "x-position": 1
           },
           {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 8
+            },
+            "x-position": 2
+          },
+          {
             "name": "name",
             "in": "query",
             "schema": {
@@ -202,7 +222,7 @@
               "default": "",
               "nullable": true
             },
-            "x-position": 2
+            "x-position": 3
           }
         ],
         "responses": {
@@ -300,6 +320,16 @@
             "x-position": 1
           },
           {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 8
+            },
+            "x-position": 2
+          },
+          {
             "name": "name",
             "in": "query",
             "schema": {
@@ -307,7 +337,7 @@
               "default": "",
               "nullable": true
             },
-            "x-position": 2
+            "x-position": 3
           },
           {
             "name": "status",
@@ -317,7 +347,7 @@
               "default": false,
               "nullable": true
             },
-            "x-position": 3
+            "x-position": 4
           }
         ],
         "responses": {
