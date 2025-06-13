@@ -19,7 +19,7 @@ public class GetBusesQueryHandler : IRequestHandler<GetBusesQuery, ServiceRespon
     private readonly IBusService _busService;
     private readonly ILogger<GetBusesQueryHandler> _logger;
 
-    private const int DefaultPageSize = 2;
+    private const int DefaultPageSize = 8;
 
     public GetBusesQueryHandler(ILogger<GetBusesQueryHandler> logger, IBusService busService)
     {

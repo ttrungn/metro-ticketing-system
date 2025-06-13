@@ -125,6 +125,17 @@ public class StationService : IStationService
             }
         }
 
+        var busRepo = _unitOfWork.GetRepository<Bus, Guid>();
+        var buses = await busRepo.Query().Where(b => b.StationId == id).ToListAsync(cancellationToken);
+        if (buses.Count != 0)
+        {
+            foreach (var bus in buses)
+            {
+                bus.DeleteFlag = true;
+                await busRepo.UpdateAsync(bus, cancellationToken);
+            }
+        }
+
         await repo.UpdateAsync(route, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
 
