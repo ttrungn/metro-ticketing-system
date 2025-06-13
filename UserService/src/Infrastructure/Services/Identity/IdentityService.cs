@@ -2,10 +2,12 @@ using BuildingBlocks.Domain.Constants;
 using BuildingBlocks.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using UserService.Application.Common.Interfaces.Repositories;
 using UserService.Application.Common.Interfaces.Services;
 using UserService.Application.Common.Models;
 using UserService.Application.Users.Commands.RegisterCustomer;
+using UserService.Application.Users.DTOs;
 using UserService.Domain.Entities;
 using UserService.Domain.ValueObjects;
 
@@ -51,7 +53,7 @@ public class IdentityService : IIdentityService
         var roles = await _userManager.GetRolesAsync(user);
         var token = _tokenRepository.GenerateJwtToken(user.Id, user.Email!, roles);
         var expiresIn = _tokenRepository.GetTokenExpirationInSeconds();
-        
+
         return (Result.Success(), TokenType, token, expiresIn);
     }
 
@@ -128,14 +130,14 @@ public class IdentityService : IIdentityService
                 Data      = string.Empty
             };
         }
-        
+
         return new ServiceResponse<string>()
         {
             Succeeded = true, Message = "Successfully registered", Data = user.Id
         };
     }
 
-    
+
     public async Task<string?> GetUserNameAsync(string userId)
     {
         var user = await _userManager.FindByIdAsync(userId);
@@ -164,5 +166,24 @@ public class IdentityService : IIdentityService
 
         return result.Succeeded;
     }
-    
+
+    public async Task<UserResponseDto?> GetUserById(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+
+        var customerRepo = _unitOfWork.GetRepository<Customer, Guid>();
+
+        var customer = await customerRepo.Query().FirstOrDefaultAsync(c => c.ApplicationUserId == userId);
+
+        if (user == null) return null;
+
+        var response = new UserResponseDto()
+        {
+            Name = user.FullName,
+            Email = user.Email,
+            IsStudent = customer?.IsStudent ?? false
+        };
+
+        return response;
+    }
 }
