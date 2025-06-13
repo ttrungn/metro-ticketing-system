@@ -196,6 +196,12 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     b.Property<Guid>("RouteId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("EntryStationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("DestinationStationId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -214,7 +220,7 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     b.Property<int>("Order")
                         .HasColumnType("int");
 
-                    b.HasKey("StationId", "RouteId");
+                    b.HasKey("StationId", "RouteId", "EntryStationId", "DestinationStationId");
 
                     b.HasIndex("RouteId");
 
