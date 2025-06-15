@@ -77,7 +77,7 @@
         "operationId": "GetStudentRequests",
         "parameters": [
           {
-            "name": "page",
+            "name": "currentPage",
             "in": "query",
             "schema": {
               "type": "integer",
@@ -85,6 +85,16 @@
               "default": 0
             },
             "x-position": 1
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 8
+            },
+            "x-position": 2
           },
           {
             "name": "status",
@@ -101,7 +111,7 @@
                 }
               ]
             },
-            "x-position": 2
+            "x-position": 3
           },
           {
             "name": "searchEmail",
@@ -109,7 +119,7 @@
             "schema": {
               "type": "string"
             },
-            "x-position": 3
+            "x-position": 4
           }
         ],
         "responses": {

@@ -454,6 +454,19 @@
         }
       }
     },
+    "/api/catalog/Tickets": {
+      "get": {
+        "tags": [
+          "Tickets"
+        ],
+        "operationId": "GetApiCatalogTickets",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/catalog/WeatherForecasts": {
       "get": {
         "tags": [

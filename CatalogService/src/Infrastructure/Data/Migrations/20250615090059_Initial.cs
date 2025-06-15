@@ -72,13 +72,15 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "TicketType",
+                name: "Ticket",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    ExpirationInDays = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    ExpirationInDay = table.Column<int>(type: "int", nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TicketType = table.Column<int>(type: "int", nullable: false),
+                    ActiveInDay = table.Column<int>(type: "int", nullable: false),
                     DeleteFlag = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     LastModifiedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
@@ -86,7 +88,7 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TicketType", x => x.Id);
+                    table.PrimaryKey("PK_Ticket", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -114,7 +116,7 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     StationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DestinationName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    DestinationName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     DeleteFlag = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     LastModifiedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
@@ -137,9 +139,12 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 {
                     StationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     RouteId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    EntryStationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DestinationStationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Order = table.Column<int>(type: "int", nullable: false)
+                    Order = table.Column<int>(type: "int", nullable: false),
+                    DistanceToNext = table.Column<double>(type: "float", nullable: false),
+                    DeleteFlag = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    LastModifiedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    DeletedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -151,46 +156,11 @@ namespace CatalogService.Infrastructure.Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_StationRoute_Station_DestinationStationId",
-                        column: x => x.DestinationStationId,
-                        principalTable: "Station",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_StationRoute_Station_EntryStationId",
-                        column: x => x.EntryStationId,
-                        principalTable: "Station",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
                         name: "FK_StationRoute_Station_StationId",
                         column: x => x.StationId,
                         principalTable: "Station",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Ticket",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    TicketTypeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DeleteFlag = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    LastModifiedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    DeletedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Ticket", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Ticket_TicketType_TicketTypeId",
-                        column: x => x.TicketTypeId,
-                        principalTable: "TicketType",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -199,24 +169,9 @@ namespace CatalogService.Infrastructure.Data.Migrations
                 column: "StationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StationRoute_DestinationStationId",
-                table: "StationRoute",
-                column: "DestinationStationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_StationRoute_EntryStationId",
-                table: "StationRoute",
-                column: "EntryStationId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_StationRoute_RouteId",
                 table: "StationRoute",
                 column: "RouteId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Ticket_TicketTypeId",
-                table: "Ticket",
-                column: "TicketTypeId");
         }
 
         /// <inheritdoc />
@@ -242,9 +197,6 @@ namespace CatalogService.Infrastructure.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Station");
-
-            migrationBuilder.DropTable(
-                name: "TicketType");
         }
     }
 }

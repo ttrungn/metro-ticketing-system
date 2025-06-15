@@ -65,18 +65,18 @@ public class StudentRequestServiceService : IStudentRequestService
     }
 
     public async Task<(IEnumerable<StudentRequestResponseDto>, int)> GetAsync(
-        GetStudentRequestQuery query, int pagePerSize, CancellationToken cancellationToken = default)
+        GetStudentRequestQuery query, CancellationToken cancellationToken = default)
     {
         var repo = _unitOfWork.GetRepository<StudentRequest, Guid>();
        Expression<Func<StudentRequest,bool>> filter = GetFilter(query);
 
        var studentRequests = await repo.GetPagedAsync(
-           skip: query.Page * pagePerSize,
-           take: pagePerSize,
+           skip: query.CurrentPage * query.PageSize,
+           take: query.PageSize,
            filters: new[] {filter},
            cancellationToken: cancellationToken);
            
-        var totalPage = await repo.GetTotalPagesAsync(pagePerSize, new []{filter}, cancellationToken);
+        var totalPage = await repo.GetTotalPagesAsync(query.PageSize, new []{filter}, cancellationToken);
 
         var dtos = studentRequests.Select(sr => new StudentRequestResponseDto
         {
