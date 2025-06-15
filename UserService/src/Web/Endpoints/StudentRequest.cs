@@ -21,7 +21,8 @@ public class StudentRequest : EndpointGroupBase
     }
 
     private async Task<IResult> GetStudentRequests(ISender sender,
-        [FromQuery] int page = 0,
+        [FromQuery] int currentPage = 0,
+        [FromQuery] int pageSize = 8,
         [FromQuery] StudentRequestStatus? status = null,
         [FromQuery] string searchEmail = null!)
     {
@@ -30,7 +31,8 @@ public class StudentRequest : EndpointGroupBase
         
         var query = new GetStudentRequestQuery
         {
-            Page = page,
+            CurrentPage = currentPage,
+            PageSize = pageSize,
             Status = status,
             SearchEmail = searchEmail
         };
