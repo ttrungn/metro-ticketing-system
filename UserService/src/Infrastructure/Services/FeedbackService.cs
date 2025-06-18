@@ -6,6 +6,7 @@ using UserService.Application.Common.Interfaces.Repositories;
 using UserService.Application.Common.Interfaces.Services;
 using UserService.Application.Feedbacks.Commands.CreateFeedback;
 using UserService.Application.Feedbacks.Commands.CreateFeedbackType;
+using UserService.Application.Feedbacks.Commands.UpdateFeedbackType;
 using UserService.Application.Feedbacks.DTOs;
 using UserService.Domain.Entities;
 
@@ -121,5 +122,56 @@ public class FeedbackService : IFeedbackService
         }).ToList();
 
         return result;
+    }
+
+    public async Task<Guid> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var repo = _unitOfWork.GetRepository<FeedbackType, Guid>();
+        var type = await repo.Query().FirstOrDefaultAsync(ft => ft.Id == id, cancellationToken: cancellationToken);
+
+        if (type == null)
+        {
+            return Guid.Empty;
+        }
+
+        type.DeleteFlag = true;
+
+        await repo.UpdateAsync(type, cancellationToken);
+        await _unitOfWork.SaveChangesAsync();
+
+        return type.Id;
+    }
+
+    public async Task<Guid> UpdateAsync(UpdateFeedbackTypeCommand command, CancellationToken cancellationToken = default)
+    {
+        var repo = _unitOfWork.GetRepository<FeedbackType, Guid>();
+        var type = await repo.Query().FirstOrDefaultAsync(ft => ft.Id == command.Id, cancellationToken: cancellationToken);
+
+        if (type == null)
+        {
+            return Guid.Empty;
+        }
+
+        type.Name = command.Name!;
+        type.Description = command.Description!;
+
+        await repo.UpdateAsync(type, cancellationToken);
+        await _unitOfWork.SaveChangesAsync();
+
+        return type.Id;
+    }
+
+    public Task<FeedbackTypeResponseDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var repo = _unitOfWork.GetRepository<FeedbackType, Guid>();
+        return repo.Query()
+            .Where(ft => ft.Id == id)
+            .Select(ft => new FeedbackTypeResponseDto
+            {
+                Id = ft.Id,
+                Name = ft.Name,
+                Description = ft.Description
+            })
+            .FirstOrDefaultAsync(cancellationToken);
     }
 }
