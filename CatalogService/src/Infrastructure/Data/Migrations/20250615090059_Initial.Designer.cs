@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CatalogService.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250613064952_DeleteTicketType")]
-    partial class DeleteTicketType
+    [Migration("20250615090059_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -231,6 +231,9 @@ namespace CatalogService.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("ActiveInDay")
+                        .HasColumnType("int");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -243,9 +246,6 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     b.Property<int>("ExpirationInDay")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsOneWay")
-                        .HasColumnType("bit");
-
                     b.Property<DateTimeOffset>("LastModifiedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -257,8 +257,8 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid>("TicketTypeId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("TicketType")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

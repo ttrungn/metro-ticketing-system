@@ -24,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<IStationRouteService, StationRouteService>();    
         services.AddScoped<IStationService, StationService>();
         services.AddScoped<IBusService, BusService>();
+        services.AddScoped<ITicketService, TicketService>();
 
         services.AddHttpContextAccessor();
 
