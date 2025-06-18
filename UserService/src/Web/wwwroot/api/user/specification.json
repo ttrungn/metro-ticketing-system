@@ -56,6 +56,42 @@
         }
       }
     },
+    "/api/user/FeedbackTypes": {
+      "post": {
+        "tags": [
+          "FeedbackTypes"
+        ],
+        "operationId": "CreateFeedbackTypeAsync",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFeedbackTypeCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "FeedbackTypes"
+        ],
+        "operationId": "GetFeedbackTypesAsync",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/user/Profiles": {
       "get": {
         "tags": [
@@ -237,6 +273,18 @@
             "type": "string"
           },
           "lastName": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateFeedbackTypeCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
             "type": "string"
           }
         }
