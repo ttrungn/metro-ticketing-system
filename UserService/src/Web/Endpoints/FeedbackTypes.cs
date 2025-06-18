@@ -19,7 +19,7 @@ public class FeedbackTypes : EndpointGroupBase
 
         if (response.Succeeded)
         {
-            return TypedResults.Ok(response);
+            return TypedResults.Created($"/api/user/FeedbackTypes/{response.Data}", response);
         }
 
         return TypedResults.BadRequest(response);

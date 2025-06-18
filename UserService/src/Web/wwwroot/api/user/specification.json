@@ -56,6 +56,42 @@
         }
       }
     },
+    "/api/user/Feedbacks": {
+      "post": {
+        "tags": [
+          "Feedbacks"
+        ],
+        "operationId": "CreateFeedbackAsync",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFeedbackCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Feedbacks"
+        ],
+        "operationId": "GetFeedbacksAsync",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/user/FeedbackTypes": {
       "post": {
         "tags": [
@@ -274,6 +310,23 @@
           },
           "lastName": {
             "type": "string"
+          }
+        }
+      },
+      "CreateFeedbackCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "feedbackTypeId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "content": {
+            "type": "string"
+          },
+          "stationId": {
+            "type": "string",
+            "nullable": true
           }
         }
       },

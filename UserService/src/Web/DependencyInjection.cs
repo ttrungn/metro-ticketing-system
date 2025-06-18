@@ -21,6 +21,8 @@ public static class DependencyInjection
         services.AddTransient<IStudentRequestService, StudentRequestServiceService>();
         services.AddHttpContextAccessor();
 
+        services.AddHttpClient();
+
         services.AddHealthChecks()
             .AddDbContextCheck<ApplicationDbContext>();
 

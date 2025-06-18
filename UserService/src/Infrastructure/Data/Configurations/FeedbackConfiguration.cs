@@ -11,26 +11,25 @@ namespace UserService.Infrastructure.Data.Configurations
         {
             builder.ToTable("Feedback");
 
-            builder.Property(f => f.Comment)
-                   .IsRequired()
-                   .HasMaxLength(1000);
+            builder.Property(f => f.Content)
+                .IsRequired()
+                .HasMaxLength(1000);
 
-            builder.Property(f => f.Location)
-                   .IsRequired()
-                   .HasMaxLength(200);
+            builder.Property(f => f.StationId)
+                .IsRequired();
 
             builder.HasOne(f => f.Customer)
-                   .WithMany()
-                   .HasForeignKey(f => f.CustomerId)
-                   .OnDelete(DeleteBehavior.Restrict)
-                   .IsRequired();
+                .WithMany()
+                .HasForeignKey(f => f.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
 
             builder.HasOne(f => f.FeedbackType)
-                   .WithMany()
-                   .HasForeignKey(f => f.FeedbackTypeId)
-                   .OnDelete(DeleteBehavior.Restrict)
-                   .IsRequired();
-            
+                .WithMany()
+                .HasForeignKey(f => f.FeedbackTypeId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
+
             builder.ConfigureAuditableProperties();
         }
     }
