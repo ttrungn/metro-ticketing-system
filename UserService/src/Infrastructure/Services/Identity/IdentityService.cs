@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using UserService.Application.Common.Interfaces.Repositories;
 using UserService.Application.Common.Interfaces.Services;
 using UserService.Application.Common.Models;
-using UserService.Application.Users.Commands.RegisterCustomer;
+using UserService.Application.Users.Commands.RegisterUser;
 using UserService.Application.Users.DTOs;
 using UserService.Domain.Entities;
 using UserService.Domain.ValueObjects;
@@ -36,7 +36,7 @@ public class IdentityService : IIdentityService
         _tokenRepository = tokenRepository;
     }
 
-    public async Task<(Result Result, string TokenType, string Token, int ExpiresIn)> LoginUserAsync(string email, string password)
+    public async Task<(Result Result, string TokenType, string Token, int ExpiresIn)> LoginUserAsync(string role, string email, string password)
     {
         var user = await _userManager.FindByEmailAsync(email);
         if (user is null)
@@ -51,37 +51,56 @@ public class IdentityService : IIdentityService
         }
 
         var roles = await _userManager.GetRolesAsync(user);
+        var hasRole = roles.Contains(role);
+        if (!hasRole)
+        {
+            return (Result.Failure(["Email hoặc mật khẩu không chính xác!"]), string.Empty, string.Empty, 0);
+        }
+
         var token = _tokenRepository.GenerateJwtToken(user.Id, user.Email!, roles);
         var expiresIn = _tokenRepository.GetTokenExpirationInSeconds();
 
         return (Result.Success(), TokenType, token, expiresIn);
     }
 
-    public async Task<ServiceResponse<string>> RegisterUserAsync(RegisterCustomerCommand registerCustomerCommand, string role)
+    public async Task<ServiceResponse<string>> RegisterUserAsync(string role, string email, string password, string firstName, string lastName)
     {
-        var user = await _userManager.FindByEmailAsync(registerCustomerCommand.Email);
+        if (role == Roles.Administrator)
+        {
+            return new ServiceResponse<string>
+            {
+                Succeeded = false,
+                Message   = "Không thể tạo tài khoản. Vui lòng thử lại.",
+                Data      = string.Empty
+            };
+        }
+        
+        var user = await _userManager.FindByEmailAsync(email);
         if (user != null)
         {
-            return new ServiceResponse<string>()
+            return new ServiceResponse<string>
             {
-                Succeeded = false, Message = "User with this email already exists.", Data = string.Empty
+                Succeeded = false,
+                Message = "Email này đã được sử dụng.",
+                Data = string.Empty
             };
         }
 
-        user = new ApplicationUser()
+        user = new ApplicationUser
         {
-            FullName = new FullName(registerCustomerCommand.FirstName, registerCustomerCommand.LastName),
-            Email = registerCustomerCommand.Email,
-            UserName = registerCustomerCommand.Email,
+            FullName = new FullName(firstName, lastName),
+            Email = email,
+            UserName = email,
         };
-
-        var createUserResult = await _userManager.CreateAsync(user, registerCustomerCommand.Password);
+        
+        var createUserResult = await _userManager.CreateAsync(user, password);
         if (!createUserResult.Succeeded)
         {
-            var errors = createUserResult.Errors.Select(e => e.Description).ToArray();
-            return new ServiceResponse<string>()
+            return new ServiceResponse<string>
             {
-                Succeeded = false, Message = string.Join(", ", errors), Data = string.Empty
+                Succeeded = false,
+                Message = "Không thể tạo tài khoản. Vui lòng thử lại.",
+                Data = string.Empty
             };
         }
 
@@ -89,10 +108,11 @@ public class IdentityService : IIdentityService
         if (!addToRoleResult.Succeeded)
         {
             await _userManager.DeleteAsync(user);
-            var errors = addToRoleResult.Errors.Select(e => e.Description).ToArray();
-            return new ServiceResponse<string>()
+            return new ServiceResponse<string>
             {
-                Succeeded = false, Message = string.Join(", ", errors), Data = string.Empty
+                Succeeded = false,
+                Message = "Không thể tạo tài khoản. Vui lòng thử lại.",
+                Data = string.Empty
             };
         }
 
@@ -101,43 +121,43 @@ public class IdentityService : IIdentityService
             if (role == Roles.Customer)
             {
                 var customerRepo = _unitOfWork.GetRepository<Customer, Guid>();
-                var customer = new Customer
+                await customerRepo.AddAsync(new Customer
                 {
                     ApplicationUserId = user.Id,
-                    IsStudent         = false
-                };
-                await customerRepo.AddAsync(customer);
+                    IsStudent = false
+                });
             }
             else if (role == Roles.Staff)
             {
                 var staffRepo = _unitOfWork.GetRepository<Staff, Guid>();
-                var staff = new Staff
+                await staffRepo.AddAsync(new Staff
                 {
                     ApplicationUserId = user.Id
-                };
-                await staffRepo.AddAsync(staff);
+                });
             }
             await _unitOfWork.SaveChangesAsync();
         }
-        catch (Exception ex)
+        catch
         {
             await _userManager.DeleteAsync(user);
-
             return new ServiceResponse<string>
             {
                 Succeeded = false,
-                Message   = "Failed to create associated Customer/Staff record: " + ex.Message,
-                Data      = string.Empty
+                Message = "Không thể tạo tài khoản. Vui lòng thử lại.",
+                Data = string.Empty
             };
         }
 
-        return new ServiceResponse<string>()
+        return new ServiceResponse<string>
         {
-            Succeeded = true, Message = "Successfully registered", Data = user.Id
+            Succeeded = true,
+            Message = "Đăng ký thành công",
+            Data = user.Id
         };
     }
 
 
+    
     public async Task<string?> GetUserNameAsync(string userId)
     {
         var user = await _userManager.FindByIdAsync(userId);
