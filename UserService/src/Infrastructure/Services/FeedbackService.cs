@@ -1,7 +1,5 @@
-﻿using System.Net.Http.Json;
-using BuildingBlocks.Response;
+﻿using BuildingBlocks.Response;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using UserService.Application.Common.Interfaces.Repositories;
 using UserService.Application.Common.Interfaces.Services;
 using UserService.Application.Feedbacks.Commands.CreateFeedback;
@@ -15,14 +13,12 @@ namespace UserService.Infrastructure.Services;
 public class FeedbackService : IFeedbackService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly string _apiBaseUrl;
+    private readonly IHttpClientService _httpClientService;
 
-    public FeedbackService(IUnitOfWork unitOfWork, IHttpClientFactory httpClientFactory, IConfiguration configuration)
+    public FeedbackService(IUnitOfWork unitOfWork, IHttpClientService httpClientService)
     {
         _unitOfWork = unitOfWork;
-        _httpClientFactory = httpClientFactory;
-        _apiBaseUrl = configuration["ClientSettings:ApiBaseUrl"] ?? "http://localhost:8080";
+        _httpClientService = httpClientService;
     }
 
     public async Task<Guid> CreateAsync(CreateFeedbackTypeCommand command, CancellationToken cancellationToken = default)
@@ -86,12 +82,15 @@ public class FeedbackService : IFeedbackService
             Content = command.Content,
         };
 
-        var cilent = _httpClientFactory.CreateClient();
-        var response = await cilent.GetAsync($"{_apiBaseUrl}/api/catalog/Stations/{Guid.Parse(command.StationId!)}", cancellationToken);
-        if (response.IsSuccessStatusCode)
+        var endpoint = $"api/catalog/Stations/{Guid.Parse(command.StationId!)}";
+        var response = await _httpClientService.SendRequest<ServiceResponse<StationsResponseDto>>(
+            endpoint,
+            HttpMethod.Get,
+            cancellationToken: cancellationToken);
+
+        if (response.Data != null)
         {
-            var responseData = await response.Content.ReadFromJsonAsync<ServiceResponse<StationsResponseDto>>(cancellationToken: cancellationToken);
-            newFeedback.StationId = (Guid)responseData?.Data?.Id!;
+            newFeedback.StationId = (Guid)response?.Data?.Id!;
         }
 
         var feedbackRepo = _unitOfWork.GetRepository<Feedback, Guid>();
@@ -103,13 +102,14 @@ public class FeedbackService : IFeedbackService
 
     public async Task<IEnumerable<FeedbackResponseDto>?> GetFeedbacksAsync(string? userId, CancellationToken cancellationToken = default)
     {
+        var endpoint = $"api/catalog/Stations?page=0&pageSize=100&status=false";
+        var response = await _httpClientService.SendRequest<ServiceResponse<GetStationsResponseDto>>(
+            endpoint,
+            HttpMethod.Get,
+            cancellationToken: cancellationToken);
+        var map = response?.Data?.Stations.ToDictionary(s => s.Id, s => s.Name) ?? new Dictionary<Guid, string?>();
+
         var feedbackRepo = _unitOfWork.GetRepository<Feedback, Guid>();
-
-        var client = _httpClientFactory.CreateClient();
-        var response = await client.GetAsync($"{_apiBaseUrl}/api/catalog/Stations?page=0&pageSize=100&status=false", cancellationToken);
-        var stations = await response.Content.ReadFromJsonAsync<ServiceResponse<GetStationsResponseDto>>(cancellationToken: cancellationToken);
-        var stationMap = stations?.Data?.Stations.ToDictionary(s => s.Id, s => s.Name) ?? new Dictionary<Guid, string?>();
-
         var feedbacks = await feedbackRepo.Query()
             .Where(f => f.Customer.ApplicationUserId == userId).Include(f => f.FeedbackType)
             .ToListAsync(cancellationToken);
@@ -117,7 +117,7 @@ public class FeedbackService : IFeedbackService
         var result = feedbacks.Select(f => new FeedbackResponseDto
         {
             Type = f.FeedbackType.Name,
-            Station = (f.StationId != Guid.Empty && stationMap.TryGetValue(f.StationId, out var name)) ? name : "",
+            Station = (f.StationId != Guid.Empty && map.TryGetValue(f.StationId, out var name)) ? name : "",
             Content = f.Content
         }).ToList();
 
