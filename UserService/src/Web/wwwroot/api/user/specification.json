@@ -390,6 +390,9 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "role": {
+            "type": "string"
+          },
           "email": {
             "type": "string"
           },
@@ -402,6 +405,9 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "role": {
+            "type": "string"
+          },
           "email": {
             "type": "string"
           },
