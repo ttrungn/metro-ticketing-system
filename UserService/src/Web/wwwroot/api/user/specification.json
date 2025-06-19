@@ -24,11 +24,11 @@
           }
         ],
         "requestBody": {
-          "x-name": "request",
+          "x-name": "loginRequest",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LoginUserCommand"
+                "$ref": "#/components/schemas/LoginRequest"
               }
             }
           },
@@ -60,160 +60,17 @@
           }
         ],
         "requestBody": {
-          "x-name": "request",
+          "x-name": "registerRequest",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RegisterUserCommand"
+                "$ref": "#/components/schemas/RegisterRequest"
               }
             }
           },
           "required": true,
           "x-position": 2
         },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/api/user/Feedbacks": {
-      "post": {
-        "tags": [
-          "Feedbacks"
-        ],
-        "operationId": "CreateFeedbackAsync",
-        "requestBody": {
-          "x-name": "command",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateFeedbackCommand"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "Feedbacks"
-        ],
-        "operationId": "GetFeedbacksAsync",
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/api/user/FeedbackTypes": {
-      "post": {
-        "tags": [
-          "FeedbackTypes"
-        ],
-        "operationId": "CreateFeedbackTypeAsync",
-        "requestBody": {
-          "x-name": "command",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateFeedbackTypeCommand"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "FeedbackTypes"
-        ],
-        "operationId": "GetFeedbackTypesAsync",
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "FeedbackTypes"
-        ],
-        "operationId": "UpdateFeedbackTypeAsync",
-        "requestBody": {
-          "x-name": "command",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateFeedbackTypeCommand"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/api/user/FeedbackTypes/{id}": {
-      "delete": {
-        "tags": [
-          "FeedbackTypes"
-        ],
-        "operationId": "DeleteFeedbackTypesAsync",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "guid"
-            },
-            "x-position": 1
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "FeedbackTypes"
-        ],
-        "operationId": "GetFeedbackTypeByIdAsync",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "guid"
-            },
-            "x-position": 1
-          }
-        ],
         "responses": {
           "200": {
             "description": ""
@@ -529,13 +386,10 @@
   },
   "components": {
     "schemas": {
-      "LoginUserCommand": {
+      "LoginRequest": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "role": {
-            "type": "string"
-          },
           "email": {
             "type": "string"
           },
@@ -544,13 +398,10 @@
           }
         }
       },
-      "RegisterUserCommand": {
+      "RegisterRequest": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "role": {
-            "type": "string"
-          },
           "email": {
             "type": "string"
           },
