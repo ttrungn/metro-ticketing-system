@@ -12,7 +12,7 @@ public class DeleteRouteCommandValidator : AbstractValidator<DeleteRouteCommand>
     public DeleteRouteCommandValidator()
     {
         RuleFor(x => x.Id)
-            .NotEmpty().WithMessage("Xin vui lòng nhập Id của tuyến.");
+            .NotEmpty().WithMessage("Xin vui lòng nhập ID của tuyến.");
     }
 }
 
@@ -30,6 +30,18 @@ public class DeleteRouteCommandHandler : IRequestHandler<DeleteRouteCommand, Ser
     public async Task<ServiceResponse<Guid>>Handle(DeleteRouteCommand request, CancellationToken cancellationToken)
     {
         var routeId = await _routeService.DeleteAsync(request.Id, cancellationToken);
+
+        if (routeId == Guid.Empty)
+        {
+            _logger.LogWarning("Route with ID {RouteId} not found for deletion.", request.Id);
+
+            return new ServiceResponse<Guid>()
+            {
+                Succeeded = false,
+                Message = "Không tìm thấy tuyến!",
+                Data = Guid.Empty
+            };
+        }
 
         _logger.LogInformation("Delete updated with ID: {RouteId}", routeId);
 

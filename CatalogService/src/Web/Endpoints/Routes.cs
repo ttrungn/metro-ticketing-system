@@ -1,8 +1,11 @@
 ﻿using CatalogService.Application.Routes.Commands.CreateRoute;
 using CatalogService.Application.Routes.Commands.DeleteRoute;
 using CatalogService.Application.Routes.Commands.UpdateRoute;
+using CatalogService.Application.Routes.Commands.UpsertRouteStation;
+using CatalogService.Application.Routes.DTOs;
 using CatalogService.Application.Routes.Queries.GetRouteById;
 using CatalogService.Application.Routes.Queries.GetRoutes;
+using CatalogService.Application.Stations.Queries.GeAllActiveStationByName;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CatalogService.Web.Endpoints;
@@ -16,28 +19,33 @@ public class Routes : EndpointGroupBase
             .MapPost(CreateRoute, "/")
             .MapPut(UpdateRoute, "/")
             .MapDelete(DeleteRoute, "/{id:guid}")
+            .MapGet(GetRoutes, "/")
             .MapGet(GetRouteById, "/{id:guid}")
-            .MapGet(GetRoutes, "/");
+            .MapPut(UpsertStationRoute, "/station-route/");
     }
 
-    private static async Task<IResult> CreateRoute(
-        ISender sender,
-        [FromForm] IFormFile? thumbnailImageUrl,
-        [FromQuery] string code,
-        [FromQuery] string name,
-        [FromQuery] double lengthInKm
-        )
+    private static async Task<IResult> CreateRoute(ISender sender, HttpRequest request)
     {
+        var form = await request.ReadFormAsync();
+
+        var thumbnailImage = form.Files.GetFile("thumbnailImage");
+        Stream? thumbnailImageStream = null;
+        string? thumbnailImageFileName = null;
+        if (thumbnailImage is { Length: > 0 })
+        {
+            thumbnailImageStream = thumbnailImage.OpenReadStream();
+            thumbnailImageFileName = thumbnailImage.FileName;
+        }
+
         var command = new CreateRouteCommand()
         {
-            Code = code,
-            Name = name,
-            ThumbnailImageUrl = thumbnailImageUrl?.FileName ?? "Empty",
-            LengthInKm = lengthInKm
+            Name = form["name"].ToString(),
+            ThumbnailImageStream = thumbnailImageStream,
+            ThumbnailImageFileName = thumbnailImageFileName,
+            LengthInKm = double.TryParse(form["lengthInKm"], out var parsedLength) ? parsedLength : 0.0
         };
 
         var response = await sender.Send(command);
-
         if (response.Succeeded)
         {
             return TypedResults.Created($"/api/catalog/routes/{response.Data}", response);
@@ -46,21 +54,26 @@ public class Routes : EndpointGroupBase
         return TypedResults.BadRequest(response);
     }
 
-    private static async Task<IResult> UpdateRoute(
-        ISender sender,
-        [FromForm] IFormFile? file,
-        [FromQuery] Guid id,
-        [FromQuery] string code,
-        [FromQuery] string name,
-        [FromQuery] double lengthInKm)
+    private static async Task<IResult> UpdateRoute(ISender sender, HttpRequest request)
     {
+        var form = await request.ReadFormAsync();
+
+        var thumbnailImage = form.Files.GetFile("thumbnailImage");
+        Stream? thumbnailImageStream = null;
+        string? thumbnailImageFileName = null;
+        if (thumbnailImage is { Length: > 0 })
+        {
+            thumbnailImageStream = thumbnailImage.OpenReadStream();
+            thumbnailImageFileName = thumbnailImage.FileName;
+        }
+
         var command = new UpdateRouteCommand()
         {
-            Id = id,
-            Code = code,
-            Name = name,
-            ThumbnailImageUrl = file?.FileName ?? "Empty",
-            LengthInKm = lengthInKm
+            Id = Guid.TryParse(form["id"].ToString(), out var parsedId) ? parsedId : Guid.Empty,
+            Name = form["name"].ToString(),
+            ThumbnailImageStream = thumbnailImageStream,
+            ThumbnailImageFileName = thumbnailImageFileName,
+            LengthInKm = double.TryParse(form["lengthInKm"], out var parsedLength) ? parsedLength : 0.1
         };
 
         var response = await sender.Send(command);
@@ -82,17 +95,19 @@ public class Routes : EndpointGroupBase
             return TypedResults.NoContent();
         }
 
-        return TypedResults.BadRequest(response);
+        return TypedResults.NotFound(response);
     }
 
     private static async Task<IResult> GetRoutes(
         ISender sender,
         [FromQuery] int page = 0,
+        [FromQuery] int pageSize = 8,
         [FromQuery] string? name = "")
     {
         var query = new GetRoutesQuery
         {
             Page = page,
+            PageSize = pageSize,
             Name = name
         };
 
@@ -115,7 +130,36 @@ public class Routes : EndpointGroupBase
             return TypedResults.Ok(response);
         }
 
+        return TypedResults.NotFound(response);
+    }
+
+
+    private static async Task<IResult> UpsertStationRoute(ISender sender, [FromBody] UpsertStationRouteRequest requestBody)
+    {
+        if (requestBody?.Route?.StationRoutes == null)
+        {
+            return TypedResults.BadRequest("Route or StationRoutes cannot be null.");
+        }
+
+        var command = new UpsertStationRouteCommand
+        {
+            Id = requestBody.Route.RouteId,
+            StationRoutes = requestBody.Route.StationRoutes.Select(s => new StationRouteDto
+            {
+                StationId = s.StationId,
+                RouteId = s.RouteId,
+                Order = s.Order,
+                DistanceToNext = s.DistanceToNext,
+            }).ToList()
+        };
+
+        var response = await sender.Send(command);
+        if (response.Succeeded)
+        {
+            return TypedResults.Ok(response);
+        }
         return TypedResults.BadRequest(response);
     }
 
-}
+
+} 

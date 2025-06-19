@@ -1,4 +1,6 @@
-﻿using OrderService.Application.Common.Interfaces;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using OrderService.Application.Common.Interfaces;
 
 namespace OrderService.Web.Services;
 
@@ -11,18 +13,12 @@ public class CurrentUser : IUser
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public string? Id =>
-        _httpContextAccessor.HttpContext?.Request.Headers["X-User-Id"].FirstOrDefault();
+    public string? Id => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
 
-    public string? Email =>
-        _httpContextAccessor.HttpContext?.Request.Headers["X-User-Email"].FirstOrDefault();
+    public string? Email => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Email);
 
-    public string? UserName =>
-        _httpContextAccessor.HttpContext?.Request.Headers["X-User-Name"].FirstOrDefault();
+    public string? UserName => _httpContextAccessor.HttpContext?.User?.FindFirstValue(JwtRegisteredClaimNames.Name);
 
-    public IEnumerable<string> Roles =>
-        (_httpContextAccessor.HttpContext?.Request.Headers["X-User-Roles"]
-            .FirstOrDefault() ?? "")
-        .Split(',', StringSplitOptions.RemoveEmptyEntries)
-        .Select(r => r.Trim());
+    public IEnumerable<string> Roles => _httpContextAccessor.HttpContext?.User?.FindAll(ClaimTypes.Role)
+        .Select(r => r.Value) ?? [];
 }

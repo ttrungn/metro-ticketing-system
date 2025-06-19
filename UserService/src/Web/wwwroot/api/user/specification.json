@@ -77,6 +77,168 @@
           }
         }
       }
+    },
+    "/api/user/Profiles": {
+      "get": {
+        "tags": [
+          "Profiles"
+        ],
+        "operationId": "GetUserByEmailAsync",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/user/StudentRequest": {
+      "get": {
+        "tags": [
+          "StudentRequest"
+        ],
+        "operationId": "GetStudentRequests",
+        "parameters": [
+          {
+            "name": "currentPage",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            },
+            "x-position": 1
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 8
+            },
+            "x-position": 2
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "oneOf": [
+                {
+                  "nullable": true,
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/StudentRequestStatus"
+                    }
+                  ]
+                }
+              ]
+            },
+            "x-position": 3
+          },
+          {
+            "name": "searchEmail",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 4
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "StudentRequest"
+        ],
+        "operationId": "CreateStudentRequest",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/user/StudentRequest/{Id}": {
+      "get": {
+        "tags": [
+          "StudentRequest"
+        ],
+        "operationId": "GetStudentRequestById",
+        "parameters": [
+          {
+            "name": "Id",
+            "x-originalName": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/user/StudentRequest/Approve/{Id}": {
+      "put": {
+        "tags": [
+          "StudentRequest"
+        ],
+        "operationId": "ApproveStudentRequest",
+        "parameters": [
+          {
+            "name": "Id",
+            "x-originalName": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/user/StudentRequest/Declined/{Id}": {
+      "put": {
+        "tags": [
+          "StudentRequest"
+        ],
+        "operationId": "DeclinedStudentRequest",
+        "parameters": [
+          {
+            "name": "Id",
+            "x-originalName": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
     }
   },
   "components": {
@@ -116,6 +278,20 @@
             "type": "string"
           }
         }
+      },
+      "StudentRequestStatus": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Pending",
+          "Approved",
+          "Declined"
+        ],
+        "enum": [
+          1,
+          2,
+          3
+        ]
       }
     },
     "securitySchemes": {

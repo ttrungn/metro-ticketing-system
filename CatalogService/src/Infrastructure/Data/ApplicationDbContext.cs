@@ -13,7 +13,6 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<StationRoute> StationRoutes => Set<StationRoute>();
     public DbSet<Bus> Buses => Set<Bus>();
     public DbSet<PriceRange> PriceRanges => Set<PriceRange>();
-    public DbSet<TicketType> TicketTypes => Set<TicketType>();
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 

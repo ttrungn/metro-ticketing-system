@@ -43,6 +43,7 @@ namespace CatalogService.Infrastructure.Data.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("DestinationName")
+                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -196,20 +197,25 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     b.Property<Guid>("RouteId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("DestinationStationId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<Guid>("EntryStationId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<bool>("DeleteFlag")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset>("DeletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<double>("DistanceToNext")
+                        .HasColumnType("float");
+
+                    b.Property<DateTimeOffset>("LastModifiedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<int>("Order")
                         .HasColumnType("int");
 
                     b.HasKey("StationId", "RouteId");
-
-                    b.HasIndex("DestinationStationId");
-
-                    b.HasIndex("EntryStationId");
 
                     b.HasIndex("RouteId");
 
@@ -222,6 +228,9 @@ namespace CatalogService.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("ActiveInDay")
+                        .HasColumnType("int");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -230,6 +239,9 @@ namespace CatalogService.Infrastructure.Data.Migrations
 
                     b.Property<DateTimeOffset>("DeletedAt")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("ExpirationInDay")
+                        .HasColumnType("int");
 
                     b.Property<DateTimeOffset>("LastModifiedAt")
                         .HasColumnType("datetimeoffset");
@@ -239,48 +251,15 @@ namespace CatalogService.Infrastructure.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<Guid>("TicketTypeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TicketTypeId");
-
-                    b.ToTable("Ticket", (string)null);
-                });
-
-            modelBuilder.Entity("CatalogService.Domain.Entities.TicketType", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<bool>("DeleteFlag")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset>("DeletedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<int>("ExpirationInDays")
-                        .HasColumnType("int");
-
-                    b.Property<DateTimeOffset>("LastModifiedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("TicketType")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.ToTable("TicketType", (string)null);
+                    b.ToTable("Ticket", (string)null);
                 });
 
             modelBuilder.Entity("CatalogService.Domain.Entities.WeatherForecast", b =>
@@ -322,26 +301,13 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     b.HasOne("CatalogService.Domain.Entities.Station", "Station")
                         .WithMany("Buses")
                         .HasForeignKey("StationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Station");
                 });
 
             modelBuilder.Entity("CatalogService.Domain.Entities.StationRoute", b =>
                 {
-                    b.HasOne("CatalogService.Domain.Entities.Station", "DestinationStation")
-                        .WithMany()
-                        .HasForeignKey("DestinationStationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("CatalogService.Domain.Entities.Station", "EntryStation")
-                        .WithMany()
-                        .HasForeignKey("EntryStationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("CatalogService.Domain.Entities.Route", "Route")
                         .WithMany("StationRoutes")
                         .HasForeignKey("RouteId")
@@ -351,27 +317,12 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     b.HasOne("CatalogService.Domain.Entities.Station", "Station")
                         .WithMany("StationRoutes")
                         .HasForeignKey("StationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("DestinationStation");
-
-                    b.Navigation("EntryStation");
 
                     b.Navigation("Route");
 
                     b.Navigation("Station");
-                });
-
-            modelBuilder.Entity("CatalogService.Domain.Entities.Ticket", b =>
-                {
-                    b.HasOne("CatalogService.Domain.Entities.TicketType", "TicketType")
-                        .WithMany("Tickets")
-                        .HasForeignKey("TicketTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("TicketType");
                 });
 
             modelBuilder.Entity("CatalogService.Domain.Entities.Route", b =>
@@ -384,11 +335,6 @@ namespace CatalogService.Infrastructure.Data.Migrations
                     b.Navigation("Buses");
 
                     b.Navigation("StationRoutes");
-                });
-
-            modelBuilder.Entity("CatalogService.Domain.Entities.TicketType", b =>
-                {
-                    b.Navigation("Tickets");
                 });
 #pragma warning restore 612, 618
         }

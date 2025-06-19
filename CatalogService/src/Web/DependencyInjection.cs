@@ -21,6 +21,10 @@ public static class DependencyInjection
 
         services.AddScoped<IUser, CurrentUser>();
         services.AddScoped<IRouteService, RouteService>();
+        services.AddScoped<IStationRouteService, StationRouteService>();    
+        services.AddScoped<IStationService, StationService>();
+        services.AddScoped<IBusService, BusService>();
+        services.AddScoped<ITicketService, TicketService>();
 
         services.AddHttpContextAccessor();
 
@@ -71,7 +75,6 @@ public static class DependencyInjection
                     });
 
                 rider.AddConsumer<SampleConsumer>();
-
                 rider.UsingKafka((context, k) =>
                 {
                     k.Host(configuration["KafkaSettings:Url"], h =>

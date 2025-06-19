@@ -10,73 +10,43 @@ public class AuthorizationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRe
     where TRequest : notnull
 {
     private readonly IUser _user;
-    private readonly IIdentityService _identityService;
 
-    public AuthorizationBehaviour(
-        IUser user,
-        IIdentityService identityService)
+    public AuthorizationBehaviour(IUser user)
     {
         _user = user;
-        _identityService = identityService;
     }
 
-    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next,
+    public async Task<TResponse> Handle(
+        TRequest request,
+        RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
+        // Pull all [Authorize] attributes on the request
         var authorizeAttributes = request.GetType().GetCustomAttributes<AuthorizeAttribute>();
 
         if (authorizeAttributes.Any())
         {
-            // Must be authenticated user
-            if (_user.Id == null)
-            {
+            // 1) Must be authenticated
+            if (string.IsNullOrEmpty(_user.Id))
                 throw new UnauthorizedAccessException();
-            }
 
-            // Role-based authorization
-            var authorizeAttributesWithRoles = authorizeAttributes.Where(a => !string.IsNullOrWhiteSpace(a.Roles));
-
-            if (authorizeAttributesWithRoles.Any())
+            // 2) Role-based checks (if any roles are specified)
+            var withRoles = authorizeAttributes.Where(a => !string.IsNullOrWhiteSpace(a.Roles));
+            if (withRoles.Any())
             {
-                var authorized = false;
+                // Flatten all roles from all attributes into a set
+                var requiredRoles = withRoles
+                    .SelectMany(a => a.Roles.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                    .Select(r => r.Trim())
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-                foreach (var roles in authorizeAttributesWithRoles.Select(a => a.Roles.Split(',')))
-                {
-                    foreach (var role in roles)
-                    {
-                        var isInRole = await _identityService.IsInRoleAsync(_user.Id, role.Trim());
-                        if (isInRole)
-                        {
-                            authorized = true;
-                            break;
-                        }
-                    }
-                }
-
-                // Must be a member of at least one role in roles
-                if (!authorized)
-                {
+                // Check intersection with the user's roles
+                if (!_user.Roles.Any(r => requiredRoles.Contains(r)))
                     throw new ForbiddenAccessException();
-                }
-            }
-
-            // Policy-based authorization
-            var authorizeAttributesWithPolicies = authorizeAttributes.Where(a => !string.IsNullOrWhiteSpace(a.Policy));
-            if (authorizeAttributesWithPolicies.Any())
-            {
-                foreach (var policy in authorizeAttributesWithPolicies.Select(a => a.Policy))
-                {
-                    var authorized = await _identityService.AuthorizeAsync(_user.Id, policy);
-
-                    if (!authorized)
-                    {
-                        throw new ForbiddenAccessException();
-                    }
-                }
             }
         }
 
-        // User is authorized / authorization not required
+        // Authorized (or no [Authorize] on the request) → continue
         return await next();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using BuildingBlocks.Response;
 using UserService.Application.Common.Models;
 using UserService.Application.Users.Commands.RegisterUser;
+using UserService.Application.Users.DTOs;
 
 namespace UserService.Application.Common.Interfaces.Services;
 
@@ -15,4 +16,6 @@ public interface IIdentityService
     Task<bool> IsInRoleAsync(string userId, string role);
     
     Task<bool> AuthorizeAsync(string userId, string policyName);
+
+    Task<UserResponseDto?> GetUserById(string userId);
 }

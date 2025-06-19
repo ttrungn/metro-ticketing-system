@@ -1,3 +1,4 @@
+using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using UserService.Application.Common.Interfaces.Services;
@@ -18,8 +19,20 @@ public class AzureBlobService : IAzureBlobService
         var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
         await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
 
+        string contentType = GetContentTypeFromFileName(blobName);
+
+        var blobHttpHeaders = new BlobHttpHeaders
+        {
+            ContentType = contentType
+        };
+
+        var blobOptions = new BlobUploadOptions
+        {
+            HttpHeaders = blobHttpHeaders
+        };
+
         var blobClient = containerClient.GetBlobClient(blobName);
-        await blobClient.UploadAsync(fileStream, overwrite: true);
+        await blobClient.UploadAsync(fileStream, blobOptions);
 
         return blobClient.Uri.ToString();
     }
@@ -53,5 +66,27 @@ public class AzureBlobService : IAzureBlobService
 
         return result;
     }
-}
+    private string GetContentTypeFromFileName(string fileName)
+    {
+        var extension = Path.GetExtension(fileName)?.ToLowerInvariant();
 
+        return extension switch
+        {
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".gif" => "image/gif",
+            ".bmp" => "image/bmp",
+            ".webp" => "image/webp",
+            ".svg" => "image/svg+xml",
+            ".ico" => "image/x-icon",
+            ".tiff" or ".tif" => "image/tiff",
+            ".pdf" => "application/pdf",
+            ".txt" => "text/plain",
+            ".json" => "application/json",
+            ".xml" => "application/xml",
+            ".zip" => "application/zip",
+            _ => "application/octet-stream"
+        };
+    }
+
+}

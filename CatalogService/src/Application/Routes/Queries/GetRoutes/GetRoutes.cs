@@ -7,8 +7,19 @@ namespace CatalogService.Application.Routes.Queries.GetRoutes;
 
 public record GetRoutesQuery : IRequest<ServiceResponse<GetRoutesResponseDto>>
 {
-    public int Page { get; set; } = 0;
-    public string? Name { get; set; } = string.Empty;
+    public int Page { get; init; } = 0;
+    public int PageSize { get; init; } = 8;
+    public string? Name { get; init; } = string.Empty;
+    public bool? Status { get; init; } = false;
+}
+
+public class GetRoutesQueryValidator : AbstractValidator<GetRoutesQuery>
+{
+    public GetRoutesQueryValidator()
+    {
+        RuleFor(x => x.PageSize)
+            .GreaterThan(0).WithMessage("Kích thước trang phải lớn hơn 0!");
+    }
 }
 
 public class GetRoutesQueryHandler : IRequestHandler<GetRoutesQuery, ServiceResponse<GetRoutesResponseDto>>
@@ -16,8 +27,6 @@ public class GetRoutesQueryHandler : IRequestHandler<GetRoutesQuery, ServiceResp
 
     private readonly IRouteService _routeService;
     private readonly ILogger<GetRoutesQueryHandler> _logger;
-
-    private const int DefaultPageSize = 8;
 
     public GetRoutesQueryHandler(IRouteService routeService, ILogger<GetRoutesQueryHandler> logger)
     {
@@ -27,12 +36,13 @@ public class GetRoutesQueryHandler : IRequestHandler<GetRoutesQuery, ServiceResp
 
     public async Task<ServiceResponse<GetRoutesResponseDto>> Handle(GetRoutesQuery request, CancellationToken cancellationToken)
     {
-        var (routes, totalPages) = await _routeService.GetAsync(request, DefaultPageSize, cancellationToken);
+        var (routes, totalPages) = await _routeService.GetAsync(request, cancellationToken);
 
         var response = new GetRoutesResponseDto
         {
             Routes = routes,
             TotalPages = totalPages,
+            PageSize = request.PageSize,
             CurrentPage = request.Page,
         };
 

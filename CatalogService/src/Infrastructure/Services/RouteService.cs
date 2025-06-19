@@ -1,49 +1,70 @@
-﻿using System.Linq.Expressions;
+﻿using System.Linq;
+using System.Linq.Expressions;
 using CatalogService.Application.Common.Interfaces.Repositories;
 using CatalogService.Application.Common.Interfaces.Services;
 using CatalogService.Application.Routes.Commands.CreateRoute;
 using CatalogService.Application.Routes.Commands.UpdateRoute;
+using CatalogService.Application.Routes.Commands.UpsertRouteStation;
 using CatalogService.Application.Routes.DTOs;
 using CatalogService.Application.Routes.Queries.GetRoutes;
 using CatalogService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace CatalogService.Infrastructure.Services;
 
 public class RouteService : IRouteService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAzureBlobService _azureBlobService;
+    private readonly IConfiguration _configuration;
 
-    public RouteService(IUnitOfWork unitOfWork)
+    public RouteService(IUnitOfWork unitOfWork, IAzureBlobService azureBlobService,
+        IConfiguration configuration)
     {
         _unitOfWork = unitOfWork;
+        _azureBlobService = azureBlobService;
+        _configuration = configuration;
     }
 
-    public async Task<Guid> CreateAsync(CreateRouteCommand command,
+    public async Task<Guid> CreateAsync(
+        CreateRouteCommand command,
         CancellationToken cancellationToken = default)
     {
+        var id = Guid.NewGuid();
+
         var repo = _unitOfWork.GetRepository<Route, Guid>();
 
-        var availableRoute = await GetRouteByCodeAsync(command.Code, cancellationToken);
-        if (availableRoute != null)
+        var count = repo.Query().Count();
+        var code = GenerateCode(count);
+
+        var thumbnailImageUrl = "empty";
+        if (command.ThumbnailImageStream != null && command.ThumbnailImageFileName != null)
         {
-            return Guid.Empty;
+            var blobName = id + GetFileType(command.ThumbnailImageFileName);
+            var containerName =
+                _configuration["Azure:BlobStorageSettings:RouteImagesContainerName"] ??
+                "route-images";
+            var blobUrl = await _azureBlobService.UploadAsync(
+                command.ThumbnailImageStream,
+                blobName,
+                containerName);
+            thumbnailImageUrl = blobUrl;
         }
 
-        var routeId = Guid.NewGuid();
         var newRoute = new Route()
         {
-            Id = routeId,
-            Code = command.Code,
+            Id = id,
+            Code = code,
             Name = command.Name,
-            ThumbnailImageUrl = command.ThumbnailImageUrl,
+            ThumbnailImageUrl = thumbnailImageUrl,
             LengthInKm = command.LengthInKm,
         };
 
         await repo.AddAsync(newRoute, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
 
-        return routeId;
+        return id;
     }
 
     public async Task<Guid> UpdateAsync(UpdateRouteCommand command,
@@ -57,16 +78,24 @@ public class RouteService : IRouteService
             return Guid.Empty;
         }
 
-        var availableRoute = await GetRouteByCodeAsync(command.Code, cancellationToken);
-        if (availableRoute != null  && availableRoute.Id != command.Id)
+        if (command.ThumbnailImageStream != null && command.ThumbnailImageFileName != null)
         {
-            return Guid.Empty;
+            var blobName = route.Id + GetFileType(command.ThumbnailImageFileName);
+            var containerName =
+                _configuration["Azure:BlobStorageSettings:RouteImagesContainerName"] ??
+                "route-images";
+            var blobUrl = await _azureBlobService.UploadAsync(
+                command.ThumbnailImageStream,
+                blobName,
+                containerName);
+            route.ThumbnailImageUrl = blobUrl;
         }
 
-        route.Code = command.Code;
         route.Name = command.Name;
-        route.ThumbnailImageUrl = command.ThumbnailImageUrl;
-        route.LengthInKm = command.LengthInKm;
+        if (command.LengthInKm > 0.1)
+        {
+            route.LengthInKm = (double)command.LengthInKm!;
+        }
 
         await repo.UpdateAsync(route, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
@@ -85,10 +114,22 @@ public class RouteService : IRouteService
             return Guid.Empty;
         }
 
+        var stationRouteRepo =
+            _unitOfWork.GetRepository<StationRoute, (Guid StationId, Guid RouteId)>();
+
+        var stationRoutes = await stationRouteRepo.Query().Where(r => r.RouteId == id).ToListAsync(cancellationToken);
+        if (stationRoutes.Count != 0)
+        {
+            foreach (var stationRoute in stationRoutes)
+            {
+                stationRoute.DeleteFlag = true;
+                await stationRouteRepo.UpdateAsync(stationRoute, cancellationToken);
+            }
+        }
+
         route.DeleteFlag = true;
 
         await repo.UpdateAsync(route, cancellationToken);
-
         await _unitOfWork.SaveChangesAsync();
 
         return route.Id;
@@ -96,7 +137,6 @@ public class RouteService : IRouteService
 
     public async Task<(IEnumerable<RoutesResponseDto>, int)> GetAsync(
         GetRoutesQuery query,
-        int sizePerPage,
         CancellationToken cancellationToken = default)
     {
         var repo = _unitOfWork.GetRepository<Route, Guid>();
@@ -104,12 +144,12 @@ public class RouteService : IRouteService
         Expression<Func<Route, bool>> filter = GetFilter(query);
 
         var routes = await repo.GetPagedAsync(
-            skip: query.Page * sizePerPage,
-            take: sizePerPage,
+            skip: query.Page * query.PageSize,
+            take: query.PageSize,
             filters: [filter],
             cancellationToken: cancellationToken);
 
-        var totalPages = await repo.GetTotalPagesAsync(sizePerPage, [filter], cancellationToken);
+        var totalPages = await repo.GetTotalPagesAsync(query.PageSize, [filter], cancellationToken);
 
         return (
             routes.Select(r => new RoutesResponseDto
@@ -122,31 +162,114 @@ public class RouteService : IRouteService
             }), totalPages);
     }
 
-    public Task<RoutesResponseDto?> GetByIdAsync(Guid requestId, CancellationToken cancellationToken = default)
+    public async Task<StationRouteResponseDto?> GetByIdAsync(Guid requestId,
+        CancellationToken cancellationToken = default)
     {
         var repo = _unitOfWork.GetRepository<Route, Guid>();
 
-        return repo.GetByIdAsync(requestId, cancellationToken)
-            .ContinueWith(task =>
-            {
-                var route = task.Result;
-                if (route == null) return null;
+        var route = await repo.Query().Include(r => r.StationRoutes.Where(sr => sr.DeleteFlag == false)).ThenInclude(r => r.Station)
+            .FirstOrDefaultAsync(r => r.Id == requestId, cancellationToken);
+        if (route == null)
+        {
+            return null;
+        }
 
-                return new RoutesResponseDto
-                {
-                    Id = route.Id,
-                    Code = route.Code,
-                    Name = route.Name,
-                    ThumbnailImageUrl = route.ThumbnailImageUrl,
-                    LengthInKm = route.LengthInKm
-                };
-            }, cancellationToken);
+        var stationRoutes = route.StationRoutes.Select(sr => new StationResponseDto()
+        {
+            Id = sr.StationId,
+            Name = sr.Station?.Name,
+            Code = sr.Station?.Code,
+            StreetNumber = sr.Station?.StreetNumber,
+            Street = sr.Station?.Street,
+            Ward = sr.Station?.Ward,
+            District = sr.Station?.District,
+            City = sr.Station?.City,
+            ThumbnailImageUrl = sr.Station?.ThumbnailImageUrl,
+            Order = sr.Order,
+            DistanceToNext = sr.DistanceToNext,
+        }).ToList();
+
+        var response = new StationRouteResponseDto()
+        {
+            Id = route.Id,
+            Name = route.Name,
+            Code = route.Code,
+            LengthInKm = route.LengthInKm,
+            ThumbnailImageUrl = route.ThumbnailImageUrl,
+            Stations = stationRoutes
+        };
+
+        return response;
     }
 
-    private async Task<Route?> GetRouteByCodeAsync(string code, CancellationToken cancellationToken)
+
+    public async Task<Guid> UpsertRouteStationAsync(UpsertStationRouteCommand command, CancellationToken cancellationToken = default)
     {
         var repo = _unitOfWork.GetRepository<Route, Guid>();
-        return await repo.Query().FirstOrDefaultAsync(r => r.Code == code, cancellationToken);
+
+        var stationRouteRepo = _unitOfWork.GetRepository<StationRoute, (Guid, Guid)>();
+
+        var route = await repo.Query().Include(r => r.StationRoutes).FirstOrDefaultAsync(r => r.Id == command.Id);
+
+        if (route == null)
+            return Guid.Empty;
+
+        double routeLength = 0;
+
+        var existingList = route.StationRoutes.Where(sr => sr.DeleteFlag == false);
+
+        foreach (var stationRouteDto in command.StationRoutes)
+        {
+            //If existing station route is found in both existingDict and command, update it
+
+            
+            var stationRoute = route.StationRoutes
+        .FirstOrDefault(sr => sr.StationId == stationRouteDto.StationId);
+            if (stationRoute != null)
+            {
+                routeLength += stationRouteDto.DistanceToNext;
+                stationRoute.Order = stationRouteDto.Order;
+                stationRoute.DistanceToNext = stationRouteDto.DistanceToNext;
+                stationRoute.DeleteFlag = false; 
+                await stationRouteRepo.UpdateAsync(stationRoute, cancellationToken);
+            }
+            else
+            {
+                routeLength += stationRouteDto.DistanceToNext;
+                // Create new station route
+                var newStationRoute = new StationRoute
+                {
+                    RouteId = command.Id,
+                    StationId = stationRouteDto.StationId,
+                    Order = stationRouteDto.Order,
+                    DistanceToNext = stationRouteDto.DistanceToNext
+                };
+                await stationRouteRepo.AddAsync(newStationRoute, cancellationToken);
+            }
+        }
+        foreach (var existingStationRoute in existingList)
+        {
+            if (existingStationRoute.DeleteFlag == false && !command.StationRoutes.Any(sr => sr.StationId == existingStationRoute.StationId))
+            {
+                // Delete station route if it is not in the command
+                await stationRouteRepo.RemoveAsync(existingStationRoute, cancellationToken);
+            }
+
+        }
+        // Update route length
+
+        route.LengthInKm = routeLength;
+
+
+        await repo.UpdateAsync(route, cancellationToken);
+
+
+        await _unitOfWork.SaveChangesAsync();
+
+
+
+        return command.Id;
+
     }
 
     #region Helper method
@@ -154,8 +277,22 @@ public class RouteService : IRouteService
     private Expression<Func<Route, bool>> GetFilter(GetRoutesQuery query)
     {
         return (r) =>
-            r.Name!.ToLower().Contains(query.Name!.ToLower() + "");
+            r.Name!.ToLower().Contains(query.Name!.ToLower() + "") &&
+            r.DeleteFlag == query.Status;
     }
+
+    private string GenerateCode(int count, int digits = 6)
+    {
+        var nextCode = count + 1;
+        return nextCode.ToString($"D{digits}");
+    }
+
+    private string GetFileType(string fileName)
+    {
+        return Path.GetExtension(fileName);
+    }
+
+
 
     #endregion
 }
