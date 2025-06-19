@@ -23,9 +23,10 @@ public static class DependencyInjection
         Guard.Against.Null(writeDbConnectionString, message: "Connection string 'OrderServiceWriteDb' not found. Make sure you have configured the connection");
         Guard.Against.Null(readDbConnectionString, message: "Connection string 'OrderServiceReadDb' not found. Make sure you have configured the connection");
 
+
         services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();
-
+        
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
@@ -46,6 +47,8 @@ public static class DependencyInjection
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<ApplicationDbContextInitialiser>();
+        services.AddScoped<IMomoService, MomoService>();
+        services.AddScoped<HttpClient>();
 
         services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();

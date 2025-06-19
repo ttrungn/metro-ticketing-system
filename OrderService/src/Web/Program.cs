@@ -5,6 +5,7 @@ using OrderService.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddWebServices(builder.Configuration);
