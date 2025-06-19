@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using UserService.Application.Common.Interfaces;
@@ -11,36 +12,24 @@ namespace UserService.Infrastructure.Services;
 public class HttpClientService : IHttpClientService
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly string _apiBaseUrl;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<HttpClientService> _logger;
-    private readonly IUser _user;
 
-    public HttpClientService(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<HttpClientService> logger, IUser user)
+    public HttpClientService(IHttpClientFactory httpClientFactory, ILogger<HttpClientService> logger, IHttpContextAccessor httpContextAccessor)
     {
         _httpClientFactory = httpClientFactory;
         _logger = logger;
-        _user = user;
-        _apiBaseUrl = configuration["ClientSettings:ApiBaseUrl"] ?? "http://localhost:8081";
+        _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<T> SendRequest<T>(string endpoint, HttpMethod method, Object? body = null, CancellationToken cancellationToken = default)
+    public async Task<T> SendGet<T>(string endpoint, string baseUrl, CancellationToken cancellationToken = default)
     {
-        var client = _httpClientFactory.CreateClient();
-        var request = new HttpRequestMessage(method, $"{_apiBaseUrl}/{endpoint}");
-        request.Headers.Add("Accept", "application/json");
-        request.Headers.Add("X-User-Id", _user.Id);
-        request.Headers.Add("X-User-Email", _user.Id);
-        request.Headers.Add("X-User-Name", _user.Id);
-        request.Headers.Add("X-User-Role", _user.Id);
+        var authorizationHeader = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
 
-        if (body != null && method != HttpMethod.Get && method != HttpMethod.Delete)
-        {
-            request.Content = new StringContent(
-                JsonSerializer.Serialize(body),
-                Encoding.UTF8,
-                "application/json"
-            );
-        }
+        var client = _httpClientFactory.CreateClient();
+        var request = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}/{endpoint}");
+        request.Headers.Add("Accept", "application/json");
+        request.Headers.Add("Authorization", authorizationHeader);
 
         var response = await client.SendAsync(request, cancellationToken);
         if (!response.IsSuccessStatusCode)

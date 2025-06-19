@@ -104,6 +104,8 @@ public static class DependencyInjection
 
         services.AddSingleton(TimeProvider.System);
 
+        services.AddHttpContextAccessor();
+
         return services;
     }
 }
