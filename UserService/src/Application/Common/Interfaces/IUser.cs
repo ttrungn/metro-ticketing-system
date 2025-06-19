@@ -3,4 +3,7 @@
 public interface IUser
 {
     string? Id { get; }
+    string? Email { get; }
+    string? UserName { get; }
+    IEnumerable<string> Roles { get; }
 }

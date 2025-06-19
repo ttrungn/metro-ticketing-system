@@ -81,17 +81,6 @@ namespace YarpApiGateway
                             {
                                 throw new UnauthorizedAccessException("Invalid token");
                             }
-
-                            var user = result.Principal!;
-                            var id = user.FindFirstValue(ClaimTypes.NameIdentifier);
-                            var email = user.FindFirstValue(ClaimTypes.Email);
-                            var name = user.FindFirstValue(JwtRegisteredClaimNames.Name);
-                            var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value);
-
-                            h.Add("X-User-Id", id ?? "");
-                            h.Add("X-User-Email", email ?? "");
-                            h.Add("X-User-Name", name ?? "");
-                            h.Add("X-User-Roles", string.Join(",", roles));
                         }
                         await ValueTask.CompletedTask;
                     });
