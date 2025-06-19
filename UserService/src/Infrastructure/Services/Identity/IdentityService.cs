@@ -65,16 +65,6 @@ public class IdentityService : IIdentityService
 
     public async Task<ServiceResponse<string>> RegisterUserAsync(string role, string email, string password, string firstName, string lastName)
     {
-        if (role == Roles.Administrator)
-        {
-            return new ServiceResponse<string>
-            {
-                Succeeded = false,
-                Message   = "Không thể tạo tài khoản. Vui lòng thử lại.",
-                Data      = string.Empty
-            };
-        }
-        
         var user = await _userManager.FindByEmailAsync(email);
         if (user != null)
         {
