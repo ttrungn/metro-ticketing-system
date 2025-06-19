@@ -31,9 +31,9 @@ public class DeleteStationCommandHandler : IRequestHandler<DeleteStationCommand,
 
     public async Task<ServiceResponse<Guid>> Handle(DeleteStationCommand command, CancellationToken cancellationToken)
     {
-        var routeId = await _stationService.DeleteAsync(command.Id, cancellationToken);
+        var stationId = await _stationService.DeleteAsync(command.Id, cancellationToken);
 
-        if (routeId == Guid.Empty)
+        if (stationId == Guid.Empty)
         {
             _logger.LogWarning("Station with ID {StationId} not found for deletion.", command.Id);
 
@@ -45,13 +45,13 @@ public class DeleteStationCommandHandler : IRequestHandler<DeleteStationCommand,
             };
         }
 
-        _logger.LogInformation("Delete updated with ID: {RouteId}", routeId);
+        _logger.LogInformation("Delete updated with ID: {RouteId}", stationId);
 
         return new ServiceResponse<Guid>()
         {
             Succeeded = true,
             Message = "Xóa trạm thành công!",
-            Data = routeId
+            Data = stationId
         };
     }
 }
