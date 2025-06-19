@@ -2,5 +2,5 @@
 
 public interface IHttpClientService
 {
-    Task<T> SendGet<T>(string endpoint, string baseUrl, CancellationToken cancellationToken = default);
+    Task<T> SendGet<T>(string baseUrl, string endpoint, CancellationToken cancellationToken = default);
 }

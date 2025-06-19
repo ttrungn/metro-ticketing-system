@@ -1,10 +1,6 @@
 ﻿using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using UserService.Application.Common.Interfaces;
 using UserService.Application.Common.Interfaces.Services;
 
 namespace UserService.Infrastructure.Services;
