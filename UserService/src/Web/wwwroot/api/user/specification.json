@@ -6,12 +6,23 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/api/user/Auth/login": {
+    "/api/user/Auth/{role}/login": {
       "post": {
         "tags": [
           "Auth"
         ],
         "operationId": "LoginAsync",
+        "parameters": [
+          {
+            "name": "role",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
         "requestBody": {
           "x-name": "request",
           "content": {
@@ -22,7 +33,7 @@
             }
           },
           "required": true,
-          "x-position": 1
+          "x-position": 2
         },
         "responses": {
           "200": {
@@ -31,23 +42,34 @@
         }
       }
     },
-    "/api/user/Auth/register/customer": {
+    "/api/user/Auth/{role}/register": {
       "post": {
         "tags": [
           "Auth"
         ],
-        "operationId": "RegisterCustomerAsync",
+        "operationId": "RegisterAsync",
+        "parameters": [
+          {
+            "name": "role",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
         "requestBody": {
           "x-name": "request",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RegisterCustomerCommand"
+                "$ref": "#/components/schemas/RegisterUserCommand"
               }
             }
           },
           "required": true,
-          "x-position": 1
+          "x-position": 2
         },
         "responses": {
           "200": {
@@ -63,6 +85,9 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "role": {
+            "type": "string"
+          },
           "email": {
             "type": "string"
           },
@@ -71,10 +96,13 @@
           }
         }
       },
-      "RegisterCustomerCommand": {
+      "RegisterUserCommand": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "role": {
+            "type": "string"
+          },
           "email": {
             "type": "string"
           },
