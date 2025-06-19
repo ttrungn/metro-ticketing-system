@@ -56,6 +56,149 @@
         }
       }
     },
+    "/api/user/Feedbacks": {
+      "post": {
+        "tags": [
+          "Feedbacks"
+        ],
+        "operationId": "CreateFeedbackAsync",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFeedbackCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Feedbacks"
+        ],
+        "operationId": "GetFeedbacksAsync",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/user/FeedbackTypes": {
+      "post": {
+        "tags": [
+          "FeedbackTypes"
+        ],
+        "operationId": "CreateFeedbackTypeAsync",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFeedbackTypeCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "FeedbackTypes"
+        ],
+        "operationId": "GetFeedbackTypesAsync",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "FeedbackTypes"
+        ],
+        "operationId": "UpdateFeedbackTypeAsync",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFeedbackTypeCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/user/FeedbackTypes/{id}": {
+      "delete": {
+        "tags": [
+          "FeedbackTypes"
+        ],
+        "operationId": "DeleteFeedbackTypesAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "FeedbackTypes"
+        ],
+        "operationId": "GetFeedbackTypeByIdAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/user/Profiles": {
       "get": {
         "tags": [
@@ -248,6 +391,53 @@
           },
           "lastName": {
             "type": "string"
+          }
+        }
+      },
+      "CreateFeedbackCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "feedbackTypeId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "content": {
+            "type": "string"
+          },
+          "stationId": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CreateFeedbackTypeCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateFeedbackTypeCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
