@@ -1,11 +1,14 @@
-﻿using BuildingBlocks.Response;
+﻿using BuildingBlocks.Domain.Constants;
+using BuildingBlocks.Response;
 using Microsoft.Extensions.Logging;
 using UserService.Application.Common.Interfaces;
 using UserService.Application.Common.Interfaces.Services;
+using UserService.Application.Common.Security;
 using UserService.Application.Users.DTOs;
 
 namespace UserService.Application.Users.Queries.GetUser;
 
+[Authorize(Roles = Roles.Customer)]
 public record GetUserQuery : IRequest<ServiceResponse<UserResponseDto>>;
 
 public class GetUserQueryValidator : AbstractValidator<GetUserQuery>

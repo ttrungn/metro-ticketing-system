@@ -8,6 +8,7 @@ namespace UserService.Application.Users.Commands.LoginUser;
 
 public record LoginUserCommand : IRequest<LoginUserResult>
 {
+    public string Role { get; set; } = null!;
     public string Email { get; init; } = null!;
     public string Password { get; init; } = null!;
 }
@@ -48,8 +49,8 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, LoginUs
     public async Task<LoginUserResult> Handle(LoginUserCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Login attempt started for Email: {Email}", request.Email);
-        (Result result, string tokenType, string token, int expiresIn) 
-            = await _identityService.LoginUserAsync(request.Email, request.Password);
+        (Result result, string tokenType, string token, int expiresIn)
+            = await _identityService.LoginUserAsync(request.Role, request.Email, request.Password);
         if (result.Succeeded)
         {
             _logger.LogInformation("Login successful for Email: {Email}", request.Email);
