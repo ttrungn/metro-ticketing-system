@@ -14,13 +14,24 @@ public class Auth : EndpointGroupBase
             .MapPost(LoginAsync, "/{role}/login")
             .MapPost(RegisterAsync, "/{role}/register");
     }
-
+    
+    public class LoginRequest
+    {
+        public string Email { get; init; } = null!;
+        public string Password { get; init; } = null!;
+    }
+    
     private static async Task<IResult> LoginAsync(
         [FromRoute] string role,
-        [FromBody] LoginUserCommand request,
+        [FromBody] LoginRequest loginRequest,
         ISender sender)
     {
-        request.Role = role;
+        var request = new LoginUserCommand
+        {
+            Email = loginRequest.Email,
+            Password = loginRequest.Password,
+            Role = role
+        };
         var result = await sender.Send(request);
         if (!result.Succeeded)
             return Results.BadRequest(new { message = result.Errors.First() });
@@ -33,12 +44,27 @@ public class Auth : EndpointGroupBase
         });
     }
     
+    public class RegisterRequest
+    {
+        public string Email     { get; init; } = null!;
+        public string Password  { get; init; } = null!;
+        public string FirstName { get; init; } = null!;
+        public string LastName  { get; init; } = null!;
+    }
+    
     private static async Task<IResult> RegisterAsync(
         [FromRoute] string role,
-        [FromBody] RegisterUserCommand request,
+        [FromBody] RegisterRequest registerRequest,
         ISender sender)
     {
-        request.Role = role;
+        var request = new RegisterUserCommand
+        {
+            Email     = registerRequest.Email,
+            Password  = registerRequest.Password,
+            FirstName = registerRequest.FirstName,
+            LastName  = registerRequest.LastName,
+            Role      = role
+        };
         var result = await sender.Send(request);
         if (!result.Succeeded)
             return Results.BadRequest(result);
