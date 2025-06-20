@@ -1,4 +1,4 @@
-﻿using BuildingBlocks.Domain.Constants;
+using BuildingBlocks.Domain.Constants;
 using BuildingBlocks.Response;
 using Microsoft.Extensions.Logging;
 using UserService.Application.Common.Interfaces;
