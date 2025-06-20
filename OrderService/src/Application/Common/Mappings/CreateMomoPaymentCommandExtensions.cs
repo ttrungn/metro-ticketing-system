@@ -25,7 +25,7 @@ public static class CreateMomoPaymentCommandExtensions
             OrderId = orderId,
             RequestId = requestId,
             Amount = (long)(command.Amount ?? 0),
-            OrderInfo = $"Thanh toán {command.OrderDetails?.Count ?? 0} vé",
+            OrderInfo = $"Thanh Toán Vé Tàu Metro",
             RedirectUrl = options.RedirectUrl,
             IpnUrl = options.IpnUrl,
             RequestType = options.RequestType,

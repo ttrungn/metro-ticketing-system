@@ -5,7 +5,73 @@
     "title": "OrderService API",
     "version": "1.0.0"
   },
+  "paths": {
+    "/api/order/Payment/momo/create": {
+      "post": {
+        "tags": [
+          "Payment"
+        ],
+        "operationId": "MomoPayment",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMomoPaymentCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    }
+  },
   "components": {
+    "schemas": {
+      "CreateMomoPaymentCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "orderDetails": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/OrderDetailDto"
+            }
+          }
+        }
+      },
+      "OrderDetailDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "ticketId": {
+            "type": "string"
+          },
+          "entryStationId": {
+            "type": "string"
+          },
+          "destinationStationId": {
+            "type": "string"
+          },
+          "boughtPrice": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      }
+    },
     "securitySchemes": {
       "JWT": {
         "type": "apiKey",

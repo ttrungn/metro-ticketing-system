@@ -6,6 +6,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using OrderService.Application.Common.Interfaces.Services;
 using OrderService.Application.MomoPayment.Commands.CreateMomoPayment;
 using OrderService.Application.MomoPayment.DTOs;
@@ -31,14 +33,25 @@ public class MomoService : IMomoService
         var momoRequest = command.ToMomoOneTimePayment(options);
 
 
-        var requestJson = JsonSerializer.Serialize(momoRequest);
+        var requestJson = JsonConvert.SerializeObject(momoRequest, new JsonSerializerSettings()
+        {
+            ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            Formatting = Formatting.Indented,
+        });
         var content = new StringContent(requestJson, Encoding.UTF8, "application/json");
+        _logger.LogInformation("Sending MoMo payment request: {Payload}", requestJson);
+        _logger.LogInformation("POST to URL: {Url}", options.PaymentUrl);
 
         var response = await _client.PostAsync(options.PaymentUrl, content);
+       
         var responseJson = await response.Content.ReadAsStringAsync();
-
-        var momoResponse = JsonSerializer.Deserialize<MomoCreatePaymentResponseModel>(responseJson);
+        var momoResponse = JsonConvert.DeserializeObject<MomoCreatePaymentResponseModel>(responseJson);
+        _logger.LogInformation("MoMo Raw Response: {Response}", responseJson);
+        _logger.LogInformation("MoMo Status Code: {StatusCode}", response.StatusCode);
 
         return momoResponse!;
+
+
+
     }
 }

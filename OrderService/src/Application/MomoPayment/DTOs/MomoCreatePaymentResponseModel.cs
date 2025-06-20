@@ -7,17 +7,17 @@ using System.Threading.Tasks;
 namespace OrderService.Application.MomoPayment.DTOs;
      public class MomoCreatePaymentResponseModel
      {
-        public string? RequestId { get; set; }
-        public int ErrorCode { get; set; }
-        public string? OrderId { get; set; }
-        public string? Message { get; set; }
-        public string? LocalMessage { get; set; }
-        public string? RequestType { get; set; }
-        public string? PayUrl { get; set; }
-        public string? Signature { get; set; }
-        public string? QrCodeUrl { get; set; }
-        public string? Deeplink { get; set; }
-        public string? DeeplinkWebInApp { get; set; }
+
+        public string PartnerCode { get; set; } = string.Empty;
+        public string RequestId { get; set; } = string.Empty;
+        public string OrderId { get; set; } = string.Empty;
+        public long Amount { get; set; }
+        public long ResponseTime { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string ResultCode { get; set; } = string.Empty;
+        public string PayUrl { get; set; } = string.Empty;
+        public string Deeplink { get; set; } = string.Empty;
+        public string QrCodeUrl { get; set; } = string.Empty;
 
      }
 

@@ -9,9 +9,9 @@ namespace OrderService.Application.MomoPayment.Commands.CreateMomoPayment;
 public record CreateMomoPaymentCommand : IRequest<ServiceResponse<MomoCreatePaymentResponseModel>>
 {
 
-    public double? Amount;
+    public double? Amount { get; init; }
 
-    public List<OrderDetailDto>? OrderDetails;
+    public List<OrderDetailDto>? OrderDetails { get; init; }
 }
 
 public class CreateMomoPaymentCommandValidator : AbstractValidator<CreateMomoPaymentCommand>
@@ -61,7 +61,7 @@ public class CreateMomoPaymentCommandHandler : IRequestHandler<CreateMomoPayment
 
             var momoResponse = await _service.CreatePaymentWithMomo(request,cancellationToken);
 
-            if (momoResponse == null || momoResponse.ErrorCode != 0)
+            if (momoResponse == null)
             {
                 _logger.LogError("MoMo payment failed: {Message}", momoResponse?.Message ?? "No response");
                 response.Succeeded = false;
