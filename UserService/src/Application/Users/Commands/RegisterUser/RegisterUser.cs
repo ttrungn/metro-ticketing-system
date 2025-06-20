@@ -3,17 +3,18 @@ using BuildingBlocks.Response;
 using Microsoft.Extensions.Logging;
 using UserService.Application.Common.Interfaces.Services;
 
-namespace UserService.Application.Users.Commands.RegisterCustomer;
+namespace UserService.Application.Users.Commands.RegisterUser;
 
-public record RegisterCustomerCommand : IRequest<ServiceResponse<string>>
+public record RegisterUserCommand : IRequest<ServiceResponse<string>>
 {
+    public string Role { get; set; } = null!;
     public string Email { get; init; } = null!;
     public string Password { get; init; } = null!;
     public string FirstName { get; init; } = null!;
     public string LastName { get; init; } = null!;
 }
 
-public class RegisterUserCommandValidator : AbstractValidator<RegisterCustomerCommand>
+public class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>
 {
     public RegisterUserCommandValidator()
     {
@@ -35,7 +36,7 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterCustomerCo
     }
 }
 
-public class RegisterUserCommandHandler : IRequestHandler<RegisterCustomerCommand, ServiceResponse<string>>
+public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, ServiceResponse<string>>
 {
     private readonly ILogger<RegisterUserCommandHandler> _logger;
     private readonly IIdentityService _identityService;
@@ -46,10 +47,10 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterCustomerComman
         _identityService = identityService;
     }
 
-    public async Task<ServiceResponse<string>> Handle(RegisterCustomerCommand request, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<string>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Starting user registration for email: {Email}", request.Email);
-        var serviceResponse = await _identityService.RegisterUserAsync(request, Roles.Customer);
+        var serviceResponse = await _identityService.RegisterUserAsync(request.Role, request.Email, request.Password, request.FirstName, request.LastName);
         if (!serviceResponse.Succeeded)
         {
             _logger.LogWarning("User registration failed for email: {Email}. Errors: {Errors}", request.Email, serviceResponse.Message);

@@ -31,7 +31,7 @@ public static class DependencyInjection
         Guard.Against.NullOrEmpty(writeDbConnectionString, message: "Connection string 'UserServiceWriteDb' not found.");
         Guard.Against.NullOrEmpty(readDbConnectionString, message: "Connection string 'UserServiceReadDb' not found.");
         Guard.Against.Null(azureBlobStorageConnectionString, message: "Azure Blob Storage connection string not found. Make sure you have configured the connection");
-        
+
         services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();
 
@@ -43,9 +43,9 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
-        
+
         services.AddScoped<ApplicationDbContextInitialiser>();
-        
+
         services.AddMarten(options =>
         {
             options.DisableNpgsqlLogging = true;
@@ -57,7 +57,7 @@ public static class DependencyInjection
             options.UseSystemTextJsonForSerialization();
         })
         .UseLightweightSessions();
-        
+
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
@@ -96,13 +96,16 @@ public static class DependencyInjection
         services.AddScoped<ITokenRepository, TokenRepository>();
         services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        
+        services.AddScoped<IHttpClientService, HttpClientService>();
+
         services.AddTransient<IIdentityService, IdentityService>();
         services.AddSingleton(new BlobServiceClient(azureBlobStorageConnectionString));
         services.AddScoped<IAzureBlobService, AzureBlobService>();
-        
+
         services.AddSingleton(TimeProvider.System);
-        
+
+        services.AddHttpContextAccessor();
+
         return services;
     }
 }

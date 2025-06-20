@@ -5,54 +5,47 @@ using SampleService.Application.Common.Security;
 
 namespace SampleService.Application.Common.Behaviours;
 
-public class AuthorizationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
+public class AuthorizationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : notnull
 {
     private readonly IUser _user;
 
-    public AuthorizationBehaviour(
-        IUser user
-    )
+    public AuthorizationBehaviour(IUser user)
     {
         _user = user;
     }
 
-    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+    public async Task<TResponse> Handle(
+        TRequest request,
+        RequestHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
     {
+        // Pull all [Authorize] attributes on the request
         var authorizeAttributes = request.GetType().GetCustomAttributes<AuthorizeAttribute>();
 
         if (authorizeAttributes.Any())
         {
-            // Must be authenticated user
-            if (_user.Id == null)
-            {
+            // 1) Must be authenticated
+            if (string.IsNullOrEmpty(_user.Id))
                 throw new UnauthorizedAccessException();
-            }
 
-            // Role-based authorization
-            var authorizeAttributesWithRoles = authorizeAttributes.Where(a => !string.IsNullOrWhiteSpace(a.Roles));
-
-            if (authorizeAttributesWithRoles.Any())
+            // 2) Role-based checks (if any roles are specified)
+            var withRoles = authorizeAttributes.Where(a => !string.IsNullOrWhiteSpace(a.Roles));
+            if (withRoles.Any())
             {
-                var authorized = false;
+                // Flatten all roles from all attributes into a set
+                var requiredRoles = withRoles
+                    .SelectMany(a => a.Roles.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                    .Select(r => r.Trim())
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-                var wanted = authorizeAttributesWithRoles
-                    .SelectMany(a => a.Roles.Split(','))
-                    .Select(r => r.Trim());
-
-                if (wanted.Intersect(_user.Roles, StringComparer.OrdinalIgnoreCase).Any())
-                {
-                    authorized = true;
-                }
-
-                // Must be a member of at least one role in roles
-                if (!authorized)
-                {
+                // Check intersection with the user's roles
+                if (!_user.Roles.Any(r => requiredRoles.Contains(r)))
                     throw new ForbiddenAccessException();
-                }
             }
         }
 
-        // User is authorized / authorization not required
+        // Authorized (or no [Authorize] on the request) → continue
         return await next();
     }
 }

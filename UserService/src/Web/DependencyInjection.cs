@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using UserService.Application.Common.Interfaces.Services;
+using UserService.Infrastructure.Services;
 using UserService.Infrastructure.Services.StudentRequests;
 
 namespace UserService.Web;
@@ -16,8 +17,11 @@ public static class DependencyInjection
         services.AddDatabaseDeveloperPageExceptionFilter();
 
         services.AddScoped<IUser, CurrentUser>();
+        services.AddScoped<IFeedbackService, FeedbackService>();
         services.AddTransient<IStudentRequestService, StudentRequestServiceService>();
         services.AddHttpContextAccessor();
+
+        services.AddHttpClient();
 
         services.AddHealthChecks()
             .AddDbContextCheck<ApplicationDbContext>();

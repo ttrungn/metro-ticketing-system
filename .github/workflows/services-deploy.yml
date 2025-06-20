@@ -54,3 +54,4 @@ jobs:
             cd /root/metro-ticketing-system
             git pull origin main
             docker compose up -d --pull always --force-recreate --no-deps ${{ steps.choose-service.outputs.service }}
+            docker image prune -f

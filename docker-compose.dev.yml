@@ -1,0 +1,13 @@
+services:
+  user-service:
+    image: "${REGISTRY_USERNAME}/mts-user-service-dev:${IMAGE_TAG-latest}"
+  sample-service:
+    image: "${REGISTRY_USERNAME}/mts-sample-service-dev:${IMAGE_TAG-latest}"
+  catalog-service:
+    image: "${REGISTRY_USERNAME}/mts-catalog-service-dev:${IMAGE_TAG-latest}"
+  order-service:
+    image: "${REGISTRY_USERNAME}/mts-order-service-dev:${IMAGE_TAG-latest}"
+  notification-service:
+    image: "${REGISTRY_USERNAME}/mts-notification-service-dev:${IMAGE_TAG-latest}"
+  api-gateway:
+    image: "${REGISTRY_USERNAME}/mts-yarp-api-gateway-dev:${IMAGE_TAG-latest}"
