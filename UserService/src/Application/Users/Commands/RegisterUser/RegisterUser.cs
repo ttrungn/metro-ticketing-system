@@ -1,6 +1,7 @@
-﻿using BuildingBlocks.Domain.Constants;
+using BuildingBlocks.Domain.Constants;
 using BuildingBlocks.Response;
 using Microsoft.Extensions.Logging;
+using UserService.Application.Common.Interfaces;
 using UserService.Application.Common.Interfaces.Services;
 
 namespace UserService.Application.Users.Commands.RegisterUser;
@@ -40,15 +41,28 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, S
 {
     private readonly ILogger<RegisterUserCommandHandler> _logger;
     private readonly IIdentityService _identityService;
+    private readonly IUser _user; 
 
-    public RegisterUserCommandHandler(ILogger<RegisterUserCommandHandler> logger, IIdentityService identityService)
+    public RegisterUserCommandHandler(ILogger<RegisterUserCommandHandler> logger, IIdentityService identityService, IUser user)
     {
         _logger = logger;
         _identityService = identityService;
+        _user = user;
     }
 
     public async Task<ServiceResponse<string>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
+        if (request.Role == Roles.Administrator
+            || (request.Role == Roles.Staff && !_user.Roles.Contains(Roles.Administrator)))
+        {
+            return new ServiceResponse<string>
+            {
+                Succeeded = false,
+                Message   = "Bạn không có quyền đăng ký người dùng với vai trò này.",
+                Data      = string.Empty
+            };
+        }
+        
         _logger.LogInformation("Starting user registration for email: {Email}", request.Email);
         var serviceResponse = await _identityService.RegisterUserAsync(request.Role, request.Email, request.Password, request.FirstName, request.LastName);
         if (!serviceResponse.Succeeded)
