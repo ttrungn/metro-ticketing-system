@@ -1,5 +1,6 @@
 ﻿using BuildingBlocks.Response;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using UserService.Application.Common.Interfaces.Repositories;
 using UserService.Application.Common.Interfaces.Services;
 using UserService.Application.Feedbacks.Commands.CreateFeedback;
@@ -14,11 +15,13 @@ public class FeedbackService : IFeedbackService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IHttpClientService _httpClientService;
+    private readonly IConfiguration _configuration;
 
-    public FeedbackService(IUnitOfWork unitOfWork, IHttpClientService httpClientService)
+    public FeedbackService(IUnitOfWork unitOfWork, IHttpClientService httpClientService, IConfiguration configuration)
     {
         _unitOfWork = unitOfWork;
         _httpClientService = httpClientService;
+        _configuration = configuration;
     }
 
     public async Task<Guid> CreateAsync(CreateFeedbackTypeCommand command, CancellationToken cancellationToken = default)
@@ -82,10 +85,11 @@ public class FeedbackService : IFeedbackService
             Content = command.Content,
         };
 
+        var baseUrl = Guard.Against.NullOrEmpty(_configuration["ClientSettings:CatalogServiceClient"], message: "Catalog Service Client URL is not configured.");
         var endpoint = $"api/catalog/Stations/{Guid.Parse(command.StationId!)}";
-        var response = await _httpClientService.SendRequest<ServiceResponse<StationsResponseDto>>(
+        var response = await _httpClientService.SendGet<ServiceResponse<StationsResponseDto>>(
+            baseUrl,
             endpoint,
-            HttpMethod.Get,
             cancellationToken: cancellationToken);
 
         if (response.Data != null)
@@ -102,10 +106,11 @@ public class FeedbackService : IFeedbackService
 
     public async Task<IEnumerable<FeedbackResponseDto>?> GetFeedbacksAsync(string? userId, CancellationToken cancellationToken = default)
     {
+        var baseUrl = Guard.Against.NullOrEmpty(_configuration["ClientSettings:CatalogServiceClient"], message: "Catalog Service Client URL is not configured.");
         var endpoint = $"api/catalog/Stations?page=0&pageSize=100&status=false";
-        var response = await _httpClientService.SendRequest<ServiceResponse<GetStationsResponseDto>>(
+        var response = await _httpClientService.SendGet<ServiceResponse<GetStationsResponseDto>>(
+            baseUrl,
             endpoint,
-            HttpMethod.Get,
             cancellationToken: cancellationToken);
         var map = response?.Data?.Stations.ToDictionary(s => s.Id, s => s.Name) ?? new Dictionary<Guid, string?>();
 
