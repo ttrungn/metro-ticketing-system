@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 namespace OrderService.Application.MomoPayment.DTOs;
 public class OrderDetailDto
 {
-    public string TicketId { get; set; } = null!;
+    public Guid TicketId { get; set; }
 
-    public string EntryStationId { get; set; } = null!;
+    public Guid EntryStationId { get; set; }
     
-    public string DestinationStationId { get; set; } = null!;
+    public Guid DestinationStationId { get; set; }
 
     public decimal BoughtPrice { get; set; } = 0;
 

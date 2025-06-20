@@ -57,13 +57,16 @@
         "additionalProperties": false,
         "properties": {
           "ticketId": {
-            "type": "string"
+            "type": "string",
+            "format": "guid"
           },
           "entryStationId": {
-            "type": "string"
+            "type": "string",
+            "format": "guid"
           },
           "destinationStationId": {
-            "type": "string"
+            "type": "string",
+            "format": "guid"
           },
           "boughtPrice": {
             "type": "number",
