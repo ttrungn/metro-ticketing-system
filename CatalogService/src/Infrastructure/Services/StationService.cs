@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using CatalogService.Application.Common.Interfaces.Repositories;
 using CatalogService.Application.Common.Interfaces.Services;
+using CatalogService.Application.Routes.DTOs;
 using CatalogService.Application.Stations.Commands.CreateStation;
 using CatalogService.Application.Stations.Commands.UpdateStation;
 using CatalogService.Application.Stations.DTOs;
@@ -262,6 +263,27 @@ public class StationService : IStationService
         .ToList();
 
         response.Stations = stationList.Select(s => s.togGetNameStationResponseDto()).ToList();
+
+        return response;
+    }
+
+    public async Task<IEnumerable<SingleUseGetStationsResponseDto>> GetStationsByRouteId(Guid routeId, CancellationToken cancellationToken = default)
+    {
+        var repo = _unitOfWork.GetRepository<StationRoute, (Guid,Guid)>();
+
+        var stationRoutes = await repo.Query()
+                                     .Include(s => s.Station)
+                                     .Where(st => st.DeleteFlag == false && st.RouteId == routeId)
+                                     .ToListAsync(cancellationToken);
+        if (stationRoutes.Count == 0)
+        {
+            return Enumerable.Empty<SingleUseGetStationsResponseDto>();
+        }
+        var response = stationRoutes.Select(st => new SingleUseGetStationsResponseDto()
+        {
+            Id = st.StationId,
+            Name = st?.Station?.Name
+        }).ToList();
 
         return response;
     }

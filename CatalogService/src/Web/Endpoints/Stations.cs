@@ -3,6 +3,7 @@ using CatalogService.Application.Stations.Commands.CreateStation;
 using CatalogService.Application.Stations.Commands.DeleteStation;
 using CatalogService.Application.Stations.Commands.UpdateStation;
 using CatalogService.Application.Stations.Queries.GeAllActiveStationByName;
+using CatalogService.Application.Stations.Queries.GetSingleUseStations;
 using CatalogService.Application.Stations.Queries.GetStationById;
 using CatalogService.Application.Stations.Queries.GetStations;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +21,8 @@ public class Stations : EndpointGroupBase
             .MapDelete(DeleteStation, "/{id:guid}")
             .MapGet(GetStations, "/")
             .MapGet(GetStationById, "/{id:guid}")
-                    .MapGet(GetAllActiveStationsByName, "/search/");
+                    .MapGet(GetAllActiveStationsByName, "/search/")
+                    .MapGet(GetSingleUseStationsByRouteId, "/single-use-station/{routeId:guid}");
 
     }
 
@@ -158,6 +160,21 @@ public class Stations : EndpointGroupBase
         {
             return TypedResults.Ok(response);
         }
-        return TypedResults.NotFound(response);
+        return TypedResults.BadRequest(response);
     }
+    private static async Task<IResult> GetSingleUseStationsByRouteId(ISender sender, [FromRoute] Guid routeId)
+    { 
+        var query = new GetSingleUseStationsQuery(routeId);
+
+        var response = await sender.Send(query);
+
+        if (response.Succeeded)
+        {
+
+            return TypedResults.Ok(response);
+
+        }
+        return TypedResults.BadRequest(response);
+    }
+
 }

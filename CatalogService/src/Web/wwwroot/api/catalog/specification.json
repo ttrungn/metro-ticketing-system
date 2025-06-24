@@ -305,6 +305,19 @@
         }
       }
     },
+    "/api/catalog/Routes/single-use-route": {
+      "get": {
+        "tags": [
+          "Routes"
+        ],
+        "operationId": "GetSingleUseActiveRoutes",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/catalog/Stations": {
       "post": {
         "tags": [
@@ -443,6 +456,31 @@
             "schema": {
               "type": "string",
               "nullable": true
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/catalog/Stations/single-use-station/{routeId}": {
+      "get": {
+        "tags": [
+          "Stations"
+        ],
+        "operationId": "GetSingleUseStationsByRouteId",
+        "parameters": [
+          {
+            "name": "routeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
             },
             "x-position": 1
           }

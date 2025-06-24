@@ -292,7 +292,18 @@ public class RouteService : IRouteService
         return Path.GetExtension(fileName);
     }
 
-
-
     #endregion
+
+    public async Task<IEnumerable<SingleUseGetRouteResponseDto>> GetSingleUseRoutesAsync(CancellationToken cancellationToken = default)
+    {
+        var repo = _unitOfWork.GetRepository<Route, Guid>();
+        var routes = (await repo.GetAllAsync()).Where(r => r.DeleteFlag == false).ToList();
+        var response = routes.Select(r => new SingleUseGetRouteResponseDto()
+        {
+            Id = r.Id,
+            Name = r.Name,
+        }).ToList();
+        return response;
+    }
+
 }
