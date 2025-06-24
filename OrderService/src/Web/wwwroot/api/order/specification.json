@@ -30,6 +30,31 @@
           }
         }
       }
+    },
+    "/api/order/Payment/momo/confirm": {
+      "post": {
+        "tags": [
+          "Payment"
+        ],
+        "operationId": "MomoPaymentConfirm",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmMomoPaymentCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
     }
   },
   "components": {
@@ -71,6 +96,68 @@
           "boughtPrice": {
             "type": "number",
             "format": "decimal"
+          }
+        }
+      },
+      "ConfirmMomoPaymentCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "partnerCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderId": {
+            "type": "string",
+            "nullable": true
+          },
+          "requestId": {
+            "type": "string",
+            "nullable": true
+          },
+          "amount": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "orderInfo": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderType": {
+            "type": "string",
+            "nullable": true
+          },
+          "transId": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "resultCode": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "payType": {
+            "type": "string",
+            "nullable": true
+          },
+          "responseTime": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "extraData": {
+            "type": "string",
+            "nullable": true
+          },
+          "signature": {
+            "type": "string",
+            "nullable": true
           }
         }
       }
