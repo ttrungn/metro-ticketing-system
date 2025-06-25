@@ -3,6 +3,7 @@ using CatalogService.Application.Routes.Commands.UpdateRoute;
 using CatalogService.Application.Routes.Commands.UpsertRouteStation;
 using CatalogService.Application.Routes.DTOs;
 using CatalogService.Application.Routes.Queries.GetRoutes;
+using CatalogService.Application.Tickets.DTO;
 
 namespace CatalogService.Application.Common.Interfaces.Services;
 

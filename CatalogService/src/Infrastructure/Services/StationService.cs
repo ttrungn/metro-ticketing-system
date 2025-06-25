@@ -6,6 +6,7 @@ using CatalogService.Application.Stations.Commands.CreateStation;
 using CatalogService.Application.Stations.Commands.UpdateStation;
 using CatalogService.Application.Stations.DTOs;
 using CatalogService.Application.Stations.Queries.GetStations;
+using CatalogService.Application.Tickets.DTO;
 using CatalogService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

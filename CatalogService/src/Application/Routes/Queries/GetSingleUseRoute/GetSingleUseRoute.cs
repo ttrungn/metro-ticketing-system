@@ -2,12 +2,14 @@
 using CatalogService.Application.Common.Interfaces;
 using CatalogService.Application.Common.Interfaces.Services;
 using CatalogService.Application.Routes.DTOs;
+using CatalogService.Application.Tickets.DTO;
 using Microsoft.Extensions.Logging;
 
 namespace CatalogService.Application.Routes.Queries.GetSingleUseRoute;
 
 public record GetSingleUseRouteQuery : IRequest<ServiceResponse<IEnumerable<SingleUseGetRouteResponseDto>>>
 {
+
 }
 
 public class GetSingleUseRouteQueryValidator : AbstractValidator<GetSingleUseRouteQuery>
