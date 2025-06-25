@@ -7,6 +7,7 @@ using CatalogService.Application.Routes.Commands.UpdateRoute;
 using CatalogService.Application.Routes.Commands.UpsertRouteStation;
 using CatalogService.Application.Routes.DTOs;
 using CatalogService.Application.Routes.Queries.GetRoutes;
+using CatalogService.Application.Tickets.DTO;
 using CatalogService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -292,7 +293,18 @@ public class RouteService : IRouteService
         return Path.GetExtension(fileName);
     }
 
-
-
     #endregion
+
+    public async Task<IEnumerable<SingleUseGetRouteResponseDto>> GetSingleUseRoutesAsync(CancellationToken cancellationToken = default)
+    {
+        var repo = _unitOfWork.GetRepository<Route, Guid>();
+        var routes = (await repo.GetAllAsync()).Where(r => r.DeleteFlag == false).ToList();
+        var response = routes.Select(r => new SingleUseGetRouteResponseDto()
+        {
+            Id = r.Id,
+            Name = r.Name,
+        }).ToList();
+        return response;
+    }
+
 }

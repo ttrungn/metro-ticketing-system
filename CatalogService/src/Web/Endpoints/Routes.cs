@@ -5,6 +5,7 @@ using CatalogService.Application.Routes.Commands.UpsertRouteStation;
 using CatalogService.Application.Routes.DTOs;
 using CatalogService.Application.Routes.Queries.GetRouteById;
 using CatalogService.Application.Routes.Queries.GetRoutes;
+using CatalogService.Application.Routes.Queries.GetSingleUseRoute;
 using CatalogService.Application.Stations.Queries.GeAllActiveStationByName;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,7 +22,8 @@ public class Routes : EndpointGroupBase
             .MapDelete(DeleteRoute, "/{id:guid}")
             .MapGet(GetRoutes, "/")
             .MapGet(GetRouteById, "/{id:guid}")
-            .MapPut(UpsertStationRoute, "/station-route/");
+            .MapPut(UpsertStationRoute, "/station-route/")
+            .MapGet(GetSingleUseActiveRoutes, "/single-use-route/");
     }
 
     private static async Task<IResult> CreateRoute(ISender sender, HttpRequest request)
@@ -161,5 +163,17 @@ public class Routes : EndpointGroupBase
         return TypedResults.BadRequest(response);
     }
 
+    private async Task<IResult> GetSingleUseActiveRoutes(ISender sender)
+    {
+        var request = new GetSingleUseRouteQuery();
 
+        var response = await sender.Send(request);  
+
+
+        if (response.Succeeded)
+        {
+            return TypedResults.Ok(response);
+        } 
+        return TypedResults.BadRequest();
+    }
 } 

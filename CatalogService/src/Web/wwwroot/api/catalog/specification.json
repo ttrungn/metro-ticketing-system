@@ -305,6 +305,19 @@
         }
       }
     },
+    "/api/catalog/Routes/single-use-route": {
+      "get": {
+        "tags": [
+          "Routes"
+        ],
+        "operationId": "GetSingleUseActiveRoutes",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/catalog/Stations": {
       "post": {
         "tags": [
@@ -454,12 +467,62 @@
         }
       }
     },
+    "/api/catalog/Stations/single-use-station/{routeId}": {
+      "get": {
+        "tags": [
+          "Stations"
+        ],
+        "operationId": "GetSingleUseStationsByRouteId",
+        "parameters": [
+          {
+            "name": "routeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/catalog/Tickets": {
       "get": {
         "tags": [
           "Tickets"
         ],
-        "operationId": "GetApiCatalogTickets",
+        "operationId": "GetActiveTickets",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/catalog/Tickets/single-use-ticket-info": {
+      "post": {
+        "tags": [
+          "Tickets"
+        ],
+        "operationId": "GetSingleUseTicketWithPrice",
+        "requestBody": {
+          "x-name": "request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetSingleUseTicketWithPriceQuery"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
         "responses": {
           "200": {
             "description": ""
@@ -657,6 +720,24 @@
           "distanceToNext": {
             "type": "number",
             "format": "double"
+          }
+        }
+      },
+      "GetSingleUseTicketWithPriceQuery": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "routeId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "entryStationId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "exitStationId": {
+            "type": "string",
+            "format": "guid"
           }
         }
       },

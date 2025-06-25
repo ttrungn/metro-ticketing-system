@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CatalogService.Application.Tickets.DTO;
+using CatalogService.Application.Tickets.Queries.GetSingleUseTicketWithPrice;
 
 namespace CatalogService.Application.Common.Interfaces.Services;
 public interface ITicketService
@@ -20,4 +21,12 @@ public interface ITicketService
     Task<Guid> UpdateAsync(TicketDto ticket, CancellationToken cancellationToken = default);    
 
     Task<Guid> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+
+
+    Task<SingleUseTicketResponseDto> GetSingleUseTicketInfo(GetSingleUseTicketWithPriceQuery request , CancellationToken cancellationToken = default);
+
+
+    Task<double> GetSingleTicketPrice(Guid routeId, Guid entryId, Guid exitId, CancellationToken cancellationToken = default);
+   
+    
 } 

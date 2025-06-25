@@ -9,11 +9,13 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using OrderService.Application.Common.Interfaces.Services;
+using OrderService.Application.MomoPayment.Commands.ConfirmMomoPayment;
 using OrderService.Application.MomoPayment.Commands.CreateMomoPayment;
 using OrderService.Application.MomoPayment.DTOs;
 using OrderService.Application.OptionModel;
 
 namespace OrderService.Infrastructure.Services;
+
 public class MomoService : IMomoService
 {
     private readonly ILogger<MomoService> _logger;
@@ -27,6 +29,14 @@ public class MomoService : IMomoService
         _client = client;
         _options = options;
     }
+
+    public Task<string> ConfirmMomoPaymentAsync(ConfirmMomoPaymentCommand command, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Confirming MoMo payment with command: {Command}", JsonConvert.SerializeObject(command, Formatting.Indented));
+
+        return Task.FromResult<string>("ok");
+    }
+
     public async Task<MomoCreatePaymentResponseModel> CreatePaymentWithMomo(CreateMomoPaymentCommand command, CancellationToken cancellationToken = default)
     {
         var options = _options.Value;
