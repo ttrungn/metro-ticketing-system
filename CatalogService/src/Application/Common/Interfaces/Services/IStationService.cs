@@ -1,7 +1,9 @@
-﻿using CatalogService.Application.Stations.Commands.CreateStation;
+﻿using CatalogService.Application.Routes.DTOs;
+using CatalogService.Application.Stations.Commands.CreateStation;
 using CatalogService.Application.Stations.Commands.UpdateStation;
 using CatalogService.Application.Stations.DTOs;
 using CatalogService.Application.Stations.Queries.GetStations;
+using CatalogService.Application.Tickets.DTO;
 using CatalogService.Domain.Entities;
 
 namespace CatalogService.Application.Common.Interfaces.Services;
@@ -17,4 +19,6 @@ public interface IStationService
 
     Task<StationListResponseDto> GetAllActiveStationsByName(string name, CancellationToken cancellationToken = default);
 
+
+    Task<IEnumerable<SingleUseGetStationsResponseDto>> GetStationsByRouteId(Guid routeId, CancellationToken cancellationToken = default);
 }
