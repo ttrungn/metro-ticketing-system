@@ -92,9 +92,9 @@ public class CartService : ICartService
         var cartDtos = carts.Select(cart => new CartResponseDto
         {
             Ticket = cart.TicketId,
-            EntryStationId = entryStationNames.GetValueOrDefault(cart.EntryStationId, "Unknown Entry Station"),
-            DestinationStationId = destinationStationNames.GetValueOrDefault(cart.DestinationStationId, "Unknown Destination Station"),
-            Route = routeInfoLst.GetValueOrDefault(cart.RouteId, "Unknown Route"),
+            EntryStationName = entryStationNames.GetValueOrDefault(cart.EntryStationId!, ""),
+            DestinationStationName = destinationStationNames.GetValueOrDefault(cart.DestinationStationId!, ""),
+            Route = routeInfoLst.GetValueOrDefault(cart.RouteId!, ""),
             Quantity = cart.Quantity
         }).ToList();
         return cartDtos;
@@ -112,16 +112,16 @@ public class CartService : ICartService
         foreach (var cart in carts)
         {
             // Fetch route information
-            var routeResponse = await GetRouteInfo(cart.RouteId, baseUrl, cancellationToken);
-            routeInfoLst[cart.RouteId] = routeResponse ?? "Unknown Route";
+            var routeResponse = await GetRouteInfo(cart.RouteId!, baseUrl, cancellationToken);
+            routeInfoLst[cart.RouteId!] = routeResponse ?? "Full Route Access";
 
             // Fetch entry station information
-            var entryStationResponse = await GetStationInfo(cart.EntryStationId, baseUrl, cancellationToken);
-            entryStationNames[cart.EntryStationId] = entryStationResponse ?? "Unknown Entry Station";
+            var entryStationResponse = await GetStationInfo(cart.EntryStationId!, baseUrl, cancellationToken);
+            entryStationNames[cart.EntryStationId!] = entryStationResponse ?? "Full Station Access";
 
             // Fetch destination station information
-            var destinationStationResponse = await GetStationInfo(cart.DestinationStationId, baseUrl, cancellationToken);
-            destinationStationNames[cart.DestinationStationId] = destinationStationResponse ?? "Unknown Destination Station";
+            var destinationStationResponse = await GetStationInfo(cart.DestinationStationId!, baseUrl, cancellationToken);
+            destinationStationNames[cart.DestinationStationId!] = destinationStationResponse ?? "Full Station Access ";
         }
     }
     private async Task<ServiceResponse<CustomerResponseDto>> GetCustomerResponse(string userId, CancellationToken cancellationToken)
@@ -134,23 +134,31 @@ public class CartService : ICartService
             cancellationToken: cancellationToken);
     }
     private async Task<string?> GetRouteInfo(string routeId, string baseUrl, CancellationToken cancellationToken)
-    {
+    {    
+        if (string.IsNullOrEmpty(routeId) || !Guid.TryParse(routeId, out var routeGuid))
+        {
+            return null;
+        }
         var routeResponse = await _httpClientService.SendGet<ServiceResponse<RouteResponseDto>>(
             baseUrl,
             $"api/catalog/Routes/{Guid.Parse(routeId)}",
             cancellationToken: cancellationToken);
 
-        return routeResponse?.Data?.Name;
+        return routeResponse?.Data?.Name ?? "Route Not Found";
     }
 
     private async Task<string?> GetStationInfo(string stationId, string baseUrl, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrEmpty(stationId) || !Guid.TryParse(stationId, out var stationGuid))
+        {
+            return null;
+        }
         var stationResponse = await _httpClientService.SendGet<ServiceResponse<StationResponseDto>>(
             baseUrl,
             $"api/catalog/stations/{Guid.Parse(stationId)}",
             cancellationToken: cancellationToken);
 
-        return stationResponse?.Data?.Name;
+        return stationResponse?.Data?.Name ?? "Station Not Found";
     }
     
 

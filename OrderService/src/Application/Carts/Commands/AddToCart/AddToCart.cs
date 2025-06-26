@@ -9,9 +9,9 @@ public record AddToCartCommand : IRequest<ServiceResponse<Guid>>
 {
     public string TicketId { get; init; } = null!;
     public int Quantity { get; init; }
-    public string EntryStationId { get; init; } = null!;
-    public string DestinationStationId { get; init; } = null!;
-    public string RouteId { get; init; } = null!;
+    public string? EntryStationId { get; init; }
+    public string? DestinationStationId { get; init; }
+    public string? RouteId { get; init; }
     
 }
 public class AddToCartCommandValidator : AbstractValidator<AddToCartCommand>
@@ -20,9 +20,6 @@ public class AddToCartCommandValidator : AbstractValidator<AddToCartCommand>
     {
         RuleFor(x => x.TicketId).NotEmpty().WithMessage("Hãy chọn vé.");
         RuleFor(x => x.Quantity).GreaterThan(0).WithMessage("Số lượng phải lớn hơn 0.");
-        RuleFor(x => x.EntryStationId).NotEmpty().WithMessage("Hãy chọn ga đi.");
-        RuleFor(x => x.DestinationStationId).NotEmpty().WithMessage("Hãy chọn ga đến.");
-        RuleFor(x => x.RouteId).NotEmpty().WithMessage("Hãy chọn tuyến đường.");
     }
 }
 
@@ -58,7 +55,7 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, Service
         _logger.LogInformation("Item added to cart for user {UserId}", _user.Id);
         return new ServiceResponse<Guid>
         {
-            Succeeded = false,
+            Succeeded = true,
             Message = "Thêm vé vào giỏ hàng thành công.",
             Data = cartId
         };    
