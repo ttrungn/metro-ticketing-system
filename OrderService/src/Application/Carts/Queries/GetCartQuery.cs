@@ -22,12 +22,12 @@ public class GetCartQueryHandler : IRequestHandler<GetCartQuery,
     public async Task<ServiceResponse<IEnumerable<CartResponseDto>>> Handle(GetCartQuery request, CancellationToken cancellationToken)
     {
         var response = await _cartService.GetCartsAsync(_user.Id!, cancellationToken);
-     return new ServiceResponse<IEnumerable<CartResponseDto>>()
-     {
+        return new ServiceResponse<IEnumerable<CartResponseDto>>()
+        {
          Succeeded = true,
          Message = "Lấy giỏ hàng thành công.",
          Data = response
-     };
+        };
     }
 
 }

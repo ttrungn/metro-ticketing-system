@@ -70,6 +70,7 @@ public class CartService : ICartService
 
     public async Task<IEnumerable<CartResponseDto>?> GetCartsAsync(string userId, CancellationToken cancellationToken = default)
     {
+
         var responseCustomer = await GetCustomerResponse(userId, cancellationToken);
         if (responseCustomer.Data == null)
         {
@@ -86,16 +87,19 @@ public class CartService : ICartService
         var routeInfoLst = new Dictionary<string, string>(); 
         var entryStationNames = new Dictionary<string, string>(); 
         var destinationStationNames = new Dictionary<string, string>(); 
+        var ticketPrices = new Dictionary<string, decimal>();
+        var ticketNames = new Dictionary<string, string>();
         
-        await PopulateCartDetails(carts, routeInfoLst, entryStationNames, destinationStationNames, cancellationToken);
+        await PopulateCartDetails(carts, routeInfoLst, entryStationNames, destinationStationNames, ticketNames, ticketPrices, cancellationToken);
         
         var cartDtos = carts.Select(cart => new CartResponseDto
         {
-            Ticket = cart.TicketId,
+            Ticket = ticketNames.GetValueOrDefault(cart.TicketId!, "Unknown Ticket"),
             EntryStationName = entryStationNames.GetValueOrDefault(cart.EntryStationId!, ""),
             DestinationStationName = destinationStationNames.GetValueOrDefault(cart.DestinationStationId!, ""),
             Route = routeInfoLst.GetValueOrDefault(cart.RouteId!, ""),
-            Quantity = cart.Quantity
+            Quantity = cart.Quantity,
+            Price = ticketPrices.GetValueOrDefault(cart.TicketId!, 0),
         }).ToList();
         return cartDtos;
     
@@ -105,6 +109,7 @@ public class CartService : ICartService
     #region Helper Methods
     private async Task PopulateCartDetails(IEnumerable<Cart> carts, Dictionary<string, string> routeInfoLst, 
         Dictionary<string, string> entryStationNames, Dictionary<string, string> destinationStationNames, 
+        Dictionary<string, string> ticketNames, Dictionary<string, decimal> ticketPrices,
         CancellationToken cancellationToken)
     {
         var baseUrl = Guard.Against.NullOrEmpty(_configuration["ClientSettings:CatalogServiceClient"], message: "Catalog Service Client URL is not configured.");
@@ -113,15 +118,39 @@ public class CartService : ICartService
         {
             // Fetch route information
             var routeResponse = await GetRouteInfo(cart.RouteId!, baseUrl, cancellationToken);
-            routeInfoLst[cart.RouteId!] = routeResponse ?? "Full Route Access";
+            routeInfoLst[cart.RouteId!] = routeResponse ?? "";
 
             // Fetch entry station information
             var entryStationResponse = await GetStationInfo(cart.EntryStationId!, baseUrl, cancellationToken);
-            entryStationNames[cart.EntryStationId!] = entryStationResponse ?? "Full Station Access";
+            entryStationNames[cart.EntryStationId!] = entryStationResponse ?? "";
 
             // Fetch destination station information
             var destinationStationResponse = await GetStationInfo(cart.DestinationStationId!, baseUrl, cancellationToken);
-            destinationStationNames[cart.DestinationStationId!] = destinationStationResponse ?? "Full Station Access ";
+            destinationStationNames[cart.DestinationStationId!] = destinationStationResponse ?? "";
+            
+            // Fetch destination ticket information
+            if (routeResponse == null || entryStationResponse == null || destinationStationResponse == null)
+            { 
+                var ticketResponse = await GetTicketInfo(cart.TicketId!, baseUrl, cancellationToken);
+                ticketNames[cart.TicketId!] = ticketResponse!.Name ?? "Unknown Ticket"; 
+                ticketPrices[cart.TicketId!] = ticketResponse.Price;
+            }
+            else
+            {
+                var ticketResponseSingleUse =
+                    await GetTicketSingleUse(new GetTicketInfoRequestDto
+                        {
+                            RouteId = Guid.Parse(cart.RouteId!),
+                            EntryStationId = Guid.Parse(cart.EntryStationId!),
+                            ExitStationId = Guid.Parse(cart.DestinationStationId!)
+                        }, 
+                        baseUrl, 
+                        cancellationToken); 
+                ticketNames[cart.TicketId!] = ticketResponseSingleUse!.Name ?? "Unknown Ticket"; 
+                ticketPrices[cart.TicketId!] = ticketResponseSingleUse.Price;
+                
+            }
+       
         }
     }
     private async Task<ServiceResponse<CustomerResponseDto>> GetCustomerResponse(string userId, CancellationToken cancellationToken)
@@ -160,7 +189,26 @@ public class CartService : ICartService
 
         return stationResponse?.Data?.Name ?? "Station Not Found";
     }
+    private async Task<TicketDto?> GetTicketSingleUse(GetTicketInfoRequestDto request, string baseUrl, CancellationToken cancellationToken)
+    {
+        var ticketResponse = await _httpClientService.SendPost<ServiceResponse<TicketDto>>(
+            baseUrl,
+            $"api/catalog/Tickets/single-use-ticket-info/",
+            request,
+            cancellationToken: cancellationToken);
+
+        return ticketResponse?.Data;
+    }
     
+    private async Task<TicketDto?> GetTicketInfo(string ticketId, string baseUrl, CancellationToken cancellationToken)
+    {
+        var ticketResponse = await _httpClientService.SendGet<ServiceResponse<TicketDto>>(
+            baseUrl,
+            $"api/catalog/Tickets/{ticketId}",
+            cancellationToken: cancellationToken);
+
+        return ticketResponse?.Data;
+    }
 
     #endregion
 }

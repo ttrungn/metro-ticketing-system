@@ -73,7 +73,7 @@ public class TicketService : ITicketService
         var repo = _unitOfWork.GetRepository<Ticket, Guid>();
         var ticket = await repo.GetByIdAsync(id, cancellationToken);
 
-        if(ticket == null || ticket.DeleteFlag == false)
+        if(ticket == null || ticket.DeleteFlag == true)
         {
             return null;
         }
