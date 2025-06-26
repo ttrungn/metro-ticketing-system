@@ -78,6 +78,19 @@
         }
       }
     },
+    "/api/user/Customers": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "operationId": "GetCustomerByUserIdAsync",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/user/Feedbacks": {
       "post": {
         "tags": [
