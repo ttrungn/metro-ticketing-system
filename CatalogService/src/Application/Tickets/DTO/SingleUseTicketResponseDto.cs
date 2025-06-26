@@ -20,4 +20,10 @@ public class SingleUseTicketResponseDto
 
     public Guid RouteId { get; set; }   
 
+
+    public string? EntryStationName { get; set; }
+
+    public string? ExitStationName { get; set; }
+
+
 }
