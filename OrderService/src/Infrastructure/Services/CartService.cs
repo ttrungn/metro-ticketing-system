@@ -94,7 +94,7 @@ public class CartService : ICartService
         
         var cartDtos = carts.Select(cart => new CartResponseDto
         {
-            Ticket = ticketNames.GetValueOrDefault(cart.TicketId!, "Unknown Ticket"),
+            TicketName = ticketNames.GetValueOrDefault(cart.TicketId!, "Unknown Ticket"),
             EntryStationName = entryStationNames.GetValueOrDefault(cart.EntryStationId!, ""),
             DestinationStationName = destinationStationNames.GetValueOrDefault(cart.DestinationStationId!, ""),
             Route = routeInfoLst.GetValueOrDefault(cart.RouteId!, ""),
