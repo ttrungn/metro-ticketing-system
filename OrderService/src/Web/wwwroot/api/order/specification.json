@@ -6,6 +6,42 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/order/Cart": {
+      "post": {
+        "tags": [
+          "Cart"
+        ],
+        "operationId": "AddToCartAsync",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddToCartCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Cart"
+        ],
+        "operationId": "GetCartAsync",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/order/Payment/momo/create": {
       "post": {
         "tags": [
@@ -59,6 +95,28 @@
   },
   "components": {
     "schemas": {
+      "AddToCartCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "ticketId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "entryStationId": {
+            "type": "string"
+          },
+          "destinationStationId": {
+            "type": "string"
+          },
+          "routeId": {
+            "type": "string"
+          }
+        }
+      },
       "CreateMomoPaymentCommand": {
         "type": "object",
         "additionalProperties": false,
