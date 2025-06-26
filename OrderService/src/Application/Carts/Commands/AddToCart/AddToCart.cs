@@ -5,7 +5,7 @@ using OrderService.Application.Common.Interfaces.Services;
 
 namespace OrderService.Application.Carts.Commands.AddToCart;
 
-public record AddToCartCommand : IRequest<ServiceResponse<List<string>>>
+public record AddToCartCommand : IRequest<ServiceResponse<Guid>>
 {
     public string TicketId { get; init; } = null!;
     public int Quantity { get; init; }
@@ -26,7 +26,7 @@ public class AddToCartCommandValidator : AbstractValidator<AddToCartCommand>
     }
 }
 
-public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, ServiceResponse<List<string>>>
+public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, ServiceResponse<Guid>>
 {
     private readonly ILogger<AddToCartCommandHandler> _logger;
     private readonly ICartService _cartService;
@@ -39,21 +39,28 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, Service
         _user = user;
     }
 
-    public async Task<ServiceResponse<List<string>>> Handle(AddToCartCommand request,
+    public async Task<ServiceResponse<Guid>> Handle(AddToCartCommand request,
         CancellationToken cancellationToken)
     {
-        var customer = await _cartService.CreateAsync(request, _user.Id!, cancellationToken);
+        var cartId = await _cartService.CreateAsync(request, _user.Id!, cancellationToken);
 
-        if (customer == null || !customer.Any())
+        if (cartId == Guid.Empty)
         {
             _logger.LogError("Failed to add item to cart for user {UserId}", _user.Id);
-            return new ServiceResponse<List<string>> { Succeeded = false, Message = "Failed to add item to cart." };
+            return new ServiceResponse<Guid>
+            {
+                Succeeded = false,
+                Message = "Thêm vé vào giỏ hàng thất bại.",
+                Data = Guid.Empty
+            };    
         }
 
         _logger.LogInformation("Item added to cart for user {UserId}", _user.Id);
-        return new ServiceResponse<List<string>>
+        return new ServiceResponse<Guid>
         {
-            Succeeded = true, Data = customer, Message = "Item added to cart successfully."
-        };
+            Succeeded = false,
+            Message = "Thêm vé vào giỏ hàng thành công.",
+            Data = cartId
+        };    
     }
 }

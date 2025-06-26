@@ -40,4 +40,5 @@ public class Tickets : EndpointGroupBase
         }
         return TypedResults.Ok(response);
     }
+    
 }
