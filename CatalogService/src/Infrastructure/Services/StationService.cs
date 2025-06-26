@@ -274,7 +274,7 @@ public class StationService : IStationService
 
         var stationRoutes = await repo.Query()
                                      .Include(s => s.Station)
-                                     .Where(st => st.DeleteFlag == false && st.RouteId == routeId)
+                                     .Where(st => st.DeleteFlag == false && st.RouteId == routeId).OrderBy(st => st.Order)
                                      .ToListAsync(cancellationToken);
         if (stationRoutes.Count == 0)
         {

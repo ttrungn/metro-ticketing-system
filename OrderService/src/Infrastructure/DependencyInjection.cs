@@ -73,10 +73,12 @@ public static class DependencyInjection
         services.AddScoped<ApplicationDbContextInitialiser>();
         services.AddScoped<IMomoService, MomoService>();
         services.AddScoped<HttpClient>();
+        services.AddHttpClient();
 
         services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        
+        services.AddScoped<ICartService, CartService>();
+        services.AddScoped<IHttpClientService, HttpClientService>();
         services.AddScoped(typeof(IMassTransitService<>), typeof(MassTransitService<>));
 
         services.AddSingleton(TimeProvider.System);
