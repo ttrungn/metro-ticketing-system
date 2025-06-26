@@ -1,4 +1,4 @@
-﻿using BuildingBlocks.Response;
+using BuildingBlocks.Response;
 using UserService.Application.Common.Models;
 using UserService.Application.Users.Commands.RegisterUser;
 using UserService.Application.Users.DTOs;

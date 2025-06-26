@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using OrderService.Application.Common.Interfaces;
+using OrderService.Application.OptionModel;
 using OrderService.Infrastructure.Data;
 using OrderService.Web.Consumers;
 using OrderService.Web.Services;
@@ -15,6 +16,12 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddWebServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddOptions<MomoOptionModel>()
+                .Bind(configuration.GetSection("Momo"))
+              .ValidateDataAnnotations()
+               .ValidateOnStart();
+        ;
+
         services.AddDatabaseDeveloperPageExceptionFilter();
 
         services.AddScoped<IUser, CurrentUser>();
