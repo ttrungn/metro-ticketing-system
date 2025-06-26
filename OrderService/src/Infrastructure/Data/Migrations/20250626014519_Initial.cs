@@ -15,8 +15,9 @@ namespace OrderService.Infrastructure.Data.Migrations
                 name: "Cart",
                 columns: table => new
                 {
-                    CustomerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    TicketId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CustomerId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TicketId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
                     EntryStationId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     DestinationStationId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
@@ -28,7 +29,7 @@ namespace OrderService.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Cart", x => new { x.CustomerId, x.TicketId });
+                    table.PrimaryKey("PK_Cart", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(

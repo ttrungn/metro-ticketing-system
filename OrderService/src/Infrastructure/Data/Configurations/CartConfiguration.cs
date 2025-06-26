@@ -11,9 +11,9 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
     {
         builder.ToTable("Cart");
 
-        builder.Ignore(c => c.Id);
+        builder.HasKey(c => c.Id);
 
-        builder.HasKey(c => new { c.CustomerId, c.TicketId });
+        // builder.HasKey(c => new { c.CustomerId, c.TicketId });
 
         builder.Property(c => c.CustomerId)
             .IsRequired();
