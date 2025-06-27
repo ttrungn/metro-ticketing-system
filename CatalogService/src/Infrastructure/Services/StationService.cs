@@ -215,29 +215,15 @@ public class StationService : IStationService
 
     }
 
-    public async Task<StationsResponseDto?> GetByIdAsync(Guid queryId, CancellationToken cancellationToken = default)
+    public async Task<StationReadModel?> GetByIdAsync(Guid queryId, CancellationToken cancellationToken = default)
     {
-        var repo = _unitOfWork.GetRepository<Station, Guid>();
+        var session = _unitOfWork.GetDocumentSession();
 
-        return await repo.GetByIdAsync(queryId, cancellationToken)
-            .ContinueWith(task =>
-            {
-                var station = task.Result;
-                if (station == null) return null;
+        var station = await QueryableExtensions.FirstOrDefaultAsync(session.Query<StationReadModel>()
+            .Where(s => s.Id == queryId),
+            cancellationToken);
 
-                return new StationsResponseDto
-                {
-                    Id = station.Id,
-                    Code = station.Code,
-                    Name = station.Name,
-                    StreetNumber = station.StreetNumber,
-                    Street = station.Street,
-                    Ward = station.Ward,
-                    District = station.District,
-                    City = station.City,
-                    ThumbnailImageUrl = station.ThumbnailImageUrl
-                };
-            }, cancellationToken);
+        return station;
     }
 
     #region Helper method

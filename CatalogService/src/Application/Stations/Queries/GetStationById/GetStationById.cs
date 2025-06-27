@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CatalogService.Application.Stations.Queries.GetStationById;
 
-public record GetStationByIdQuery(Guid Id) : IRequest<ServiceResponse<StationsResponseDto>>;
+public record GetStationByIdQuery(Guid Id) : IRequest<ServiceResponse<StationReadModel>>;
 
 public class GetStationByIdQueryValidator : AbstractValidator<GetStationByIdQuery>
 {
@@ -19,7 +19,7 @@ public class GetStationByIdQueryValidator : AbstractValidator<GetStationByIdQuer
     }
 }
 
-public class GetStationByIdQueryHandler : IRequestHandler<GetStationByIdQuery, ServiceResponse<StationsResponseDto>>
+public class GetStationByIdQueryHandler : IRequestHandler<GetStationByIdQuery, ServiceResponse<StationReadModel>>
 {
     private readonly IStationService _stationService;
     private readonly ILogger<GetStationByIdQueryHandler> _logger;
@@ -30,14 +30,14 @@ public class GetStationByIdQueryHandler : IRequestHandler<GetStationByIdQuery, S
         _logger = logger;
     }
 
-    public async Task<ServiceResponse<StationsResponseDto>> Handle(GetStationByIdQuery query, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<StationReadModel>> Handle(GetStationByIdQuery query, CancellationToken cancellationToken)
     {
         var station = await _stationService.GetByIdAsync(query.Id, cancellationToken);
 
         if (station == null)
         {
             _logger.LogWarning("Station with ID {RouteId} not found.", query.Id);
-            return new ServiceResponse<StationsResponseDto>
+            return new ServiceResponse<StationReadModel>
             {
                 Succeeded = false,
                 Message = "Không tìm thấy trạm!",
@@ -47,7 +47,7 @@ public class GetStationByIdQueryHandler : IRequestHandler<GetStationByIdQuery, S
 
         _logger.LogInformation("Route with ID {RouteId} retrieved successfully.", query.Id);
 
-        return new ServiceResponse<StationsResponseDto>
+        return new ServiceResponse<StationReadModel>
         {
             Succeeded = true,
             Message = "Lấy thông tin trạm thành công!",
