@@ -23,29 +23,26 @@ public class CartService : ICartService
         _configuration = configuration;
     }
     
-    public async Task<Guid> CreateAsync(AddToCartCommand command, string userId, CancellationToken cancellationToken = default)
+    public async Task<CartIdResponseWithStudentDto> CreateAsync(AddToCartCommand command, string userId, CancellationToken cancellationToken = default)
     {
         Guid cartId;
         var responseCustomer = await GetCustomerResponse(userId, cancellationToken);
-        if(responseCustomer.Data == null)
-        {
-            return Guid.Empty;
-        }
+  
         var cartRepo = _unitOfWork.GetRepository<Cart, Guid>();
         
         var responseTicket = await GetTicketInfo(command.TicketId, cancellationToken);
         // Check if account is student add the student ticket
-        if (responseCustomer.Data.IsStudent == false)
+        if (responseCustomer.Data!.IsStudent == false)
         {
             if (responseTicket!.TicketType == 3)
             {
-                return Guid.Parse("3631e38b-60dd-4d1a-af7f-a26f21c2ef82");
+                return new CartIdResponseWithStudentDto() { IsStudent = false };
             }
         }
         // Check if the user already has a same ticket in the cart
         var filter = new List<Expression<Func<Cart, bool>>>
         {
-            c => c.CustomerId == responseCustomer.Data.CustomerId
+            c => c.CustomerId == responseCustomer.Data!.CustomerId
                  && c.TicketId == command.TicketId
                  && c.EntryStationId == command.EntryStationId
                  && c.DestinationStationId == command.DestinationStationId
@@ -64,22 +61,27 @@ public class CartService : ICartService
         else
         {
             cartId = Guid.NewGuid();
-            var newCart = new Cart
+            var newCart = new Cart()
             {
+                Id = cartId,
                 TicketId = command.TicketId.ToString(),
                 Quantity = command.Quantity,
                 EntryStationId = command.EntryStationId,
                 DestinationStationId = command.DestinationStationId,
-                RouteId = command.RouteId
+                RouteId = command.RouteId,
+                CustomerId = responseCustomer.Data.CustomerId
             };
-            newCart.Id = cartId;
-            newCart.CustomerId = responseCustomer.Data.CustomerId;
+            
             await cartRepo.AddAsync(newCart, cancellationToken);
         }
         await _unitOfWork.SaveChangesAsync();
-        return  cartId;
+        return  new CartIdResponseWithStudentDto
+        {
+            Id = cartId,
+            IsStudent = responseCustomer.Data.IsStudent
+        };
     }
-
+    
     public async Task<IEnumerable<CartResponseDto>?> GetCartsAsync(string userId, CancellationToken cancellationToken = default)
     {
 
