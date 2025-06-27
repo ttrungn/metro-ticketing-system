@@ -152,10 +152,8 @@ public class RouteService : IRouteService
         }
 
         var now = DateTimeOffset.UtcNow;
-        var lastModifiedAt = now;
-        var deletedAt = now;
-        route.LastModifiedAt = lastModifiedAt;
-        route.DeletedAt = deletedAt;
+        route.LastModifiedAt = now;
+        route.DeletedAt = now;
         route.DeleteFlag = true;
 
         route.AddDomainEvent(new DeleteRouteEvent()

@@ -13,7 +13,7 @@ public interface IStationService
     Task<Guid> CreateAsync(CreateStationCommand command, CancellationToken cancellationToken = default);
     Task<Guid> UpdateAsync(UpdateStationCommand command, CancellationToken cancellationToken);
     Task<Guid> DeleteAsync(Guid id, CancellationToken cancellationToken);
-    Task<(IEnumerable<StationsResponseDto>, int)> GetAsync(GetStationsQuery request, CancellationToken cancellationToken = default);
+    Task<(IEnumerable<StationReadModel>, int)> GetAsync(GetStationsQuery request, CancellationToken cancellationToken = default);
     Task<StationsResponseDto?> GetByIdAsync(Guid queryId, CancellationToken cancellationToken = default);
 
 

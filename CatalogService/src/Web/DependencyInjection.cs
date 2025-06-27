@@ -1,5 +1,6 @@
 ﻿using BuildingBlocks.Domain.Events.Routes;
 using BuildingBlocks.Domain.Events.Sample;
+using BuildingBlocks.Domain.Events.Stations;
 using Confluent.Kafka;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +11,8 @@ using CatalogService.Application.Common.Interfaces.Services;
 using CatalogService.Infrastructure.Data;
 using CatalogService.Infrastructure.Services;
 using CatalogService.Web.Consumers;
+using CatalogService.Web.Consumers.Routes;
+using CatalogService.Web.Consumers.Stations;
 using CatalogService.Web.Services;
 
 namespace CatalogService.Web;
@@ -111,10 +114,49 @@ public static class DependencyInjection
                             configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
                     });
 
+                rider.AddProducer<CreateStationEvent>(
+                    configuration["KafkaSettings:CatalogServiceEvents:CreateStation:Name"],
+                    (ctx, kc) =>
+                    {
+                        kc.MessageTimeout = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageTimeoutMs"));
+                        kc.MessageSendMaxRetries =
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageSendMaxRetries");
+                        kc.RetryBackoff = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
+                    });
+
+                rider.AddProducer<UpdateStationEvent>(
+                    configuration["KafkaSettings:CatalogServiceEvents:UpdateStation:Name"],
+                    (ctx, kc) =>
+                    {
+                        kc.MessageTimeout = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageTimeoutMs"));
+                        kc.MessageSendMaxRetries =
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageSendMaxRetries");
+                        kc.RetryBackoff = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
+                    });
+
+                rider.AddProducer<DeleteStationEvent>(
+                    configuration["KafkaSettings:CatalogServiceEvents:DeleteStation:Name"],
+                    (ctx, kc) =>
+                    {
+                        kc.MessageTimeout = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageTimeoutMs"));
+                        kc.MessageSendMaxRetries =
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageSendMaxRetries");
+                        kc.RetryBackoff = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
+                    });
+
                 rider.AddConsumer<SampleConsumer>();
                 rider.AddConsumer<CreateRouteConsumer>();
                 rider.AddConsumer<UpdateRouteConsumer>();
                 rider.AddConsumer<DeleteRouteConsumer>();
+                rider.AddConsumer<CreateStationConsumer>();
+                rider.AddConsumer<UpdateStationConsumer>();
+                rider.AddConsumer<DeleteStationConsumer>();
 
                 rider.UsingKafka((context, k) =>
                 {
@@ -168,6 +210,30 @@ public static class DependencyInjection
                         e =>
                         {
                             e.ConfigureConsumer<DeleteRouteConsumer>(context);
+                        }
+                    );
+                    k.TopicEndpoint<CreateStationEvent>(
+                        configuration["KafkaSettings:CatalogServiceEvents:CreateStation:Name"],
+                        configuration["KafkaSettings:CatalogServiceEvents:CreateStation:Group"],
+                        e =>
+                        {
+                            e.ConfigureConsumer<CreateStationConsumer>(context);
+                        }
+                    );
+                    k.TopicEndpoint<UpdateStationEvent>(
+                        configuration["KafkaSettings:CatalogServiceEvents:UpdateStation:Name"],
+                        configuration["KafkaSettings:CatalogServiceEvents:UpdateStation:Group"],
+                        e =>
+                        {
+                            e.ConfigureConsumer<UpdateStationConsumer>(context);
+                        }
+                    );
+                    k.TopicEndpoint<DeleteStationEvent>(
+                        configuration["KafkaSettings:CatalogServiceEvents:DeleteStation:Name"],
+                        configuration["KafkaSettings:CatalogServiceEvents:DeleteStation:Group"],
+                        e =>
+                        {
+                            e.ConfigureConsumer<DeleteStationConsumer>(context);
                         }
                     );
                 });

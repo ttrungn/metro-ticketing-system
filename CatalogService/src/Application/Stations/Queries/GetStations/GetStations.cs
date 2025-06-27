@@ -42,10 +42,10 @@ public class GetStationsQueryHandler : IRequestHandler<GetStationsQuery, Service
 
         var response = new GetStationsResponseDto
         {
-            Stations = stations,
             TotalPages = totalPages,
-            PageSize = request.PageSize,
             CurrentPage = request.Page,
+            PageSize = request.PageSize,
+            Stations = stations,
         };
 
         return new ServiceResponse<GetStationsResponseDto>()

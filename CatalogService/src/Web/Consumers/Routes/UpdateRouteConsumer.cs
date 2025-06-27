@@ -3,7 +3,7 @@ using CatalogService.Application.Common.Interfaces.Repositories;
 using CatalogService.Application.Routes.DTOs;
 using MassTransit;
 
-namespace CatalogService.Web.Consumers;
+namespace CatalogService.Web.Consumers.Routes;
 
 public class UpdateRouteConsumer : IConsumer<UpdateRouteEvent>
 {

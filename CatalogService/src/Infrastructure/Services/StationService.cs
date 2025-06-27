@@ -1,13 +1,16 @@
 ﻿using System.Linq.Expressions;
+using BuildingBlocks.Domain.Events.Stations;
 using CatalogService.Application.Common.Interfaces.Repositories;
 using CatalogService.Application.Common.Interfaces.Services;
 using CatalogService.Application.Routes.DTOs;
 using CatalogService.Application.Stations.Commands.CreateStation;
 using CatalogService.Application.Stations.Commands.UpdateStation;
 using CatalogService.Application.Stations.DTOs;
+using CatalogService.Application.Stations.EventHandlers;
 using CatalogService.Application.Stations.Queries.GetStations;
 using CatalogService.Application.Tickets.DTO;
 using CatalogService.Domain.Entities;
+using Marten;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -49,6 +52,7 @@ public class StationService : IStationService
             thumbnailImageUrl = blobUrl;
         }
 
+        var createdAt = DateTimeOffset.UtcNow;
         var station = new Station()
         {
             Id = id,
@@ -59,10 +63,25 @@ public class StationService : IStationService
             Ward = command.Ward,
             District = command.District,
             City = command.City,
-            ThumbnailImageUrl = thumbnailImageUrl
+            ThumbnailImageUrl = thumbnailImageUrl,
+            CreatedAt = createdAt,
         };
 
         await repo.AddAsync(station, cancellationToken);
+
+        station.AddDomainEvent(new CreateStationEvent()
+        {
+            Id = station.Id,
+            Code = station.Code,
+            Name = station.Name,
+            StreetNumber = station.StreetNumber,
+            Street = station.Street,
+            Ward = station.Ward,
+            District = station.District,
+            City = station.City,
+            ThumbnailImageUrl = station.ThumbnailImageUrl,
+            CreatedAt = station.CreatedAt
+        });
         await _unitOfWork.SaveChangesAsync();
 
         return id;
@@ -72,52 +91,65 @@ public class StationService : IStationService
     {
         var repo = _unitOfWork.GetRepository<Station, Guid>();
 
-        var route = await repo.GetByIdAsync(command.Id, cancellationToken);
-        if (route == null)
+        var station = await repo.GetByIdAsync(command.Id, cancellationToken);
+        if (station == null)
         {
             return Guid.Empty;
         }
 
         if (command.ThumbnailImageStream != null && command.ThumbnailImageFileName != null)
         {
-            var blobName = route.Id + GetFileType(command.ThumbnailImageFileName);
+            var blobName = station.Id + GetFileType(command.ThumbnailImageFileName);
             var containerName = _configuration["Azure:BlobStorageSettings:StationImagesContainerName"] ?? "station-images";
             var blobUrl = await _azureBlobService.UploadAsync(
                 command.ThumbnailImageStream,
                 blobName,
                 containerName);
-            route.ThumbnailImageUrl = blobUrl;
+            station.ThumbnailImageUrl = blobUrl;
         }
+        var lastModifiedAt = DateTimeOffset.UtcNow;
 
-        route.Name = command.Name;
-        route.StreetNumber = command.StreetNumber;
-        route.Street = command.Street;
-        route.Ward = command.Ward;
-        route.District = command.District;
-        route.City = command.City;
+        station.Name = command.Name;
+        station.StreetNumber = command.StreetNumber;
+        station.Street = command.Street;
+        station.Ward = command.Ward;
+        station.District = command.District;
+        station.City = command.City;
+        station.LastModifiedAt = lastModifiedAt;
 
-        await repo.UpdateAsync(route, cancellationToken);
+        station.AddDomainEvent(new UpdateStationEvent()
+        {
+            Id = station.Id,
+            Name = station.Name,
+            StreetNumber = station.StreetNumber,
+            Street = station.Street,
+            Ward = station.Ward,
+            District = station.District,
+            City = station.City,
+            ThumbnailImageUrl = station.ThumbnailImageUrl,
+            LastModifiedAt = station.LastModifiedAt
+        });
+
+        await repo.UpdateAsync(station, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
 
-        return route.Id;
+        return station.Id;
     }
 
     public async Task<Guid> DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
         var repo = _unitOfWork.GetRepository<Station, Guid>();
 
-        var route = await repo.GetByIdAsync(id, cancellationToken);
-        if (route == null)
+        var station = await repo.GetByIdAsync(id, cancellationToken);
+        if (station == null)
         {
             return Guid.Empty;
         }
 
-        route.DeleteFlag = true;
-
         var stationRouteRepo =
             _unitOfWork.GetRepository<StationRoute, (Guid StationId, Guid RouteId)>();
 
-        var stationRoutes = await stationRouteRepo.Query().Where(r => r.StationId == id).ToListAsync(cancellationToken);
+        var stationRoutes = await EntityFrameworkQueryableExtensions.ToListAsync(stationRouteRepo.Query().Where(r => r.StationId == id), cancellationToken);
         if (stationRoutes.Count != 0)
         {
             foreach (var stationRoute in stationRoutes)
@@ -128,7 +160,7 @@ public class StationService : IStationService
         }
 
         var busRepo = _unitOfWork.GetRepository<Bus, Guid>();
-        var buses = await busRepo.Query().Where(b => b.StationId == id).ToListAsync(cancellationToken);
+        var buses = await EntityFrameworkQueryableExtensions.ToListAsync(busRepo.Query().Where(b => b.StationId == id), cancellationToken);
         if (buses.Count != 0)
         {
             foreach (var bus in buses)
@@ -138,41 +170,48 @@ public class StationService : IStationService
             }
         }
 
-        await repo.UpdateAsync(route, cancellationToken);
+        var now = DateTimeOffset.UtcNow;
+        station.LastModifiedAt = now;
+        station.DeletedAt = now;
+        station.DeleteFlag = true;
+
+        station.AddDomainEvent(new DeleteStationEvent()
+        {
+            Id = station.Id,
+            LastModifiedAt = station.LastModifiedAt,
+            DeletedAt = station.DeletedAt,
+            DeleteFlag = station.DeleteFlag
+        });
+
+        await repo.UpdateAsync(station, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
 
-        return route.Id;
+        return station.Id;
     }
 
-    public async Task<(IEnumerable<StationsResponseDto>, int)> GetAsync(
+    public async Task<(IEnumerable<StationReadModel>, int)> GetAsync(
         GetStationsQuery query,
         CancellationToken cancellationToken)
     {
-        var repo = _unitOfWork.GetRepository<Station, Guid>();
+        var session = _unitOfWork.GetDocumentSession();
 
-        Expression<Func<Station, bool>> filter = GetFilter(query);
+        Expression<Func<StationReadModel, bool>> filter = GetFilter(query);
 
-        var stations = await repo.GetPagedAsync(
-            skip: query.Page * query.PageSize,
-            take: query.PageSize,
-            filters: [filter],
-            cancellationToken: cancellationToken);
+        var stations = await QueryableExtensions.ToListAsync(session.Query<StationReadModel>()
+                .Where(filter)
+                .Skip(query.Page * query.PageSize)
+                .Take(query.PageSize)
+                .AsNoTracking(),
+            cancellationToken);
 
-        var totalPages = await repo.GetTotalPagesAsync(query.PageSize, [filter], cancellationToken);
+        var totalCount = await QueryableExtensions.CountAsync(session.Query<StationReadModel>()
+                .Where(filter)
+                .AsNoTracking(),
+            cancellationToken);
 
-        return (
-            stations.Select(s => new StationsResponseDto
-            {
-                Id = s.Id,
-                Code = s.Code,
-                Name = s.Name,
-                StreetNumber = s.StreetNumber,
-                Street = s.Street,
-                Ward = s.Ward,
-                District = s.District,
-                City = s.City,
-                ThumbnailImageUrl = s.ThumbnailImageUrl
-            }), totalPages);
+        var totalPages = (int)Math.Ceiling((double)totalCount / query.PageSize);
+
+        return (stations, totalPages);
 
     }
 
@@ -203,7 +242,7 @@ public class StationService : IStationService
 
     #region Helper method
 
-    private Expression<Func<Station, bool>> GetFilter(GetStationsQuery query)
+    private Expression<Func<StationReadModel, bool>> GetFilter(GetStationsQuery query)
     {
         return (s) =>
             s.Name!.ToLower().Contains(query.Name!.ToLower() + "") &&
@@ -226,7 +265,7 @@ public class StationService : IStationService
         if(stationName  == null) return false;
 
         return stationName.RemoveDiacritics().Contains(searchString, StringComparison.OrdinalIgnoreCase);
-  
+
     }
 
 
@@ -239,13 +278,13 @@ public class StationService : IStationService
         var repo = _unitOfWork.GetRepository<Station, Guid>();
         StationListResponseDto response = new StationListResponseDto();
 
-        
+
 
         List<Station> stationList;
         if (string.IsNullOrEmpty(searchString))
         {
-            stationList = await repo.Query()
-                .Where(s => s.DeleteFlag == false).ToListAsync(cancellationToken);
+            stationList = await EntityFrameworkQueryableExtensions.ToListAsync(repo.Query()
+                    .Where(s => s.DeleteFlag == false), cancellationToken);
 
             response.Stations = stationList.Select(s => s.togGetNameStationResponseDto()).ToList();
 
@@ -254,9 +293,8 @@ public class StationService : IStationService
         var normalizedSearch = searchString.Trim().RemoveDiacritics();
 
 
-        var rawStations = await repo.Query()
-            .Where(s => s.DeleteFlag == false && s.Name != null)
-            .ToListAsync(cancellationToken);
+        var rawStations = await EntityFrameworkQueryableExtensions.ToListAsync(repo.Query()
+                .Where(s => s.DeleteFlag == false && s.Name != null), cancellationToken);
 
 
         stationList = rawStations
@@ -272,10 +310,9 @@ public class StationService : IStationService
     {
         var repo = _unitOfWork.GetRepository<StationRoute, (Guid,Guid)>();
 
-        var stationRoutes = await repo.Query()
-                                     .Include(s => s.Station)
-                                     .Where(st => st.DeleteFlag == false && st.RouteId == routeId)
-                                     .ToListAsync(cancellationToken);
+        var stationRoutes = await EntityFrameworkQueryableExtensions.ToListAsync(repo.Query()
+                                         .Include(s => s.Station)
+                                         .Where(st => st.DeleteFlag == false && st.RouteId == routeId), cancellationToken);
         if (stationRoutes.Count == 0)
         {
             return Enumerable.Empty<SingleUseGetStationsResponseDto>();
