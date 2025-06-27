@@ -2,12 +2,10 @@
 
 public class CartResponseDto
 {
-    public string TicketName { get; set; } = string.Empty;
-    public string EntryStationName { get; set; } = string.Empty;
-    public string DestinationStationName { get; set; } = string.Empty;
+    public string Ticket { get; set; } = string.Empty;
+    public string EntryStationId { get; set; } = string.Empty;
+    public string DestinationStationId { get; set; } = string.Empty;
     public string Route { get; set; } = null!;
     public int Quantity { get; set; }
-    public decimal Price { get; set; }
-    
     
 }

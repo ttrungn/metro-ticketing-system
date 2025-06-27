@@ -30,15 +30,7 @@ public class Cart : EndpointGroupBase
 
         if (response.Succeeded)
         {
-            decimal totalPrice = response.Data!.Sum(i => i.Price * i.Quantity);
-
-            return Results.Ok(new
-            {
-                succeeded = true,
-                message = "Lấy giỏ hàng thành công.",
-                data = response.Data,
-                totalPrice = totalPrice
-            });
+            return TypedResults.Ok(response);
         }
 
         return TypedResults.BadRequest(response);

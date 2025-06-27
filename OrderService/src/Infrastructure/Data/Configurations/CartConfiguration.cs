@@ -26,17 +26,13 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
             .HasDefaultValue(1);
 
         builder.Property(c => c.EntryStationId)
-            .IsRequired(false)
+            .IsRequired()
             .HasMaxLength(50);
 
         builder.Property(c => c.DestinationStationId)
-            .IsRequired(false)
+            .IsRequired()
             .HasMaxLength(50);
-        
-        builder.Property(c => c.RouteId)
-            .IsRequired(false)
-            .HasMaxLength(50);
-        
+
         builder.ConfigureAuditableProperties();
     }
 }
