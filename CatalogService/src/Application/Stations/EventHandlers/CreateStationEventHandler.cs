@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CatalogService.Application.Stations.EventHandlers;
 
-public class CreateStationEventHandler
+public class CreateStationEventHandler : INotificationHandler<CreateStationEvent>
 {
     private readonly ILogger<CreateStationEventHandler> _logger;
     private readonly IMassTransitService<CreateStationEvent> _massTransitService;

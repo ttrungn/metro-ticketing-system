@@ -23,7 +23,6 @@ public class UpdateRouteConsumer : IConsumer<UpdateRouteEvent>
 
         var session = _unitOfWork.GetDocumentSession();
 
-        // Assuming RouteReadModel has an Id property that matches the message Id
         var routeReadModel = await session.LoadAsync<RouteReadModel>(message.Id);
         if (routeReadModel != null)
         {

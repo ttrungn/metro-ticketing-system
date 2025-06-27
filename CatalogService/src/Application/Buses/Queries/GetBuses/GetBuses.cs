@@ -41,12 +41,13 @@ public class GetBusesQueryHandler : IRequestHandler<GetBusesQuery, ServiceRespon
 
         var response = new GetBusesResponseDto
         {
-            Buses = buses,
             TotalPages = totalPages,
-            PageSize = request.PageSize,
             CurrentPage = request.Page,
+            PageSize = request.PageSize,
+            Buses = buses,
         };
-
+        _logger.LogInformation("Retrieve buses successfully: Total pages: {TotalPages} - Current page: {CurrentPage} - Page size: {PageSize}",
+            response.TotalPages, response.CurrentPage, response.PageSize);
         return new ServiceResponse<GetBusesResponseDto>
         {
             Succeeded = true,
