@@ -39,26 +39,4 @@ public class HttpClientService : IHttpClientService
 
         return responseData!;
     }
-    public async Task<T> SendPost<T>(string baseUrl, string endpoint, object content, CancellationToken cancellationToken = default)
-    {
-        var authorizationHeader = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
-
-        var client = _httpClientFactory.CreateClient();
-        var request = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/{endpoint}");
-        request.Headers.Add("Accept", "application/json");
-        request.Headers.Add("Authorization", authorizationHeader);
-        request.Content = JsonContent.Create(content);
-
-        var response = await client.SendAsync(request, cancellationToken);
-        if (!response.IsSuccessStatusCode)
-        {
-            _logger.LogError("Request to {Endpoint} failed with status code {StatusCode}", endpoint, response.StatusCode);
-            return default!;
-        }
-
-        _logger.LogInformation("Request to {Endpoint} succeeded with status code {StatusCode}", endpoint, response.StatusCode);
-        var responseData = await response.Content.ReadFromJsonAsync<T>(cancellationToken);
-
-        return responseData!;
-    }
 }

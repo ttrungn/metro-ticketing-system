@@ -23,12 +23,17 @@ public class CartService : ICartService
         _configuration = configuration;
     }
     
-    public async Task<Guid> CreateAsync(AddToCartCommand command, string userId, CancellationToken cancellationToken = default)
+    public async Task<List<string>> CreateAsync(AddToCartCommand command, string userId, CancellationToken cancellationToken = default)
     {
-        var response = await GetCustomerResponse(userId, cancellationToken);
+        var baseUrl = Guard.Against.NullOrEmpty(_configuration["ClientSettings:UserServiceClient"], message: "User Service Client URL is not configured.");
+        var endpoint = $"api/user/Customers/";
+        var response = await _httpClientService.SendGet<ServiceResponse<CustomerResponseDto>>(
+            baseUrl,
+            endpoint,
+            cancellationToken: cancellationToken);
         if(response.Data == null)
         {
-            return Guid.Empty;
+            return new List<string> { "Không tìm thấy thông tin người dùng." };
         }
         var cartRepo = _unitOfWork.GetRepository<Cart, Guid>();
         // Check if the user already has a same ticket in the cart
@@ -42,16 +47,15 @@ public class CartService : ICartService
         var matchedItems  = await cartRepo.
                                                     FindAsync(filter, cancellationToken : cancellationToken);
         var existingCartItem = matchedItems.FirstOrDefault();
-        Guid cartId;
+        
         if (existingCartItem != null)
         {
             existingCartItem.Quantity += command.Quantity;
             await cartRepo.UpdateAsync(existingCartItem, cancellationToken);
-            cartId = existingCartItem.Id;
         }
         else
         {
-            cartId = Guid.NewGuid();
+            
             var newCart = new Cart
             {
                 TicketId = command.TicketId.ToString(),
@@ -60,21 +64,25 @@ public class CartService : ICartService
                 DestinationStationId = command.DestinationStationId,
                 RouteId = command.RouteId
             };
-            newCart.Id = cartId;
+            newCart.Id = Guid.NewGuid();
             newCart.CustomerId = response.Data.CustomerId;
             await cartRepo.AddAsync(newCart, cancellationToken);
         }
         await _unitOfWork.SaveChangesAsync();
-        return  cartId;
+        return  new List<string> { "Thêm vào giỏ hàng thành công." };
     }
 
-    public async Task<IEnumerable<CartResponseDto>?> GetCartsAsync(string userId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<CartResponseDto>> GetCartsAsync(string userId, CancellationToken cancellationToken = default)
     {
-
-        var responseCustomer = await GetCustomerResponse(userId, cancellationToken);
+        var baseUrlCustomer = Guard.Against.NullOrEmpty(_configuration["ClientSettings:UserServiceClient"], message: "User Service Client URL is not configured.");
+        var endpointCustomer = $"api/user/Customers/";
+        var responseCustomer = await _httpClientService.SendGet<ServiceResponse<CustomerResponseDto>>(
+            baseUrlCustomer,
+            endpointCustomer,
+            cancellationToken: cancellationToken);
         if (responseCustomer.Data == null)
         {
-            return null;
+            return new List<CartResponseDto>();
         }
         var customerId = responseCustomer.Data?.CustomerId;
         
@@ -87,128 +95,62 @@ public class CartService : ICartService
         var routeInfoLst = new Dictionary<string, string>(); 
         var entryStationNames = new Dictionary<string, string>(); 
         var destinationStationNames = new Dictionary<string, string>(); 
-        var ticketPrices = new Dictionary<string, decimal>();
-        var ticketNames = new Dictionary<string, string>();
-        
-        await PopulateCartDetails(carts, routeInfoLst, entryStationNames, destinationStationNames, ticketNames, ticketPrices, cancellationToken);
-        
-        var cartDtos = carts.Select(cart => new CartResponseDto
-        {
-            TicketName = ticketNames.GetValueOrDefault(cart.TicketId!, "Unknown Ticket"),
-            EntryStationName = entryStationNames.GetValueOrDefault(cart.EntryStationId!, ""),
-            DestinationStationName = destinationStationNames.GetValueOrDefault(cart.DestinationStationId!, ""),
-            Route = routeInfoLst.GetValueOrDefault(cart.RouteId!, ""),
-            Quantity = cart.Quantity,
-            Price = ticketPrices.GetValueOrDefault(cart.TicketId!, 0),
-        }).ToList();
-        return cartDtos;
-    
-    }
-
-
-    #region Helper Methods
-    private async Task PopulateCartDetails(IEnumerable<Cart> carts, Dictionary<string, string> routeInfoLst, 
-        Dictionary<string, string> entryStationNames, Dictionary<string, string> destinationStationNames, 
-        Dictionary<string, string> ticketNames, Dictionary<string, decimal> ticketPrices,
-        CancellationToken cancellationToken)
-    {
         var baseUrl = Guard.Against.NullOrEmpty(_configuration["ClientSettings:CatalogServiceClient"], message: "Catalog Service Client URL is not configured.");
 
         foreach (var cart in carts)
         {
-            // Fetch route information
-            var routeResponse = await GetRouteInfo(cart.RouteId!, baseUrl, cancellationToken);
-            routeInfoLst[cart.RouteId!] = routeResponse ?? "";
-
-            // Fetch entry station information
-            var entryStationResponse = await GetStationInfo(cart.EntryStationId!, baseUrl, cancellationToken);
-            entryStationNames[cart.EntryStationId!] = entryStationResponse ?? "";
-
-            // Fetch destination station information
-            var destinationStationResponse = await GetStationInfo(cart.DestinationStationId!, baseUrl, cancellationToken);
-            destinationStationNames[cart.DestinationStationId!] = destinationStationResponse ?? "";
-            
-            // Fetch destination ticket information
-            if (routeResponse == null || entryStationResponse == null || destinationStationResponse == null)
-            { 
-                var ticketResponse = await GetTicketInfo(cart.TicketId!, baseUrl, cancellationToken);
-                ticketNames[cart.TicketId!] = ticketResponse!.Name ?? "Unknown Ticket"; 
-                ticketPrices[cart.TicketId!] = ticketResponse.Price;
+            var routeResponse = await _httpClientService.SendGet<ServiceResponse<RouteResponseDto>>(
+                baseUrl, 
+                $"api/catalog/Routes/{Guid.Parse(cart.RouteId)}",
+                cancellationToken: cancellationToken);
+            if (routeResponse.Data != null)
+            {
+                routeInfoLst[cart.RouteId] = routeResponse.Data!.Name!;
             }
             else
             {
-                var ticketResponseSingleUse =
-                    await GetTicketSingleUse(new GetTicketInfoRequestDto
-                        {
-                            RouteId = Guid.Parse(cart.RouteId!),
-                            EntryStationId = Guid.Parse(cart.EntryStationId!),
-                            ExitStationId = Guid.Parse(cart.DestinationStationId!)
-                        }, 
-                        baseUrl, 
-                        cancellationToken); 
-                ticketNames[cart.TicketId!] = ticketResponseSingleUse!.Name ?? "Unknown Ticket"; 
-                ticketPrices[cart.TicketId!] = ticketResponseSingleUse.Price;
-                
+                routeInfoLst[cart.RouteId] = "Unknown Route";
             }
-       
+            
+            // Lấy thông tin về Entry Station
+            var entryStationResponse = await _httpClientService.SendGet<ServiceResponse<StationResponseDto>>(
+                baseUrl,
+                $"api/catalog/stations/{Guid.Parse(cart.EntryStationId)}",
+                cancellationToken: cancellationToken);
+            if (entryStationResponse.Data != null)
+            {
+                entryStationNames[cart.EntryStationId] = entryStationResponse.Data!.Name!;
+            }
+            else
+            {
+                entryStationNames[cart.EntryStationId] = "Unknown Entry Station";
+            }
+            
+            // Lấy thông tin về Destination Station
+            var destinationStationResponse = await _httpClientService.SendGet<ServiceResponse<StationResponseDto>>(
+                baseUrl,
+                $"api/catalog/stations/{Guid.Parse(cart.DestinationStationId)}",
+                cancellationToken: cancellationToken);
+             
+            if (destinationStationResponse.Data != null)
+            {
+                destinationStationNames[cart.DestinationStationId] = destinationStationResponse.Data!.Name!;
+            }
+            else
+            {
+                destinationStationNames[cart.DestinationStationId] = "Unknown Destination Station";
+            }
+            
         }
-    }
-    private async Task<ServiceResponse<CustomerResponseDto>> GetCustomerResponse(string userId, CancellationToken cancellationToken)
-    {
-        var baseUrlCustomer = Guard.Against.NullOrEmpty(_configuration["ClientSettings:UserServiceClient"], message: "User Service Client URL is not configured.");
-        var endpointCustomer = $"api/user/Customers/";
-        return await _httpClientService.SendGet<ServiceResponse<CustomerResponseDto>>(
-            baseUrlCustomer,
-            endpointCustomer,
-            cancellationToken: cancellationToken);
-    }
-    private async Task<string?> GetRouteInfo(string routeId, string baseUrl, CancellationToken cancellationToken)
-    {    
-        if (string.IsNullOrEmpty(routeId) || !Guid.TryParse(routeId, out var routeGuid))
+        var cartDtos = carts.Select(cart => new CartResponseDto
         {
-            return null;
-        }
-        var routeResponse = await _httpClientService.SendGet<ServiceResponse<RouteResponseDto>>(
-            baseUrl,
-            $"api/catalog/Routes/{Guid.Parse(routeId)}",
-            cancellationToken: cancellationToken);
-
-        return routeResponse?.Data?.Name ?? "Route Not Found";
-    }
-
-    private async Task<string?> GetStationInfo(string stationId, string baseUrl, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrEmpty(stationId) || !Guid.TryParse(stationId, out var stationGuid))
-        {
-            return null;
-        }
-        var stationResponse = await _httpClientService.SendGet<ServiceResponse<StationResponseDto>>(
-            baseUrl,
-            $"api/catalog/stations/{Guid.Parse(stationId)}",
-            cancellationToken: cancellationToken);
-
-        return stationResponse?.Data?.Name ?? "Station Not Found";
-    }
-    private async Task<TicketDto?> GetTicketSingleUse(GetTicketInfoRequestDto request, string baseUrl, CancellationToken cancellationToken)
-    {
-        var ticketResponse = await _httpClientService.SendPost<ServiceResponse<TicketDto>>(
-            baseUrl,
-            $"api/catalog/Tickets/single-use-ticket-info/",
-            request,
-            cancellationToken: cancellationToken);
-
-        return ticketResponse?.Data;
-    }
+            Ticket = cart.TicketId,
+            EntryStationId = entryStationNames.GetValueOrDefault(cart.EntryStationId, "Unknown Entry Station"),
+            DestinationStationId = destinationStationNames.GetValueOrDefault(cart.DestinationStationId, "Unknown Destination Station"),
+            Route = routeInfoLst.GetValueOrDefault(cart.RouteId, "Unknown Route"),
+            Quantity = cart.Quantity
+        }).ToList();
+        return cartDtos;
     
-    private async Task<TicketDto?> GetTicketInfo(string ticketId, string baseUrl, CancellationToken cancellationToken)
-    {
-        var ticketResponse = await _httpClientService.SendGet<ServiceResponse<TicketDto>>(
-            baseUrl,
-            $"api/catalog/Tickets/{ticketId}",
-            cancellationToken: cancellationToken);
-
-        return ticketResponse?.Data;
     }
-
-    #endregion
 }
