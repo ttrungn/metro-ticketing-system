@@ -1,18 +1,18 @@
 ﻿using BuildingBlocks.Response;
 using Microsoft.Extensions.Logging;
+using OrderService.Application.Carts.DTOs;
 using OrderService.Application.Common.Interfaces;
 using OrderService.Application.Common.Interfaces.Services;
 
 namespace OrderService.Application.Carts.Commands.AddToCart;
 
-public record AddToCartCommand : IRequest<ServiceResponse<List<string>>>
+public record AddToCartCommand : IRequest<ServiceResponse<CartIdResponseWithStudentDto>>
 {
     public string TicketId { get; init; } = null!;
     public int Quantity { get; init; }
     public string EntryStationId { get; init; } = null!;
     public string DestinationStationId { get; init; } = null!;
     public string RouteId { get; init; } = null!;
-    
 }
 public class AddToCartCommandValidator : AbstractValidator<AddToCartCommand>
 {
@@ -20,13 +20,10 @@ public class AddToCartCommandValidator : AbstractValidator<AddToCartCommand>
     {
         RuleFor(x => x.TicketId).NotEmpty().WithMessage("Hãy chọn vé.");
         RuleFor(x => x.Quantity).GreaterThan(0).WithMessage("Số lượng phải lớn hơn 0.");
-        RuleFor(x => x.EntryStationId).NotEmpty().WithMessage("Hãy chọn ga đi.");
-        RuleFor(x => x.DestinationStationId).NotEmpty().WithMessage("Hãy chọn ga đến.");
-        RuleFor(x => x.RouteId).NotEmpty().WithMessage("Hãy chọn tuyến đường.");
     }
 }
 
-public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, ServiceResponse<List<string>>>
+public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, ServiceResponse<CartIdResponseWithStudentDto>>
 {
     private readonly ILogger<AddToCartCommandHandler> _logger;
     private readonly ICartService _cartService;
@@ -38,22 +35,40 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, Service
         _logger = logger;
         _user = user;
     }
-
-    public async Task<ServiceResponse<List<string>>> Handle(AddToCartCommand request,
+    
+    public async Task<ServiceResponse<CartIdResponseWithStudentDto>> Handle(AddToCartCommand request,
         CancellationToken cancellationToken)
     {
-        var customer = await _cartService.CreateAsync(request, _user.Id!, cancellationToken);
+        if (string.IsNullOrEmpty(_user.Id))
+        {
+            _logger.LogWarning("User is not authenticated.");
+            return new ServiceResponse<CartIdResponseWithStudentDto>
+            {
+                Succeeded = false,
+                Message = "Bạn cần đăng nhập để thực hiện thao tác này.",
+                Data = null
+            };
+        }
 
-        if (customer == null || !customer.Any())
+        var cart = await _cartService.CreateAsync(request, _user.Id!, cancellationToken);
+
+        if (cart == null)
         {
             _logger.LogError("Failed to add item to cart for user {UserId}", _user.Id);
-            return new ServiceResponse<List<string>> { Succeeded = false, Message = "Failed to add item to cart." };
+            return new ServiceResponse<CartIdResponseWithStudentDto>
+            {
+                Succeeded = false,
+                Message = "Thêm vé vào giỏ hàng thất bại.",
+                Data = null
+            };
         }
 
         _logger.LogInformation("Item added to cart for user {UserId}", _user.Id);
-        return new ServiceResponse<List<string>>
+        return new ServiceResponse<CartIdResponseWithStudentDto>
         {
-            Succeeded = true, Data = customer, Message = "Item added to cart successfully."
+            Succeeded = true,
+            Message = "Thêm vé vào giỏ hàng thành công.",
+            Data = cart
         };
     }
 }
