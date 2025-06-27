@@ -20,9 +20,6 @@ public class AddToCartCommandValidator : AbstractValidator<AddToCartCommand>
     {
         RuleFor(x => x.TicketId).NotEmpty().WithMessage("Hãy chọn vé.");
         RuleFor(x => x.Quantity).GreaterThan(0).WithMessage("Số lượng phải lớn hơn 0.");
-        RuleFor(x => x.EntryStationId).NotEmpty().WithMessage("Hãy chọn ga đi.");
-        RuleFor(x => x.DestinationStationId).NotEmpty().WithMessage("Hãy chọn ga đến.");
-        RuleFor(x => x.RouteId).NotEmpty().WithMessage("Hãy chọn tuyến đường.");
     }
 }
 
@@ -42,8 +39,29 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, Service
     public async Task<ServiceResponse<Guid>> Handle(AddToCartCommand request,
         CancellationToken cancellationToken)
     {
+        if(string.IsNullOrEmpty(_user.Id))
+        {
+            _logger.LogWarning("User is not authenticated.");
+            return new ServiceResponse<Guid>
+            {
+                Succeeded = false,
+                Message = "Bạn cần đăng nhập để thực hiện thao tác này.",
+                Data = Guid.Empty
+            };
+        }
+        
         var cartId = await _cartService.CreateAsync(request, _user.Id!, cancellationToken);
-
+        if (cartId == Guid.Parse("3631e38b-60dd-4d1a-af7f-a26f21c2ef82"))
+        {
+            _logger.LogError("Failed to add item to cart for user {UserId}", _user.Id);
+            return new ServiceResponse<Guid>
+            {
+                Succeeded = true,
+                Message = "Bạn phải đăng ký tài khoản student để thực hiện thao tác này.",
+                Data = cartId
+            };    
+        }
+        
         if (cartId == Guid.Empty)
         {
             _logger.LogError("Failed to add item to cart for user {UserId}", _user.Id);
@@ -58,7 +76,7 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, Service
         _logger.LogInformation("Item added to cart for user {UserId}", _user.Id);
         return new ServiceResponse<Guid>
         {
-            Succeeded = false,
+            Succeeded = true,
             Message = "Thêm vé vào giỏ hàng thành công.",
             Data = cartId
         };    
