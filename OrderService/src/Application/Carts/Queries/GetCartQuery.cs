@@ -7,7 +7,8 @@ namespace OrderService.Application.Carts.Queries;
 
 public record GetCartQuery : IRequest<ServiceResponse<IEnumerable<CartResponseDto>>>;
 
-public class GetCartQueryHandler : IRequestHandler<GetCartQuery, ServiceResponse<IEnumerable<CartResponseDto>>>
+public class GetCartQueryHandler : IRequestHandler<GetCartQuery, 
+    ServiceResponse<IEnumerable<CartResponseDto>>>
 {
     private readonly ICartService _cartService;
     private readonly IUser _user;
@@ -20,13 +21,13 @@ public class GetCartQueryHandler : IRequestHandler<GetCartQuery, ServiceResponse
 
     public async Task<ServiceResponse<IEnumerable<CartResponseDto>>> Handle(GetCartQuery request, CancellationToken cancellationToken)
     {
-        var carts = await _cartService.GetCartsAsync(_user.Id!, cancellationToken);
-
+        var response = await _cartService.GetCartsAsync(_user.Id!, cancellationToken);
         return new ServiceResponse<IEnumerable<CartResponseDto>>()
         {
             Succeeded = true,
             Message = "Lấy giỏ hàng thành công.",
-            Data = carts
+            Data = response
         };
     }
+
 }

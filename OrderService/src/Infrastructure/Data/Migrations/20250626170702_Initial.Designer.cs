@@ -12,7 +12,7 @@ using OrderService.Infrastructure.Data;
 namespace OrderService.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250626014519_Initial")]
+    [Migration("20250626170702_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -45,12 +45,10 @@ namespace OrderService.Infrastructure.Data.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("DestinationStationId")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("EntryStationId")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -63,8 +61,8 @@ namespace OrderService.Infrastructure.Data.Migrations
                         .HasDefaultValue(1);
 
                     b.Property<string>("RouteId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("TicketId")
                         .IsRequired()

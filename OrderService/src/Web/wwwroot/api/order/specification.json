@@ -107,13 +107,16 @@
             "format": "int32"
           },
           "entryStationId": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "destinationStationId": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "routeId": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           }
         }
       },

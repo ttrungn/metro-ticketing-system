@@ -39,6 +39,10 @@
       <_ContentIncludedByDefault Remove="wwwroot\api\sample\specification.json" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="wwwroot\api\order\" />
+    </ItemGroup>
+
 
     <!-- Auto-generated Open API specification and Angular TypeScript clients -->
     <PropertyGroup>
