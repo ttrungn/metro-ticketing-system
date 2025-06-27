@@ -40,12 +40,14 @@ public class GetRoutesQueryHandler : IRequestHandler<GetRoutesQuery, ServiceResp
 
         var response = new GetRoutesResponseDto
         {
-            Routes = routes,
             TotalPages = totalPages,
-            PageSize = request.PageSize,
             CurrentPage = request.Page,
+            PageSize = request.PageSize,
+            Routes = routes,
         };
 
+        _logger.LogInformation("Retrieve routes successfully: Total pages: {TotalPages} - Current page: {CurrentPage} - Page size: {PageSize}",
+            response.TotalPages, response.CurrentPage, response.PageSize);
         return new ServiceResponse<GetRoutesResponseDto>()
         {
             Succeeded = true,

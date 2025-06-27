@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Linq.Expressions;
+using BuildingBlocks.Domain.Events.Routes;
 using CatalogService.Application.Common.Interfaces.Repositories;
 using CatalogService.Application.Common.Interfaces.Services;
 using CatalogService.Application.Routes.Commands.CreateRoute;
@@ -9,6 +10,7 @@ using CatalogService.Application.Routes.DTOs;
 using CatalogService.Application.Routes.Queries.GetRoutes;
 using CatalogService.Application.Tickets.DTO;
 using CatalogService.Domain.Entities;
+using Marten;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -53,6 +55,7 @@ public class RouteService : IRouteService
             thumbnailImageUrl = blobUrl;
         }
 
+        var createdAt = DateTimeOffset.UtcNow;
         var newRoute = new Route()
         {
             Id = id,
@@ -60,7 +63,18 @@ public class RouteService : IRouteService
             Name = command.Name,
             ThumbnailImageUrl = thumbnailImageUrl,
             LengthInKm = command.LengthInKm,
+            CreatedAt = createdAt,
         };
+
+        newRoute.AddDomainEvent(new CreateRouteEvent()
+        {
+            Id = newRoute.Id,
+            Code = newRoute.Code,
+            Name = newRoute.Name,
+            ThumbnailImageUrl = newRoute.ThumbnailImageUrl,
+            LengthInKm = newRoute.LengthInKm,
+            CreatedAt = newRoute.CreatedAt,
+        });
 
         await repo.AddAsync(newRoute, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
@@ -91,12 +105,21 @@ public class RouteService : IRouteService
                 containerName);
             route.ThumbnailImageUrl = blobUrl;
         }
+        var lastModifiedAt = DateTimeOffset.UtcNow;
 
         route.Name = command.Name;
-        if (command.LengthInKm > 0.1)
+        route.LengthInKm = (double)command.LengthInKm!;
+        route.LastModifiedAt = lastModifiedAt;
+
+
+        route.AddDomainEvent(new UpdateRouteEvent()
         {
-            route.LengthInKm = (double)command.LengthInKm!;
-        }
+            Id = route.Id,
+            Name = route.Name,
+            ThumbnailImageUrl = route.ThumbnailImageUrl,
+            LengthInKm = route.LengthInKm,
+            LastModifiedAt = route.LastModifiedAt,
+        });
 
         await repo.UpdateAsync(route, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
@@ -118,7 +141,7 @@ public class RouteService : IRouteService
         var stationRouteRepo =
             _unitOfWork.GetRepository<StationRoute, (Guid StationId, Guid RouteId)>();
 
-        var stationRoutes = await stationRouteRepo.Query().Where(r => r.RouteId == id).ToListAsync(cancellationToken);
+        var stationRoutes = await EntityFrameworkQueryableExtensions.ToListAsync(stationRouteRepo.Query().Where(r => r.RouteId == id), cancellationToken);
         if (stationRoutes.Count != 0)
         {
             foreach (var stationRoute in stationRoutes)
@@ -128,7 +151,20 @@ public class RouteService : IRouteService
             }
         }
 
+        var now = DateTimeOffset.UtcNow;
+        var lastModifiedAt = now;
+        var deletedAt = now;
+        route.LastModifiedAt = lastModifiedAt;
+        route.DeletedAt = deletedAt;
         route.DeleteFlag = true;
+
+        route.AddDomainEvent(new DeleteRouteEvent()
+        {
+            Id = route.Id,
+            LastModifiedAt = route.LastModifiedAt,
+            DeletedAt = route.DeletedAt,
+            DeleteFlag = route.DeleteFlag,
+        });
 
         await repo.UpdateAsync(route, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
@@ -136,31 +172,29 @@ public class RouteService : IRouteService
         return route.Id;
     }
 
-    public async Task<(IEnumerable<RoutesResponseDto>, int)> GetAsync(
+    public async Task<(IEnumerable<RouteReadModel>, int)> GetAsync(
         GetRoutesQuery query,
         CancellationToken cancellationToken = default)
     {
-        var repo = _unitOfWork.GetRepository<Route, Guid>();
+        var session = _unitOfWork.GetDocumentSession();
 
-        Expression<Func<Route, bool>> filter = GetFilter(query);
+        Expression<Func<RouteReadModel, bool>> filter = GetFilter(query);
 
-        var routes = await repo.GetPagedAsync(
-            skip: query.Page * query.PageSize,
-            take: query.PageSize,
-            filters: [filter],
-            cancellationToken: cancellationToken);
+        var routes = await QueryableExtensions.ToListAsync(session.Query<RouteReadModel>()
+            .Where(filter)
+            .Skip(query.Page * query.PageSize)
+            .Take(query.PageSize)
+            .AsNoTracking(),
+            cancellationToken);
 
-        var totalPages = await repo.GetTotalPagesAsync(query.PageSize, [filter], cancellationToken);
+        var totalCount = await QueryableExtensions.CountAsync(session.Query<RouteReadModel>()
+            .Where(filter)
+            .AsNoTracking(),
+            cancellationToken);
 
-        return (
-            routes.Select(r => new RoutesResponseDto
-            {
-                Id = r.Id,
-                Code = r.Code,
-                Name = r.Name,
-                ThumbnailImageUrl = r.ThumbnailImageUrl,
-                LengthInKm = r.LengthInKm
-            }), totalPages);
+        var totalPages = (int)Math.Ceiling((double)totalCount / query.PageSize);
+
+        return (routes, totalPages);
     }
 
     public async Task<StationRouteResponseDto?> GetByIdAsync(Guid requestId,
@@ -168,8 +202,7 @@ public class RouteService : IRouteService
     {
         var repo = _unitOfWork.GetRepository<Route, Guid>();
 
-        var route = await repo.Query().Include(r => r.StationRoutes.Where(sr => sr.DeleteFlag == false)).ThenInclude(r => r.Station)
-            .FirstOrDefaultAsync(r => r.Id == requestId, cancellationToken);
+        var route = await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(repo.Query().Include(r => r.StationRoutes.Where(sr => sr.DeleteFlag == false)).ThenInclude(r => r.Station), r => r.Id == requestId, cancellationToken);
         if (route == null)
         {
             return null;
@@ -210,7 +243,7 @@ public class RouteService : IRouteService
 
         var stationRouteRepo = _unitOfWork.GetRepository<StationRoute, (Guid, Guid)>();
 
-        var route = await repo.Query().Include(r => r.StationRoutes).FirstOrDefaultAsync(r => r.Id == command.Id);
+        var route = await EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(repo.Query().Include(r => r.StationRoutes), r => r.Id == command.Id);
 
         if (route == null)
             return Guid.Empty;
@@ -223,7 +256,7 @@ public class RouteService : IRouteService
         {
             //If existing station route is found in both existingDict and command, update it
 
-            
+
             var stationRoute = route.StationRoutes
         .FirstOrDefault(sr => sr.StationId == stationRouteDto.StationId);
             if (stationRoute != null)
@@ -231,7 +264,7 @@ public class RouteService : IRouteService
                 routeLength += stationRouteDto.DistanceToNext;
                 stationRoute.Order = stationRouteDto.Order;
                 stationRoute.DistanceToNext = stationRouteDto.DistanceToNext;
-                stationRoute.DeleteFlag = false; 
+                stationRoute.DeleteFlag = false;
                 await stationRouteRepo.UpdateAsync(stationRoute, cancellationToken);
             }
             else
@@ -275,7 +308,7 @@ public class RouteService : IRouteService
 
     #region Helper method
 
-    private Expression<Func<Route, bool>> GetFilter(GetRoutesQuery query)
+    private Expression<Func<RouteReadModel, bool>> GetFilter(GetRoutesQuery query)
     {
         return (r) =>
             r.Name!.ToLower().Contains(query.Name!.ToLower() + "") &&
