@@ -69,7 +69,7 @@ public class CartService : ICartService
                 EntryStationId = command.EntryStationId,
                 DestinationStationId = command.DestinationStationId,
                 RouteId = command.RouteId,
-                CustomerId = responseCustomer.Data.CustomerId
+                CustomerId = responseCustomer.Data!.CustomerId
             };
             
             await cartRepo.AddAsync(newCart, cancellationToken);

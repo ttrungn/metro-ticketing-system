@@ -13,6 +13,7 @@ namespace OrderService.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20250627045325_Initial")]
+
     partial class Initial
     {
         /// <inheritdoc />

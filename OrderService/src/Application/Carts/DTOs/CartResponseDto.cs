@@ -8,7 +8,6 @@ public class CartResponseDto
     public string DestinationStationName { get; set; } = string.Empty;
     public string Route { get; set; } = null!;
     public int Quantity { get; set; }
-    
     public decimal Price { get; set; }
     
     

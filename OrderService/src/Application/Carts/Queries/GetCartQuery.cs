@@ -6,7 +6,6 @@ using OrderService.Application.Common.Interfaces.Services;
 namespace OrderService.Application.Carts.Queries;
 
 public record GetCartQuery : IRequest<ServiceResponse<IEnumerable<CartResponseDto>>>;
-
 public class GetCartQueryHandler : IRequestHandler<GetCartQuery, 
     ServiceResponse<IEnumerable<CartResponseDto>>>
 {
@@ -38,5 +37,4 @@ public class GetCartQueryHandler : IRequestHandler<GetCartQuery,
             Data = response
         };
     }
-
 }

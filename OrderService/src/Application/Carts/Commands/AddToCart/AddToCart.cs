@@ -23,7 +23,6 @@ public class AddToCartCommandValidator : AbstractValidator<AddToCartCommand>
     }
 }
 
-
 public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, ServiceResponse<CartIdResponseWithStudentDto>>
 {
     private readonly ILogger<AddToCartCommandHandler> _logger;
@@ -36,7 +35,7 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, Service
         _logger = logger;
         _user = user;
     }
-
+    
     public async Task<ServiceResponse<CartIdResponseWithStudentDto>> Handle(AddToCartCommand request,
         CancellationToken cancellationToken)
     {
@@ -73,58 +72,3 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, Service
         };
     }
 }
-
-
-
-
-//
-// public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, ServiceResponse<CartResponseWithStudentDto>>
-// {
-//     private readonly ILogger<AddToCartCommandHandler> _logger;
-//     private readonly ICartService _cartService;
-//     private readonly IUser _user;
-//
-//     public AddToCartCommandHandler(ICartService cartService, ILogger<AddToCartCommandHandler> logger, IUser user)
-//     {
-//         _cartService = cartService;
-//         _logger = logger;
-//         _user = user;
-//     }
-//
-//     public async Task<ServiceResponse<CartResponseWithStudentDto()>> Handle(AddToCartCommand request,
-//         CancellationToken cancellationToken)
-//     {
-//         if(string.IsNullOrEmpty(_user.Id))
-//         {
-//             _logger.LogWarning("User is not authenticated.");
-//             return new ServiceResponse<Guid>
-//             {
-//                 Succeeded = false,
-//                 Message = "Bạn cần đăng nhập để thực hiện thao tác này.",
-//                 Data = Guid.Empty
-//             };
-//         }
-//         
-//         var cart = await _cartService.CreateAsync(request, _user.Id!, cancellationToken);
-//
-//         if (cart)
-//         {
-//             _logger.LogError("Failed to add item to cart for user {UserId}", _user.Id);
-//             return new ServiceResponse<Guid>
-//             {
-//                 Succeeded = false,
-//                 Message = "Thêm vé vào giỏ hàng thất bại.",
-//                 Data = Guid.Empty
-//             };    
-//         }
-//
-//         _logger.LogInformation("Item added to cart for user {UserId}", _user.Id);
-//         return new ServiceResponse<Guid>
-//         {
-//             Succeeded = true,
-//             Message = "Thêm vé vào giỏ hàng thành công.",
-//             Data = cartId
-//         };    
-//     }
-
-
