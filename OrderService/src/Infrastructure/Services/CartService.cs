@@ -120,7 +120,63 @@ public class CartService : ICartService
     
     }
 
+    public async Task<int> GetQuantitiesCartAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var responseCustomer = await GetCustomerResponse(userId, cancellationToken);
+        var customerId = responseCustomer.Data?.CustomerId;
+        
+        var cartRepo = _unitOfWork.GetRepository<Cart, Guid>();
+        var carts = await cartRepo.Query() 
+            .Where(c => c.CustomerId == customerId)
+            .ToListAsync(cancellationToken);  
 
+        return carts.Sum(c => c.Quantity);
+    }
+
+    public async Task<Guid> UpdateCartAsync(Guid id,int quantity, string userId, 
+                                            CancellationToken cancellationToken = default)
+    {
+        var responseCustomer = await GetCustomerResponse(userId, cancellationToken);
+        if (responseCustomer.Data == null)
+        {
+            return Guid.Empty;
+        }
+        
+        var cartRepo = _unitOfWork.GetRepository<Cart, Guid>();
+        var cart = await cartRepo.GetByIdAsync(id, cancellationToken);
+        
+        if (cart == null)
+        {
+            return Guid.Empty; 
+        }
+
+        cart.Quantity = quantity;
+        await cartRepo.UpdateAsync(cart, cancellationToken);
+        await cartRepo.SaveChangesAsync(cancellationToken);
+        
+        return cart.Id;
+    }
+    public async Task<Guid> DeleteCartAsync(Guid id, string userId, 
+        CancellationToken cancellationToken = default)
+    {
+        var responseCustomer = await GetCustomerResponse(userId, cancellationToken);
+        if (responseCustomer.Data == null)
+        {
+            return Guid.Empty;
+        }
+        
+        var cartRepo = _unitOfWork.GetRepository<Cart, Guid>();
+        var cart = await cartRepo.GetByIdAsync(id, cancellationToken);
+        
+        if (cart == null)
+        {
+            return Guid.Empty; 
+        }
+
+        await cartRepo.RemoveOutAsync(cart, cancellationToken);
+        await cartRepo.SaveChangesAsync(cancellationToken);
+        return cart.Id;
+    }
     #region Helper Methods
     private async Task PopulateCartDetails(IEnumerable<Cart> carts, Dictionary<string, string> routeInfoLst, 
         Dictionary<string, string> entryStationNames, Dictionary<string, string> destinationStationNames, 

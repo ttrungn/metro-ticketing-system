@@ -40,6 +40,67 @@
             "description": ""
           }
         }
+      },
+      "put": {
+        "tags": [
+          "Cart"
+        ],
+        "operationId": "UpdateQuantityCart",
+        "requestBody": {
+          "x-name": "request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCartCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/order/Cart/{id}": {
+      "delete": {
+        "tags": [
+          "Cart"
+        ],
+        "operationId": "DeleteCart",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/order/Cart/quantities": {
+      "get": {
+        "tags": [
+          "Cart"
+        ],
+        "operationId": "GetQuantitiesCartAsync",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
       }
     },
     "/api/order/Payment/momo/create": {
@@ -114,6 +175,20 @@
           },
           "routeId": {
             "type": "string"
+          }
+        }
+      },
+      "UpdateCartCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
