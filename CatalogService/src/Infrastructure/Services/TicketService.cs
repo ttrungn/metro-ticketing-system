@@ -122,7 +122,7 @@ public class TicketService : ITicketService
             if (sumDistance <= 0) break;
         }
 
-        return Task.FromResult(result);
+        return Task.FromResult(RoundUpToNearest(result));
     }
 
     public async Task<SingleUseTicketResponseDto> GetSingleUseTicketInfo(GetSingleUseTicketWithPriceQuery request, CancellationToken cancellationToken = default)
@@ -168,4 +168,16 @@ public class TicketService : ITicketService
         await repo.SaveChangesAsync(cancellationToken); 
         return ticket.Id;
     }
+    private double RoundUpToNearest(double value)
+    {
+        if (value <= 0) return 0;
+        if (value < 100000)
+        {
+            return Math.Ceiling(value / 1000.0) * 1000;
+        }
+        
+        return Math.Ceiling(value / 10000.0) * 10000;
+        
+    }
+
 }

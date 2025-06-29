@@ -59,6 +59,10 @@ public interface IGenericRepository<T, TId> where T : BaseEntity<TId>
         CancellationToken cancellationToken = default
     );
 
+    Task RemoveOutAsync(T entity,
+        CancellationToken cancellationToken = default
+    );
+    
     Task<int> SaveChangesAsync(
         CancellationToken cancellationToken = default
     );
