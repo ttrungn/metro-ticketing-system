@@ -12,7 +12,7 @@ public interface IRouteService
     Task<Guid> CreateAsync(CreateRouteCommand command, CancellationToken cancellationToken = default);
     Task<Guid> UpdateAsync(UpdateRouteCommand command, CancellationToken cancellationToken = default);
     Task<Guid> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<(IEnumerable<RoutesResponseDto>, int)> GetAsync(GetRoutesQuery query, CancellationToken cancellationToken = default);
+    Task<(IEnumerable<RouteReadModel>, int)> GetAsync(GetRoutesQuery query, CancellationToken cancellationToken = default);
 
     Task<StationRouteResponseDto?> GetByIdAsync(Guid requestId, CancellationToken cancellationToken = default);
 

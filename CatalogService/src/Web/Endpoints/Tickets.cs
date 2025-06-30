@@ -1,10 +1,8 @@
 ﻿
 using CatalogService.Application.Common.Interfaces.Services;
-using CatalogService.Application.Routes.Queries.GetAllTicketsWithPriceQuery;
-using CatalogService.Application.Ticket.Queries.GetActiveTickets;
-using CatalogService.Application.Tickets.Queries.GetActiveTicketByIdQuery;
 using CatalogService.Application.Tickets.Queries.GetSingleUseTicketWithPrice;
 using Microsoft.AspNetCore.Mvc;
+using CatalogService.Application.Tickets.Queries.GetActiveTicketByIdQuery;
 
 namespace CatalogService.Web.Endpoints;
 

@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using BuildingBlocks.Domain.Events.Buses;
 using CatalogService.Application.Buses.Commands.CreateBus;
 using CatalogService.Application.Buses.Commands.UpdateBus;
 using CatalogService.Application.Buses.DTOs;
@@ -6,6 +7,8 @@ using CatalogService.Application.Buses.Queries.GetBuses;
 using CatalogService.Application.Common.Interfaces.Repositories;
 using CatalogService.Application.Common.Interfaces.Services;
 using CatalogService.Domain.Entities;
+using Marten;
+using Microsoft.EntityFrameworkCore;
 
 namespace CatalogService.Infrastructure.Services;
 
@@ -32,6 +35,7 @@ public class BusService : IBusService
         var code = GenerateCode(count);
 
         var id = Guid.NewGuid();
+        var createdAt = DateTimeOffset.UtcNow;
 
         var bus = new Bus()
         {
@@ -39,7 +43,17 @@ public class BusService : IBusService
             Code = code,
             StationId = command.StationId,
             DestinationName = command.DestinationName,
+            CreatedAt = createdAt,
         };
+
+        bus.AddDomainEvent(new CreateBusEvent()
+        {
+            Id = bus.Id,
+            Code = bus.Code,
+            StationId = bus.StationId,
+            DestinationName = bus.DestinationName,
+            CreatedAt = bus.CreatedAt
+        });
 
         await repo.AddAsync(bus, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
@@ -66,8 +80,18 @@ public class BusService : IBusService
             }
             bus.StationId = command.StationId.Value;
         }
+        var lastModifiedAt = DateTimeOffset.UtcNow;
 
         bus.DestinationName = command.DestinationName;
+        bus.LastModifiedAt = lastModifiedAt;
+
+        bus.AddDomainEvent(new UpdateBusEvent()
+        {
+            Id = bus.Id,
+            StationId = bus.StationId,
+            DestinationName = bus.DestinationName,
+            LastModifiedAt = bus.LastModifiedAt
+        });
 
         await repo.UpdateAsync(bus, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
@@ -82,62 +106,63 @@ public class BusService : IBusService
         {
             return Guid.Empty;
         }
+        var now = DateTimeOffset.UtcNow;
 
         bus.DeleteFlag = true;
+        bus.DeletedAt = now;
+        bus.LastModifiedAt = now;
+
+        bus.AddDomainEvent(new DeleteBusEvent()
+        {
+            Id = bus.Id,
+            LastModifiedAt = bus.LastModifiedAt,
+            DeletedAt = bus.DeletedAt,
+            DeleteFlag = bus.DeleteFlag
+        });
+
         await repo.UpdateAsync(bus, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
 
         return bus.Id;
     }
 
-    public async Task<BusResponseDto?> GetByIdAsync(Guid queryId, CancellationToken cancellationToken)
+    public async Task<BusReadModel?> GetByIdAsync(Guid queryId, CancellationToken cancellationToken)
     {
-        var repo = _unitOfWork.GetRepository<Bus, Guid>();
-        return await repo.GetByIdAsync(queryId, cancellationToken)
-            .ContinueWith(task =>
-            {
-                var bus = task.Result;
-                if (bus == null)
-                {
-                    return null;
-                }
-                return new BusResponseDto
-                {
-                    Id = bus.Id,
-                    Code = bus.Code,
-                    StationId = bus.StationId,
-                    DestinationName = bus.DestinationName
-                };
-            }, cancellationToken);
+        var session = _unitOfWork.GetDocumentSession();
+
+        var bus = await QueryableExtensions.FirstOrDefaultAsync(session.Query<BusReadModel>()
+                .Where(s => s.Id == queryId),
+            cancellationToken);
+
+        return bus;
     }
 
-    public async Task<(IEnumerable<BusResponseDto>, int)> GetAsync(
-        GetBusesQuery request,
+    public async Task<(IEnumerable<BusReadModel>, int)> GetAsync(
+        GetBusesQuery query,
         CancellationToken cancellationToken)
     {
-        var repo = _unitOfWork.GetRepository<Bus, Guid>();
+        var session = _unitOfWork.GetDocumentSession();
 
-        Expression<Func<Bus, bool>> filter = GetFilter(request);
+        Expression<Func<BusReadModel, bool>> filter = GetFilter(query);
 
-        var buses = await repo.GetPagedAsync(
-            skip: request.Page * request.PageSize,
-            take: request.PageSize,
-            filters: [filter],
-            cancellationToken: cancellationToken);
+        var buses = await QueryableExtensions.ToListAsync(session.Query<BusReadModel>()
+                .Where(filter)
+                .Skip(query.Page * query.PageSize)
+                .Take(query.PageSize)
+                .AsNoTracking(),
+            cancellationToken);
 
-        var totalPages = await repo.GetTotalPagesAsync(request.PageSize, [filter], cancellationToken);
+        var totalCount = await QueryableExtensions.CountAsync(session.Query<BusReadModel>()
+                .Where(filter)
+                .AsNoTracking(),
+            cancellationToken);
 
-        return (
-            buses.Select(b => new BusResponseDto
-            {
-                Id = b.Id,
-                Code = b.Code,
-                StationId = b.StationId,
-                DestinationName = b.DestinationName
-            }), totalPages);
+        var totalPages = (int)Math.Ceiling((double)totalCount / query.PageSize);
+
+        return (buses, totalPages);
     }
 
-    private Expression<Func<Bus, bool>> GetFilter(GetBusesQuery query)
+    private Expression<Func<BusReadModel, bool>> GetFilter(GetBusesQuery query)
     {
         return (b) =>
             (query.StationId == Guid.Empty || b.StationId == query.StationId) &&

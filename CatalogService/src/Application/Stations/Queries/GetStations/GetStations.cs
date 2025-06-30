@@ -42,12 +42,13 @@ public class GetStationsQueryHandler : IRequestHandler<GetStationsQuery, Service
 
         var response = new GetStationsResponseDto
         {
-            Stations = stations,
             TotalPages = totalPages,
-            PageSize = request.PageSize,
             CurrentPage = request.Page,
+            PageSize = request.PageSize,
+            Stations = stations,
         };
-
+        _logger.LogInformation("Retrieve stations successfully: Total pages: {TotalPages} - Current page: {CurrentPage} - Page size: {PageSize}",
+            response.TotalPages, response.CurrentPage, response.PageSize);
         return new ServiceResponse<GetStationsResponseDto>()
         {
             Succeeded = true,

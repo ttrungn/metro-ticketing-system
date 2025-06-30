@@ -10,6 +10,6 @@ public interface IBusService
     Task<Guid> CreateAsync(CreateBusCommand command, CancellationToken cancellationToken = default);
     Task<Guid> UpdateAsync(UpdateBusCommand command, CancellationToken cancellationToken = default);
     Task<Guid> DeleteAsync(Guid requestId, CancellationToken cancellationToken = default);
-    Task<BusResponseDto?> GetByIdAsync(Guid queryId, CancellationToken cancellationToken);
-    Task<(IEnumerable<BusResponseDto>, int)> GetAsync(GetBusesQuery request, CancellationToken cancellationToken);
+    Task<BusReadModel?> GetByIdAsync(Guid queryId, CancellationToken cancellationToken);
+    Task<(IEnumerable<BusReadModel>, int)> GetAsync(GetBusesQuery request, CancellationToken cancellationToken);
 }

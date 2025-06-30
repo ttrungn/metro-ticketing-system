@@ -1,10 +1,5 @@
 using System.Text;
 using Azure.Storage.Blobs;
-using Marten;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using CatalogService.Application.Common.Interfaces;
 using CatalogService.Application.Common.Interfaces.Repositories;
 using CatalogService.Application.Common.Interfaces.Services;
@@ -12,7 +7,12 @@ using CatalogService.Infrastructure.Data;
 using CatalogService.Infrastructure.Data.Interceptors;
 using CatalogService.Infrastructure.Repositories;
 using CatalogService.Infrastructure.Services;
+using Marten;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
 namespace CatalogService.Infrastructure;
@@ -47,7 +47,7 @@ public static class DependencyInjection
 
             // Specify that we want to use STJ as our serializer
             options.UseSystemTextJsonForSerialization();
-        })
+            })
         .UseLightweightSessions();
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -70,7 +70,7 @@ public static class DependencyInjection
             });
 
         services.AddAuthorization();
-        
+
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<ApplicationDbContextInitialiser>();
 
@@ -81,7 +81,7 @@ public static class DependencyInjection
         services.AddScoped(typeof(IMassTransitService<>), typeof(MassTransitService<>));
         services.AddSingleton(new BlobServiceClient(azureBlobStorageConnectionString));
         services.AddScoped<IAzureBlobService, AzureBlobService>();
-        
+
         services.AddSingleton(TimeProvider.System);
 
         return services;

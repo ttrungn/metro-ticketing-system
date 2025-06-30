@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CatalogService.Application.Buses.Queries.GetBusById;
 
-public record GetBusByIdQuery(Guid Id) : IRequest<ServiceResponse<BusResponseDto>>;
+public record GetBusByIdQuery(Guid Id) : IRequest<ServiceResponse<BusReadModel>>;
 
 public class GetBusByIdQueryValidator : AbstractValidator<GetBusByIdQuery>
 {
@@ -17,7 +17,7 @@ public class GetBusByIdQueryValidator : AbstractValidator<GetBusByIdQuery>
     }
 }
 
-public class GetBusByIdQueryHandler : IRequestHandler<GetBusByIdQuery, ServiceResponse<BusResponseDto>>
+public class GetBusByIdQueryHandler : IRequestHandler<GetBusByIdQuery, ServiceResponse<BusReadModel>>
 {
     private readonly IBusService _busService;
     private readonly ILogger<GetBusByIdQueryHandler> _logger;
@@ -27,14 +27,14 @@ public class GetBusByIdQueryHandler : IRequestHandler<GetBusByIdQuery, ServiceRe
         _busService = busService;
     }
 
-    public async Task<ServiceResponse<BusResponseDto>> Handle(GetBusByIdQuery query, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<BusReadModel>> Handle(GetBusByIdQuery query, CancellationToken cancellationToken)
     {
         var bus = await _busService.GetByIdAsync(query.Id, cancellationToken);
 
         if (bus == null)
         {
             _logger.LogWarning("Bus with ID {BusId} not found.", query.Id);
-            return new ServiceResponse<BusResponseDto>()
+            return new ServiceResponse<BusReadModel>()
             {
                 Succeeded = false,
                 Message = "Không tìm thấy bus!",
@@ -43,7 +43,7 @@ public class GetBusByIdQueryHandler : IRequestHandler<GetBusByIdQuery, ServiceRe
         }
 
         _logger.LogInformation("Bus with ID {BusId} retrieved successfully", bus.Id);
-        return new ServiceResponse<BusResponseDto>()
+        return new ServiceResponse<BusReadModel>()
         {
             Succeeded = true,
             Message = "Lấy thông tin bus thành công!",
