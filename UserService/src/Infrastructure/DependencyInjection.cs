@@ -101,7 +101,7 @@ public static class DependencyInjection
         services.AddTransient<IIdentityService, IdentityService>();
         services.AddSingleton(new BlobServiceClient(azureBlobStorageConnectionString));
         services.AddScoped<IAzureBlobService, AzureBlobService>();
-
+        services.AddScoped<ICustomerService, CustomerService>();
         services.AddSingleton(TimeProvider.System);
 
         services.AddHttpContextAccessor();

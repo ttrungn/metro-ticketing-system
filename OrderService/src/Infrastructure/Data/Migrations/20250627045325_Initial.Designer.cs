@@ -12,7 +12,8 @@ using OrderService.Infrastructure.Data;
 namespace OrderService.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250611091722_Initial")]
+    [Migration("20250627045325_Initial")]
+
     partial class Initial
     {
         /// <inheritdoc />
@@ -27,14 +28,16 @@ namespace OrderService.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("OrderService.Domain.Entities.Cart", b =>
                 {
-                    b.Property<string>("CustomerId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("TicketId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("DeleteFlag")
                         .HasColumnType("bit");
@@ -64,7 +67,11 @@ namespace OrderService.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("CustomerId", "TicketId");
+                    b.Property<string>("TicketId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
 
                     b.ToTable("Cart", (string)null);
                 });

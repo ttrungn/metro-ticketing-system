@@ -48,7 +48,7 @@ public class TicketService : ITicketService
         }
         ticket.DeleteFlag = true;
         ticket.DeletedAt = DateTime.UtcNow;
-        
+
 
         await repo.RemoveAsync(ticket, cancellationToken);
         await repo.SaveChangesAsync(cancellationToken);
@@ -62,7 +62,7 @@ public class TicketService : ITicketService
         var tickets =  repo.Query().Where(t => t.DeleteFlag == false).OrderBy(t => t.TicketType).ToList();
 
         var ticketDtos = tickets.Select(t => t.ToTicketDto());
-        
+
         await repo.SaveChangesAsync(cancellationToken);
         return ticketDtos;
 
@@ -73,7 +73,7 @@ public class TicketService : ITicketService
         var repo = _unitOfWork.GetRepository<Ticket, Guid>();
         var ticket = await repo.GetByIdAsync(id, cancellationToken);
 
-        if(ticket == null || ticket.DeleteFlag == false)
+        if(ticket == null || ticket.DeleteFlag == true)
         {
             return null;
         }
@@ -85,7 +85,7 @@ public class TicketService : ITicketService
     {
         var stationRouteRepo = _unitOfWork.GetRepository<StationRoute, (Guid, Guid)>();
 
-        var priceRangeRepo = _unitOfWork.GetRepository<PriceRange, Guid>(); 
+        var priceRangeRepo = _unitOfWork.GetRepository<PriceRange, Guid>();
 
         var priceRangeList = priceRangeRepo.Query().Where(pr => pr.DeleteFlag == false).OrderBy(pr => pr.FromKm).ToList();
 
@@ -122,11 +122,11 @@ public class TicketService : ITicketService
             if (sumDistance <= 0) break;
         }
 
-        return Task.FromResult(result);
+        return Task.FromResult(RoundUpToNearest(result));
     }
 
     public async Task<SingleUseTicketResponseDto> GetSingleUseTicketInfo(GetSingleUseTicketWithPriceQuery request, CancellationToken cancellationToken = default)
-    { 
+    {
         var ticketRepo = _unitOfWork.GetRepository<Ticket, Guid>();
 
         var singleUseTicket = ticketRepo.Query().FirstOrDefault(t => t.TicketType == Domain.Enum.TicketTypeEnum.SingleUseType);
@@ -165,7 +165,20 @@ public class TicketService : ITicketService
 
         await repo.UpdateAsync(ticket, cancellationToken);
 
-        await repo.SaveChangesAsync(cancellationToken); 
+        await repo.SaveChangesAsync(cancellationToken);
         return ticket.Id;
     }
+
+    private double RoundUpToNearest(double value)
+    {
+        if (value <= 0) return 0;
+        if (value < 100000)
+        {
+            return Math.Ceiling(value / 1000.0) * 1000;
+        }
+
+        return Math.Ceiling(value / 10000.0) * 10000;
+
+    }
+
 }

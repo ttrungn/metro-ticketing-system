@@ -183,7 +183,13 @@ namespace OrderService.Infrastructure.Repositories
             _dbContext.Entry(entity).State = EntityState.Modified;
             return Task.CompletedTask;
         }
-        
+        public virtual async Task RemoveOutAsync(T entity, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(entity);
+            _dbSet.Remove(entity);
+            await Task.CompletedTask;
+        }
+
         public virtual async Task<int> SaveChangesAsync(
             CancellationToken cancellationToken = default
         )
