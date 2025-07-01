@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using BuildingBlocks.Domain.Events.Buses;
 using BuildingBlocks.Domain.Events.Stations;
 using CatalogService.Application.Common.Interfaces.Repositories;
 using CatalogService.Application.Common.Interfaces.Services;
@@ -50,7 +51,6 @@ public class StationService : IStationService
             thumbnailImageUrl = blobUrl;
         }
 
-        var createdAt = DateTimeOffset.UtcNow;
         var station = new Station()
         {
             Id = id,
@@ -62,7 +62,6 @@ public class StationService : IStationService
             District = command.District,
             City = command.City,
             ThumbnailImageUrl = thumbnailImageUrl,
-            CreatedAt = createdAt,
         };
 
         await repo.AddAsync(station, cancellationToken);
@@ -78,7 +77,6 @@ public class StationService : IStationService
             District = station.District,
             City = station.City,
             ThumbnailImageUrl = station.ThumbnailImageUrl,
-            CreatedAt = station.CreatedAt
         });
         await _unitOfWork.SaveChangesAsync();
 
@@ -105,7 +103,6 @@ public class StationService : IStationService
                 containerName);
             station.ThumbnailImageUrl = blobUrl;
         }
-        var lastModifiedAt = DateTimeOffset.UtcNow;
 
         station.Name = command.Name;
         station.StreetNumber = command.StreetNumber;
@@ -113,7 +110,6 @@ public class StationService : IStationService
         station.Ward = command.Ward;
         station.District = command.District;
         station.City = command.City;
-        station.LastModifiedAt = lastModifiedAt;
 
         station.AddDomainEvent(new UpdateStationEvent()
         {
@@ -125,7 +121,6 @@ public class StationService : IStationService
             District = station.District,
             City = station.City,
             ThumbnailImageUrl = station.ThumbnailImageUrl,
-            LastModifiedAt = station.LastModifiedAt
         });
 
         await repo.UpdateAsync(station, cancellationToken);
@@ -164,21 +159,18 @@ public class StationService : IStationService
             foreach (var bus in buses)
             {
                 bus.DeleteFlag = true;
+                bus.AddDomainEvent(new DeleteBusEvent()
+                {
+                    Id = bus.Id,
+                });
                 await busRepo.UpdateAsync(bus, cancellationToken);
             }
         }
-
-        var now = DateTimeOffset.UtcNow;
-        station.LastModifiedAt = now;
-        station.DeletedAt = now;
         station.DeleteFlag = true;
 
         station.AddDomainEvent(new DeleteStationEvent()
         {
             Id = station.Id,
-            LastModifiedAt = station.LastModifiedAt,
-            DeletedAt = station.DeletedAt,
-            DeleteFlag = station.DeleteFlag
         });
 
         await repo.UpdateAsync(station, cancellationToken);

@@ -30,7 +30,10 @@ public class CreateRouteConsumer : IConsumer<CreateRouteEvent>
             Name = message.Name,
             ThumbnailImageUrl = message.ThumbnailImageUrl,
             LengthInKm = message.LengthInKm,
-            CreatedAt = message.CreatedAt
+            CreatedAt = message.CreatedAt,
+            LastModifiedAt = message.LastModifiedAt,
+            DeletedAt = message.DeletedAt,
+            DeleteFlag = message.DeleteFlag,
         };
 
         session.Store(routeReadModel);

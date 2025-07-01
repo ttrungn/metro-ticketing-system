@@ -55,7 +55,6 @@ public class RouteService : IRouteService
             thumbnailImageUrl = blobUrl;
         }
 
-        var createdAt = DateTimeOffset.UtcNow;
         var newRoute = new Route()
         {
             Id = id,
@@ -63,7 +62,6 @@ public class RouteService : IRouteService
             Name = command.Name,
             ThumbnailImageUrl = thumbnailImageUrl,
             LengthInKm = command.LengthInKm,
-            CreatedAt = createdAt,
         };
 
         newRoute.AddDomainEvent(new CreateRouteEvent()
@@ -73,7 +71,6 @@ public class RouteService : IRouteService
             Name = newRoute.Name,
             ThumbnailImageUrl = newRoute.ThumbnailImageUrl,
             LengthInKm = newRoute.LengthInKm,
-            CreatedAt = newRoute.CreatedAt,
         });
 
         await repo.AddAsync(newRoute, cancellationToken);
@@ -105,11 +102,9 @@ public class RouteService : IRouteService
                 containerName);
             route.ThumbnailImageUrl = blobUrl;
         }
-        var lastModifiedAt = DateTimeOffset.UtcNow;
 
         route.Name = command.Name;
         route.LengthInKm = (double)command.LengthInKm!;
-        route.LastModifiedAt = lastModifiedAt;
 
 
         route.AddDomainEvent(new UpdateRouteEvent()
@@ -118,7 +113,6 @@ public class RouteService : IRouteService
             Name = route.Name,
             ThumbnailImageUrl = route.ThumbnailImageUrl,
             LengthInKm = route.LengthInKm,
-            LastModifiedAt = route.LastModifiedAt,
         });
 
         await repo.UpdateAsync(route, cancellationToken);
@@ -150,18 +144,11 @@ public class RouteService : IRouteService
                 await stationRouteRepo.UpdateAsync(stationRoute, cancellationToken);
             }
         }
-
-        var now = DateTimeOffset.UtcNow;
-        route.LastModifiedAt = now;
-        route.DeletedAt = now;
         route.DeleteFlag = true;
 
         route.AddDomainEvent(new DeleteRouteEvent()
         {
             Id = route.Id,
-            LastModifiedAt = route.LastModifiedAt,
-            DeletedAt = route.DeletedAt,
-            DeleteFlag = route.DeleteFlag,
         });
 
         await repo.UpdateAsync(route, cancellationToken);

@@ -38,6 +38,20 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
             .Where(e => e.Entity.DomainEvents.Any())
             .Select(e => e.Entity);
 
+        foreach (var entity in entities)
+        {
+            if (entity is IBaseAuditableEntity auditable)
+            {
+                foreach (var ev in entity.DomainEvents.OfType<DomainBaseEvent>())
+                {
+                    ev.CreatedAt      = auditable.CreatedAt;
+                    ev.LastModifiedAt = auditable.LastModifiedAt;
+                    ev.DeletedAt      = auditable.DeletedAt;
+                    ev.DeleteFlag     = auditable.DeleteFlag;
+                }
+            }
+        }
+
         var domainEvents = entities
             .SelectMany(e => e.DomainEvents)
             .ToList();
