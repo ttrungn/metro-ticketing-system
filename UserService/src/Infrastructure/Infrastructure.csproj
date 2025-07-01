@@ -7,6 +7,7 @@
 
     <ItemGroup>
         <PackageReference Include="Azure.Storage.Blobs" />
+        <PackageReference Include="MassTransit.Kafka" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
         <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore"/>
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"/>
@@ -24,6 +25,12 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Application\Application.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="MassTransit.KafkaIntegration">
+        <HintPath>..\Web\bin\Debug\net8.0\MassTransit.KafkaIntegration.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>
