@@ -1,4 +1,5 @@
 using BuildingBlocks.Domain.Constants;
+using BuildingBlocks.Domain.Events.Users;
 using BuildingBlocks.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -111,18 +112,39 @@ public class IdentityService : IIdentityService
             if (role == Roles.Customer)
             {
                 var customerRepo = _unitOfWork.GetRepository<Customer, Guid>();
-                await customerRepo.AddAsync(new Customer
+                var customer = new Customer()
                 {
                     ApplicationUserId = user.Id,
                     IsStudent = false
+                };
+                await customerRepo.AddAsync(customer);
+                customer.AddDomainEvent(new CreateCustomerEvent()
+                {
+                    ApplicationUserId = customer.ApplicationUserId,
+                    Email = user.Email,
+                    FirstName = user.FullName.FirstName,
+                    LastName = user.FullName.LastName,
+                    CustomerId = customer.Id,
+                    IsStudent = customer.IsStudent,
+                    DeleteFlag = false
                 });
             }
             else if (role == Roles.Staff)
             {
                 var staffRepo = _unitOfWork.GetRepository<Staff, Guid>();
-                await staffRepo.AddAsync(new Staff
+                var staff = new Staff()
                 {
                     ApplicationUserId = user.Id
+                };
+                await staffRepo.AddAsync(staff);
+                staff.AddDomainEvent(new CreateStaffEvent()
+                {
+                    ApplicationUserId = staff.ApplicationUserId,
+                    Email = user.Email,
+                    FirstName = user.FullName.FirstName,
+                    LastName = user.FullName.LastName,
+                    StaffId = staff.Id,
+                    DeleteFlag = false
                 });
             }
             await _unitOfWork.SaveChangesAsync();

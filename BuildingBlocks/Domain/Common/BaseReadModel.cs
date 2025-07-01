@@ -1,4 +1,4 @@
-﻿namespace BuildingBlocks.Domain.Common;
+namespace BuildingBlocks.Domain.Common;
 
 public abstract class BaseReadModel
 {

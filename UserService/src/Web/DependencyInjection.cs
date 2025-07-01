@@ -1,4 +1,9 @@
-﻿using UserService.Application.Common.Interfaces;
+﻿using BuildingBlocks.Domain.Events.Routes;
+using BuildingBlocks.Domain.Events.Sample;
+using BuildingBlocks.Domain.Events.Users;
+using Confluent.Kafka;
+using MassTransit;
+using UserService.Application.Common.Interfaces;
 using UserService.Infrastructure.Data;
 using UserService.Web.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -7,12 +12,13 @@ using NSwag.Generation.Processors.Security;
 using UserService.Application.Common.Interfaces.Services;
 using UserService.Infrastructure.Services;
 using UserService.Infrastructure.Services.StudentRequests;
+using UserService.Web.Consumers;
 
 namespace UserService.Web;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddWebServices(this IServiceCollection services)
+    public static IServiceCollection AddWebServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -48,6 +54,81 @@ public static class DependencyInjection
             });
 
             configure.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("JWT"));
+        });
+        
+        services.AddMassTransit(x =>
+        {
+            x.UsingInMemory();
+
+            x.AddRider(rider =>
+            {
+                rider.AddProducer<CreateCustomerEvent>(
+                    configuration["KafkaSettings:UserServiceEvents:CreateCustomer:Name"],
+                    (ctx, kc) =>
+                    {
+                        kc.MessageTimeout = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageTimeoutMs"));
+                        kc.MessageSendMaxRetries =
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageSendMaxRetries");
+                        kc.RetryBackoff = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
+                    });
+
+                rider.AddProducer<CreateStaffEvent>(
+                    configuration["KafkaSettings:UserServiceEvents:CreateStaff:Name"],
+                    (ctx, kc) =>
+                    {
+                        kc.MessageTimeout = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageTimeoutMs"));
+                        kc.MessageSendMaxRetries =
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageSendMaxRetries");
+                        kc.RetryBackoff = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
+                    });
+
+                rider.AddConsumer<CreateCustomerConsumer>();
+                rider.AddConsumer<CreateStaffConsumer>();
+                
+                rider.UsingKafka((context, k) =>
+                {
+                    k.Host(configuration["KafkaSettings:Url"], h =>
+                    {
+                        if (
+                            configuration["KafkaSettings:Username"] != null &&
+                            configuration["KafkaSettings:Username"] != string.Empty &&
+                            configuration["KafkaSettings:Password"] != null &&
+                            configuration["KafkaSettings:Password"] != string.Empty
+                        )
+                        {
+
+                            h.UseSasl(s =>
+                            {
+                                s.Mechanism = SaslMechanism.Plain;
+                                s.SecurityProtocol = SecurityProtocol.SaslSsl;
+                                s.Username = configuration["KafkaSettings:Username"];
+                                s.Password = configuration["KafkaSettings:Password"];
+                            });
+                        }
+                    });
+
+                    k.TopicEndpoint<CreateCustomerEvent>(
+                        configuration["KafkaSettings:UserServiceEvents:CreateCustomer:Name"],
+                        configuration["KafkaSettings:UserServiceEvents:CreateCustomer:Group"],
+                        e =>
+                        {
+                            e.ConfigureConsumer<CreateCustomerConsumer>(context);
+                        }
+                    );
+                    k.TopicEndpoint<CreateStaffEvent>(
+                        configuration["KafkaSettings:UserServiceEvents:CreateStaff:Name"],
+                        configuration["KafkaSettings:UserServiceEvents:CreateStaff:Group"],
+                        e =>
+                        {
+                            e.ConfigureConsumer<CreateStaffConsumer>(context);
+                        }
+                    );
+                });
+            });
         });
 
         return services;
