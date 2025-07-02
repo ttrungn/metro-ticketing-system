@@ -1,6 +1,5 @@
-﻿using BuildingBlocks.Domain.Events.FeedbackTypes;
-using BuildingBlocks.Domain.Events.Routes;
-using BuildingBlocks.Domain.Events.Sample;
+﻿using BuildingBlocks.Domain.Events.Feedbacks;
+using BuildingBlocks.Domain.Events.FeedbackTypes;
 using BuildingBlocks.Domain.Events.Users;
 using Confluent.Kafka;
 using MassTransit;
@@ -14,6 +13,7 @@ using UserService.Application.Common.Interfaces.Services;
 using UserService.Infrastructure.Services;
 using UserService.Infrastructure.Services.StudentRequests;
 using UserService.Web.Consumers;
+using UserService.Web.Consumers.Feedbacks;
 using UserService.Web.Consumers.FeedbackTypes;
 
 namespace UserService.Web;
@@ -124,12 +124,26 @@ public static class DependencyInjection
                             configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
                     });
 
+                rider.AddProducer<CreateFeedbackEvent>(
+                    configuration["KafkaSettings:UserServiceEvents:CreateFeedback:Name"],
+                    (ctx, kc) =>
+                    {
+                        kc.MessageTimeout = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageTimeoutMs"));
+                        kc.MessageSendMaxRetries =
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageSendMaxRetries");
+                        kc.RetryBackoff = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
+                    });
+
                 rider.AddConsumer<CreateCustomerConsumer>();
                 rider.AddConsumer<CreateStaffConsumer>();
 
                 rider.AddConsumer<CreateFeedbackTypeConsumer>();
                 rider.AddConsumer<UpdateFeedbackTypeConsumer>();
                 rider.AddConsumer<DeleteFeedbackTypeConsumer>();
+
+                rider.AddConsumer<CreateFeedbackConsumer>();
 
                 rider.UsingKafka((context, k) =>
                 {
@@ -191,6 +205,14 @@ public static class DependencyInjection
                         e =>
                         {
                             e.ConfigureConsumer<DeleteFeedbackTypeConsumer>(context);
+                        }
+                    );
+                    k.TopicEndpoint<CreateFeedbackEvent>(
+                        configuration["KafkaSettings:UserServiceEvents:CreateFeedback:Name"],
+                        configuration["KafkaSettings:UserServiceEvents:CreateFeedback:Group"],
+                        e =>
+                        {
+                            e.ConfigureConsumer<CreateFeedbackConsumer>(context);
                         }
                     );
                 });

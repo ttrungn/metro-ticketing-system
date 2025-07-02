@@ -45,7 +45,7 @@ public class GetStationByIdQueryHandler : IRequestHandler<GetStationByIdQuery, S
             };
         }
 
-        _logger.LogInformation("Route with ID {RouteId} retrieved successfully.", query.Id);
+        _logger.LogInformation("Station with ID {RouteId} retrieved successfully.", query.Id);
 
         return new ServiceResponse<StationReadModel>
         {

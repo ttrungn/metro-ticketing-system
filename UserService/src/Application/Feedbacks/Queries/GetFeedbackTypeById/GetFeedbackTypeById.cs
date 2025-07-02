@@ -1,6 +1,5 @@
 ﻿using BuildingBlocks.Response;
 using Microsoft.Extensions.Logging;
-using UserService.Application.Common.Interfaces;
 using UserService.Application.Common.Interfaces.Services;
 using UserService.Application.Feedbacks.DTOs;
 
