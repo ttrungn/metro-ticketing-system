@@ -1,4 +1,5 @@
-﻿using BuildingBlocks.Domain.Events.Routes;
+﻿using BuildingBlocks.Domain.Events.FeedbackTypes;
+using BuildingBlocks.Domain.Events.Routes;
 using BuildingBlocks.Domain.Events.Sample;
 using BuildingBlocks.Domain.Events.Users;
 using Confluent.Kafka;
@@ -13,6 +14,7 @@ using UserService.Application.Common.Interfaces.Services;
 using UserService.Infrastructure.Services;
 using UserService.Infrastructure.Services.StudentRequests;
 using UserService.Web.Consumers;
+using UserService.Web.Consumers.FeedbackTypes;
 
 namespace UserService.Web;
 
@@ -55,7 +57,7 @@ public static class DependencyInjection
 
             configure.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("JWT"));
         });
-        
+
         services.AddMassTransit(x =>
         {
             x.UsingInMemory();
@@ -86,9 +88,49 @@ public static class DependencyInjection
                             configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
                     });
 
+                rider.AddProducer<CreateFeedbackTypeEvent>(
+                    configuration["KafkaSettings:UserServiceEvents:CreateFeedbackType:Name"],
+                    (ctx, kc) =>
+                    {
+                        kc.MessageTimeout = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageTimeoutMs"));
+                        kc.MessageSendMaxRetries =
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageSendMaxRetries");
+                        kc.RetryBackoff = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
+                    });
+
+                rider.AddProducer<UpdateFeedbackTypeEvent>(
+                    configuration["KafkaSettings:UserServiceEvents:UpdateFeedbackType:Name"],
+                    (ctx, kc) =>
+                    {
+                        kc.MessageTimeout = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageTimeoutMs"));
+                        kc.MessageSendMaxRetries =
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageSendMaxRetries");
+                        kc.RetryBackoff = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
+                    });
+
+                rider.AddProducer<DeleteFeedbackTypeEvent>(
+                    configuration["KafkaSettings:UserServiceEvents:DeleteFeedbackType:Name"],
+                    (ctx, kc) =>
+                    {
+                        kc.MessageTimeout = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageTimeoutMs"));
+                        kc.MessageSendMaxRetries =
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageSendMaxRetries");
+                        kc.RetryBackoff = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
+                    });
+
                 rider.AddConsumer<CreateCustomerConsumer>();
                 rider.AddConsumer<CreateStaffConsumer>();
-                
+
+                rider.AddConsumer<CreateFeedbackTypeConsumer>();
+                rider.AddConsumer<UpdateFeedbackTypeConsumer>();
+                rider.AddConsumer<DeleteFeedbackTypeConsumer>();
+
                 rider.UsingKafka((context, k) =>
                 {
                     k.Host(configuration["KafkaSettings:Url"], h =>
@@ -125,6 +167,30 @@ public static class DependencyInjection
                         e =>
                         {
                             e.ConfigureConsumer<CreateStaffConsumer>(context);
+                        }
+                    );
+                    k.TopicEndpoint<CreateFeedbackTypeEvent>(
+                        configuration["KafkaSettings:UserServiceEvents:CreateFeedbackType:Name"],
+                        configuration["KafkaSettings:UserServiceEvents:CreateFeedbackType:Group"],
+                        e =>
+                        {
+                            e.ConfigureConsumer<CreateFeedbackTypeConsumer>(context);
+                        }
+                    );
+                    k.TopicEndpoint<UpdateFeedbackTypeEvent>(
+                        configuration["KafkaSettings:UserServiceEvents:UpdateFeedbackType:Name"],
+                        configuration["KafkaSettings:UserServiceEvents:UpdateFeedbackType:Group"],
+                        e =>
+                        {
+                            e.ConfigureConsumer<UpdateFeedbackTypeConsumer>(context);
+                        }
+                    );
+                    k.TopicEndpoint<DeleteFeedbackTypeEvent>(
+                        configuration["KafkaSettings:UserServiceEvents:DeleteFeedbackType:Name"],
+                        configuration["KafkaSettings:UserServiceEvents:DeleteFeedbackType:Group"],
+                        e =>
+                        {
+                            e.ConfigureConsumer<DeleteFeedbackTypeConsumer>(context);
                         }
                     );
                 });

@@ -1,4 +1,6 @@
-﻿using BuildingBlocks.Response;
+﻿using BuildingBlocks.Domain.Events.FeedbackTypes;
+using BuildingBlocks.Response;
+using Marten;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using UserService.Application.Common.Interfaces.Repositories;
@@ -36,24 +38,27 @@ public class FeedbackService : IFeedbackService
             Description = command.Description
         };
 
+        newFeedbackType.AddDomainEvent(new CreateFeedbackTypeEvent()
+        {
+            Id = id,
+            Name = command.Name,
+            Description = command.Description
+        });
+
         await repo.AddAsync(newFeedbackType, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
 
         return id;
     }
 
-    public async Task<IEnumerable<FeedbackTypeResponseDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<FeedbackTypeReadModel>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var repo = _unitOfWork.GetRepository<FeedbackType, Guid>();
-
-        return await repo.Query()
-            .Select(ft => new FeedbackTypeResponseDto
-            {
-                Id = ft.Id,
-                Name = ft.Name,
-                Description = ft.Description
-            })
-            .ToListAsync(cancellationToken);
+        var session = _unitOfWork.GetDocumentSession();
+        var feedbackTypes = await QueryableExtensions.ToListAsync(session.Query<FeedbackTypeReadModel>()
+                .Where(ft => ft.DeleteFlag == false)
+                .AsNoTracking(),
+            cancellationToken);
+        return feedbackTypes;
     }
 
     public async Task<Guid> CreateAsync(
@@ -115,9 +120,8 @@ public class FeedbackService : IFeedbackService
         var map = response?.Data?.Stations.ToDictionary(s => s.Id, s => s.Name) ?? new Dictionary<Guid, string?>();
 
         var feedbackRepo = _unitOfWork.GetRepository<Feedback, Guid>();
-        var feedbacks = await feedbackRepo.Query()
-            .Where(f => f.Customer.ApplicationUserId == userId).Include(f => f.FeedbackType)
-            .ToListAsync(cancellationToken);
+        var feedbacks = await EntityFrameworkQueryableExtensions.ToListAsync(feedbackRepo.Query()
+                .Where(f => f.Customer.ApplicationUserId == userId).Include(f => f.FeedbackType), cancellationToken);
 
         var result = feedbacks.Select(f => new FeedbackResponseDto
         {
@@ -141,6 +145,11 @@ public class FeedbackService : IFeedbackService
 
         type.DeleteFlag = true;
 
+        type.AddDomainEvent(new DeleteFeedbackTypeEvent()
+        {
+            Id = type.Id,
+        });
+
         await repo.UpdateAsync(type, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
 
@@ -160,23 +169,26 @@ public class FeedbackService : IFeedbackService
         type.Name = command.Name!;
         type.Description = command.Description!;
 
+        type.AddDomainEvent(new UpdateFeedbackTypeEvent
+        {
+            Id = type.Id,
+            Name = type.Name,
+            Description = type.Description!
+        });
+
         await repo.UpdateAsync(type, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
 
         return type.Id;
     }
 
-    public Task<FeedbackTypeResponseDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<FeedbackTypeReadModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var repo = _unitOfWork.GetRepository<FeedbackType, Guid>();
-        return repo.Query()
-            .Where(ft => ft.Id == id)
-            .Select(ft => new FeedbackTypeResponseDto
-            {
-                Id = ft.Id,
-                Name = ft.Name,
-                Description = ft.Description
-            })
-            .FirstOrDefaultAsync(cancellationToken);
+        var session = _unitOfWork.GetDocumentSession();
+        var feedbackType = await QueryableExtensions.FirstOrDefaultAsync(session.Query<FeedbackTypeReadModel>()
+                .Where(ft => ft.Id == id)
+                .AsNoTracking(),
+            cancellationToken);
+        return feedbackType;
     }
 }
