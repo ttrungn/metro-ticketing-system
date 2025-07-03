@@ -47,10 +47,11 @@ public class DispatchDomainEventsInterceptor : SaveChangesInterceptor
                     ev.CreatedAt      = auditable.CreatedAt;
                     ev.LastModifiedAt = auditable.LastModifiedAt;
                     ev.DeletedAt      = auditable.DeletedAt;
+                    ev.DeleteFlag     = auditable.DeleteFlag;
                 }
             }
         }
-        
+
         var domainEvents = entities
             .SelectMany(e => e.DomainEvents)
             .ToList();

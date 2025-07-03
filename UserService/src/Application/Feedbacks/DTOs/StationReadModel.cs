@@ -1,10 +1,11 @@
 ﻿using BuildingBlocks.Domain.Common;
 
-namespace BuildingBlocks.Domain.Events.Stations;
+namespace UserService.Application.Feedbacks.DTOs;
 
-public class UpdateStationEvent : DomainBaseEvent
+public class StationReadModel : BaseReadModel
 {
     public Guid Id { get; set; }
+    public string Code { get; set; } = null!;
     public string Name { get; set; } = null!;
     public string? StreetNumber { get; set; }
     public string? Street { get; set; }

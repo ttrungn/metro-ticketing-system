@@ -29,7 +29,10 @@ public class CreateBusConsumer : IConsumer<CreateBusEvent>
             Code = message.Code,
             StationId = message.StationId,
             DestinationName = message.DestinationName,
-            CreatedAt = message.CreatedAt
+            CreatedAt = message.CreatedAt,
+            LastModifiedAt = message.LastModifiedAt,
+            DeletedAt = message.DeletedAt,
+            DeleteFlag = message.DeleteFlag,
         };
 
         session.Store(busReadModel);

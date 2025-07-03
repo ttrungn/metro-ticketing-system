@@ -34,7 +34,10 @@ public class CreateStationConsumer : IConsumer<CreateStationEvent>
             District = message.District,
             City = message.City,
             ThumbnailImageUrl = message.ThumbnailImageUrl,
-            CreatedAt = message.CreatedAt
+            CreatedAt = message.CreatedAt,
+            LastModifiedAt = message.LastModifiedAt,
+            DeletedAt = message.DeletedAt,
+            DeleteFlag = message.DeleteFlag
         };
 
         session.Store(stationReadModel);

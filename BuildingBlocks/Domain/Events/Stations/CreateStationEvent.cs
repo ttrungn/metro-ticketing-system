@@ -2,7 +2,7 @@
 
 namespace BuildingBlocks.Domain.Events.Stations;
 
-public class CreateStationEvent : BaseEvent
+public class CreateStationEvent : DomainBaseEvent
 {
     public Guid Id { get; set; }
     public string Code { get; set; } = null!;
@@ -13,5 +13,4 @@ public class CreateStationEvent : BaseEvent
     public string? District { get; set; }
     public string? City { get; set; }
     public string? ThumbnailImageUrl { get; set; }
-    public DateTimeOffset CreatedAt { get; set; }
 }

@@ -35,7 +35,6 @@ public class BusService : IBusService
         var code = GenerateCode(count);
 
         var id = Guid.NewGuid();
-        var createdAt = DateTimeOffset.UtcNow;
 
         var bus = new Bus()
         {
@@ -43,7 +42,6 @@ public class BusService : IBusService
             Code = code,
             StationId = command.StationId,
             DestinationName = command.DestinationName,
-            CreatedAt = createdAt,
         };
 
         bus.AddDomainEvent(new CreateBusEvent()
@@ -52,7 +50,6 @@ public class BusService : IBusService
             Code = bus.Code,
             StationId = bus.StationId,
             DestinationName = bus.DestinationName,
-            CreatedAt = bus.CreatedAt
         });
 
         await repo.AddAsync(bus, cancellationToken);
@@ -80,17 +77,14 @@ public class BusService : IBusService
             }
             bus.StationId = command.StationId.Value;
         }
-        var lastModifiedAt = DateTimeOffset.UtcNow;
 
         bus.DestinationName = command.DestinationName;
-        bus.LastModifiedAt = lastModifiedAt;
 
         bus.AddDomainEvent(new UpdateBusEvent()
         {
             Id = bus.Id,
             StationId = bus.StationId,
             DestinationName = bus.DestinationName,
-            LastModifiedAt = bus.LastModifiedAt
         });
 
         await repo.UpdateAsync(bus, cancellationToken);
@@ -106,18 +100,12 @@ public class BusService : IBusService
         {
             return Guid.Empty;
         }
-        var now = DateTimeOffset.UtcNow;
 
         bus.DeleteFlag = true;
-        bus.DeletedAt = now;
-        bus.LastModifiedAt = now;
 
         bus.AddDomainEvent(new DeleteBusEvent()
         {
             Id = bus.Id,
-            LastModifiedAt = bus.LastModifiedAt,
-            DeletedAt = bus.DeletedAt,
-            DeleteFlag = bus.DeleteFlag
         });
 
         await repo.UpdateAsync(bus, cancellationToken);

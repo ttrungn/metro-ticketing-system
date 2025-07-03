@@ -4,9 +4,9 @@ using UserService.Application.Feedbacks.DTOs;
 
 namespace UserService.Application.Feedbacks.Queries.GetFeedbackTypes;
 
-public record GetFeedbackTypesQuery : IRequest<ServiceResponse<IEnumerable<FeedbackTypeResponseDto>>>;
+public record GetFeedbackTypesQuery : IRequest<ServiceResponse<IEnumerable<FeedbackTypeReadModel>>>;
 
-public class GetFeedbackTypesQueryHandler : IRequestHandler<GetFeedbackTypesQuery, ServiceResponse<IEnumerable<FeedbackTypeResponseDto>>>
+public class GetFeedbackTypesQueryHandler : IRequestHandler<GetFeedbackTypesQuery, ServiceResponse<IEnumerable<FeedbackTypeReadModel>>>
 {
     private readonly IFeedbackService _feedbackService;
 
@@ -15,11 +15,11 @@ public class GetFeedbackTypesQueryHandler : IRequestHandler<GetFeedbackTypesQuer
         _feedbackService = feedbackService;
     }
 
-    public async Task<ServiceResponse<IEnumerable<FeedbackTypeResponseDto>>> Handle(GetFeedbackTypesQuery request, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<IEnumerable<FeedbackTypeReadModel>>> Handle(GetFeedbackTypesQuery request, CancellationToken cancellationToken)
     {
         var feedbackTypes = await _feedbackService.GetAllAsync(cancellationToken);
 
-        return new ServiceResponse<IEnumerable<FeedbackTypeResponseDto>>()
+        return new ServiceResponse<IEnumerable<FeedbackTypeReadModel>>()
         {
             Succeeded = true,
             Message = "Lấy danh sách loại feedback thành công!",
