@@ -9,7 +9,7 @@ using UserService.Application.Users.DTOs;
 namespace UserService.Application.Users.Queries.GetUser;
 
 [Authorize(Roles = Roles.Customer)]
-public record GetUserQuery : IRequest<ServiceResponse<UserResponseDto>>;
+public record GetUserQuery : IRequest<ServiceResponse<CustomerReadModel>>;
 
 public class GetUserQueryValidator : AbstractValidator<GetUserQuery>
 {
@@ -19,7 +19,7 @@ public class GetUserQueryValidator : AbstractValidator<GetUserQuery>
     }
 }
 
-public class GetUserQueryHandler : IRequestHandler<GetUserQuery, ServiceResponse<UserResponseDto>>
+public class GetUserQueryHandler : IRequestHandler<GetUserQuery, ServiceResponse<CustomerReadModel>>
 {
     private readonly IUser _user;
     private readonly IIdentityService _identityService;
@@ -32,14 +32,14 @@ public class GetUserQueryHandler : IRequestHandler<GetUserQuery, ServiceResponse
         _user = user;
     }
 
-    public async Task<ServiceResponse<UserResponseDto>> Handle(GetUserQuery request, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<CustomerReadModel>> Handle(GetUserQuery request, CancellationToken cancellationToken)
     {
         var user = await _identityService.GetUserById(_user.Id!);
 
         if (user == null)
         {
             _logger.LogWarning("User with ID {userId} not found", _user.Id);
-            return new ServiceResponse<UserResponseDto>
+            return new ServiceResponse<CustomerReadModel>
             {
                 Succeeded = false,
                 Message = "Không tìm thấy người dùng!",
@@ -48,7 +48,7 @@ public class GetUserQueryHandler : IRequestHandler<GetUserQuery, ServiceResponse
         }
 
         _logger.LogInformation("User with ID {RouteId} retrieved successfully", _user.Id);
-        return new ServiceResponse<UserResponseDto>
+        return new ServiceResponse<CustomerReadModel>
         {
             Succeeded = true,
             Message = "Lấy thông tin người dùng thành công!",
