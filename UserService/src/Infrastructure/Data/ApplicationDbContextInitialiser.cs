@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using UserService.Domain.ValueObjects;
 using UserService.Infrastructure.Services.Identity;
 
 namespace UserService.Infrastructure.Data;
@@ -76,7 +77,7 @@ public class ApplicationDbContextInitialiser
         }
         
         // Default users
-        var administrator = new ApplicationUser { UserName = "administrator@localhost", Email = "administrator@localhost" };
+        var administrator = new ApplicationUser { UserName = "administrator@localhost", Email = "administrator@localhost", EmailConfirmed = true, FullName = new FullName("Admin", "System")};
 
         if (_userManager.Users.All(u => u.UserName != administrator.UserName))
         {

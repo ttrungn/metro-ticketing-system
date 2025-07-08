@@ -6,7 +6,7 @@ using UserService.Application.Users.DTOs;
 
 namespace UserService.Application.Users.Queries;
 // [Authorize(Roles = Roles.Staff)]
-public record GetStudentRequestByIdQuery(Guid Id) : IRequest<ServiceResponse<StudentRequestResponseDto>>;
+public record GetStudentRequestByIdQuery(Guid Id) : IRequest<ServiceResponse<StudentRqReadModel>>;
 
 public class GetStudentRequestByIdQueryValidator : AbstractValidator<GetStudentRequestByIdQuery>
 {
@@ -17,7 +17,7 @@ public class GetStudentRequestByIdQueryValidator : AbstractValidator<GetStudentR
     }
 }
 
-public class GetStudentRequestByIdQueryHandler : IRequestHandler<GetStudentRequestByIdQuery, ServiceResponse<StudentRequestResponseDto>>
+public class GetStudentRequestByIdQueryHandler : IRequestHandler<GetStudentRequestByIdQuery, ServiceResponse<StudentRqReadModel>>
 {
     private readonly IStudentRequestService _studentRequestService;
 
@@ -26,19 +26,19 @@ public class GetStudentRequestByIdQueryHandler : IRequestHandler<GetStudentReque
         _studentRequestService = studentRequestService;
     }
 
-    public async Task<ServiceResponse<StudentRequestResponseDto>> Handle(GetStudentRequestByIdQuery request, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<StudentRqReadModel>> Handle(GetStudentRequestByIdQuery request, CancellationToken cancellationToken)
     {
         var studentRequest = await _studentRequestService.GetByIdAsync(request.Id, cancellationToken);
         if (studentRequest == null)
         {
-            return new ServiceResponse<StudentRequestResponseDto>
+            return new ServiceResponse<StudentRqReadModel>
             {
                 Succeeded = false,
                 Message = "Student request not found."
             };
         }
 
-        return new ServiceResponse<StudentRequestResponseDto>
+        return new ServiceResponse<StudentRqReadModel>
         {
             Succeeded = true,
             Message = "Student request retrieved successfully.",

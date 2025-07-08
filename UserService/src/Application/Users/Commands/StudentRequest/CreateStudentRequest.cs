@@ -74,7 +74,7 @@ public class StudentRequestCommandHandler : IRequestHandler<CreateStudentRequest
             };
         }
         _logger.LogInformation("Login attempt started for Email: {StudentEmail}", request.StudentEmail);
-        var studentRequestId = await _studentRequestService.StudentRequestAsync(request, userId!);
+        var studentRequestId = await _studentRequestService.CreateStudentRequestAsync(request, userId!);
         return new ServiceResponse<Guid>
         {
             Succeeded = true,

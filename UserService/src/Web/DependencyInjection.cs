@@ -15,6 +15,7 @@ using UserService.Infrastructure.Services.StudentRequests;
 using UserService.Web.Consumers;
 using UserService.Web.Consumers.Feedbacks;
 using UserService.Web.Consumers.FeedbackTypes;
+using UserService.Web.Consumers.StudentRequest;
 
 namespace UserService.Web;
 
@@ -26,7 +27,7 @@ public static class DependencyInjection
 
         services.AddScoped<IUser, CurrentUser>();
         services.AddScoped<IFeedbackService, FeedbackService>();
-        services.AddTransient<IStudentRequestService, StudentRequestServiceService>();
+        services.AddTransient<IStudentRequestService, StudentRequestService>();
         services.AddHttpContextAccessor();
 
         services.AddHttpClient();
@@ -135,7 +136,41 @@ public static class DependencyInjection
                         kc.RetryBackoff = TimeSpan.FromMilliseconds(
                             configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
                     });
-
+                
+                rider.AddProducer<CreateStudentRequestEvent>(
+                    configuration["KafkaSettings:UserServiceEvents:CreateStudentRequest:Name"],
+                    (ctx, kc) =>
+                    {
+                        kc.MessageTimeout = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageTimeoutMs"));
+                        kc.MessageSendMaxRetries =
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageSendMaxRetries");
+                        kc.RetryBackoff = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
+                    });
+                
+                rider.AddProducer<UpdateStudentRequestApproveEvent>(
+                    configuration["KafkaSettings:UserServiceEvents:UpdateStudentRequestApprove:Name"],
+                    (ctx, kc) =>
+                    {
+                        kc.MessageTimeout = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageTimeoutMs"));
+                        kc.MessageSendMaxRetries =
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageSendMaxRetries");
+                        kc.RetryBackoff = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
+                    });
+                rider.AddProducer<UpdateStudentRequestDeclinedEvent>(
+                    configuration["KafkaSettings:UserServiceEvents:UpdateStudentRequestDeclined:Name"],
+                    (ctx, kc) =>
+                    {
+                        kc.MessageTimeout = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageTimeoutMs"));
+                        kc.MessageSendMaxRetries =
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageSendMaxRetries");
+                        kc.RetryBackoff = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
+                    });
                 rider.AddConsumer<CreateCustomerConsumer>();
                 rider.AddConsumer<CreateStaffConsumer>();
 
@@ -144,7 +179,10 @@ public static class DependencyInjection
                 rider.AddConsumer<DeleteFeedbackTypeConsumer>();
 
                 rider.AddConsumer<CreateFeedbackConsumer>();
-
+                
+                rider.AddConsumer<CreateStudentRequestConsumer>();
+                rider.AddConsumer<UpdateStudentRequestApproveEventConsumer>();
+                rider.AddConsumer<UpdateStudentRequestDeclinedEventConsumer>();
                 rider.UsingKafka((context, k) =>
                 {
                     k.Host(configuration["KafkaSettings:Url"], h =>
@@ -213,6 +251,30 @@ public static class DependencyInjection
                         e =>
                         {
                             e.ConfigureConsumer<CreateFeedbackConsumer>(context);
+                        }
+                    );
+                    k.TopicEndpoint<CreateStudentRequestEvent>(
+                        configuration["KafkaSettings:UserServiceEvents:CreateStudentRequest:Name"],
+                        configuration["KafkaSettings:UserServiceEvents:CreateStudentRequest:Group"],
+                        e =>
+                        {
+                            e.ConfigureConsumer<CreateStudentRequestConsumer>(context);
+                        }
+                    );
+                    k.TopicEndpoint<UpdateStudentRequestApproveEvent>(
+                        configuration["KafkaSettings:UserServiceEvents:UpdateStudentRequestApprove:Name"],
+                        configuration["KafkaSettings:UserServiceEvents:UpdateStudentRequestApprove:Group"],
+                        e =>
+                        {
+                            e.ConfigureConsumer<UpdateStudentRequestApproveEventConsumer>(context);
+                        }
+                    );
+                    k.TopicEndpoint<UpdateStudentRequestDeclinedEvent>(
+                        configuration["KafkaSettings:UserServiceEvents:UpdateStudentRequestDeclined:Name"],
+                        configuration["KafkaSettings:UserServiceEvents:UpdateStudentRequestDeclined:Group"],
+                        e =>
+                        {
+                            e.ConfigureConsumer<UpdateStudentRequestDeclinedEventConsumer>(context);
                         }
                     );
                 });
