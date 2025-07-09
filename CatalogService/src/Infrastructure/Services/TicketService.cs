@@ -1,13 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using BuildingBlocks.Domain.Events.Tickets;
 using CatalogService.Application.Common.Interfaces.Repositories;
 using CatalogService.Application.Common.Interfaces.Services;
+using CatalogService.Application.Tickets.Commands.CreateTicket;
+using CatalogService.Application.Tickets.Commands.UpdateTicket;
 using CatalogService.Application.Tickets.DTO;
 using CatalogService.Application.Tickets.Queries.GetSingleUseTicketWithPrice;
+using CatalogService.Application.Tickets.Queries.GetTickets;
 using CatalogService.Domain.Entities;
+using CatalogService.Domain.Enum;
+using Marten;
+using Microsoft.EntityFrameworkCore;
 
 namespace CatalogService.Infrastructure.Services;
 public class TicketService : ITicketService
@@ -169,6 +177,109 @@ public class TicketService : ITicketService
         return ticket.Id;
     }
 
+
+    public async Task<Guid> CreateTicketAsync(CreateTicketCommand request, CancellationToken cancellationToken = default)
+    {
+        var repo = _unitOfWork.GetRepository<Ticket, Guid>();
+        var id = Guid.NewGuid();
+
+        var ticket = new Ticket()
+        {
+            Id = id,
+            Name = request.Name,
+            Price = request.Price,
+            ActiveInDay = request.ActiveInDay,
+            ExpirationInDay = request.ExpirationInDay,
+            TicketType = request.TicketType,
+        };
+
+        ticket.AddDomainEvent(new CreateTicketEvent()
+        {
+            Id = ticket.Id,
+            Name = ticket.Name,
+            Price = ticket.Price,
+            ActiveInDay = ticket.ActiveInDay,
+            ExpirationInDay = ticket.ExpirationInDay,
+            TicketType = (int)ticket.TicketType,
+        });
+
+        await repo.AddAsync(ticket, cancellationToken);
+        await _unitOfWork.SaveChangesAsync();
+        return ticket.Id;
+    }
+
+    public async Task<Guid> UpdateTicket(UpdateTicketCommand request, CancellationToken cancellationToken = default)
+    {
+        var repo = _unitOfWork.GetRepository<Ticket, Guid>();
+        var ticket = await repo.GetByIdAsync(request.Id, cancellationToken);
+        if (ticket == null)
+        {
+            return Guid.Empty;
+        }
+
+        ticket.Name = request.Name;
+        ticket.Price = request.Price ?? 0;
+        ticket.ActiveInDay = request.ActiveInDay ?? 0;
+        ticket.ExpirationInDay = request.ExpirationInDay ?? 0;
+        ticket.TicketType = request.TicketType ?? TicketTypeEnum.SingleUseType;
+
+        ticket.AddDomainEvent(new UpdateTicketEvent()
+        {
+            Id = ticket.Id,
+            Name = ticket.Name,
+            Price = ticket.Price,
+            ActiveInDay = ticket.ActiveInDay,
+            ExpirationInDay = ticket.ExpirationInDay,
+            TicketType = (int)ticket.TicketType,
+        });
+
+        await repo.UpdateAsync(ticket, cancellationToken);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ticket.Id;
+    }
+
+    public async Task<Guid> DeleteTicket(Guid requestId, CancellationToken cancellationToken = default)
+    {
+        var repo = _unitOfWork.GetRepository<Ticket, Guid>();
+        var ticket = await repo.GetByIdAsync(requestId, cancellationToken);
+        if (ticket == null)
+        {
+            return Guid.Empty;
+        }
+
+        ticket.DeleteFlag = true;
+        ticket.AddDomainEvent(new DeleteTicketEvent() { Id = ticket.Id });
+
+        await repo.UpdateAsync(ticket, cancellationToken);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ticket.Id;
+    }
+
+    public async Task<(IEnumerable<TicketReadModel>, int)> GetTickets(GetTicketsQuery query, CancellationToken cancellationToken)
+    {
+        var session = _unitOfWork.GetDocumentSession();
+
+        Expression<Func<TicketReadModel, bool>> filter = GetFilter(query);
+
+        var tickets = await QueryableExtensions.ToListAsync(session.Query<TicketReadModel>()
+                .Where(filter)
+                .Skip(query.Page * query.PageSize)
+                .Take(query.PageSize)
+                .AsNoTracking(),
+            cancellationToken);
+
+        var totalCount = await QueryableExtensions.CountAsync(session.Query<TicketReadModel>()
+                .Where(filter)
+                .AsNoTracking(),
+            cancellationToken);
+
+        var totalPages = (int)Math.Ceiling((double)totalCount / query.PageSize);
+
+        return (tickets, totalPages);
+    }
+
     private double RoundUpToNearest(double value)
     {
         if (value <= 0) return 0;
@@ -179,6 +290,20 @@ public class TicketService : ITicketService
 
         return Math.Ceiling(value / 10000.0) * 10000;
 
+    }
+
+    private Expression<Func<TicketReadModel, bool>> GetFilter(GetTicketsQuery query)
+    {
+        return r =>
+            (string.IsNullOrEmpty(query.Name) || r.Name!.ToLower().Contains(query.Name.ToLower())) &&
+            (query.MinPrice == null || r.Price >= query.MinPrice) &&
+            (query.MaxPrice == null || r.Price <= query.MaxPrice) &&
+            (query.MinActiveInDay == null || r.ActiveInDay >= query.MinActiveInDay) &&
+            (query.MaxActiveInDay == null || r.ActiveInDay <= query.MaxActiveInDay) &&
+            (query.MinExpirationInDay == null || r.ExpirationInDay >= query.MinExpirationInDay) &&
+            (query.MaxExpirationInDay == null || r.ExpirationInDay <= query.MaxExpirationInDay) &&
+            (query.TicketType == null || r.TicketType == query.TicketType) &&
+            (query.Status == null || r.DeleteFlag == query.Status);
     }
 
 }
