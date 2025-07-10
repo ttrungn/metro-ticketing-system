@@ -5,9 +5,9 @@ using Microsoft.Extensions.Logging;
 
 namespace CatalogService.Application.Tickets.Queries.GetActiveTicketByIdQuery;
 
-public record GetActiveTicketByIdQuery(Guid Id) : IRequest<ServiceResponse<TicketDto>>;
+public record GetActiveTicketByIdQuery(Guid Id) : IRequest<ServiceResponse<TicketReadModel>>;
 
-public class GetActiveTicketByIdQueryHandler : IRequestHandler<GetActiveTicketByIdQuery, ServiceResponse<TicketDto>>
+public class GetActiveTicketByIdQueryHandler : IRequestHandler<GetActiveTicketByIdQuery, ServiceResponse<TicketReadModel>>
 {
     private readonly ITicketService _ticketService;
     private readonly ILogger<GetActiveTicketByIdQueryHandler> _logger;
@@ -20,7 +20,7 @@ public class GetActiveTicketByIdQueryHandler : IRequestHandler<GetActiveTicketBy
         _logger = logger;
     }
 
-    public async Task<ServiceResponse<TicketDto>> Handle(GetActiveTicketByIdQuery request, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<TicketReadModel>> Handle(GetActiveTicketByIdQuery request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Handling GetActiveTicketByIdQuery for TicketId: {TicketId}", request.Id);
 
@@ -28,7 +28,7 @@ public class GetActiveTicketByIdQueryHandler : IRequestHandler<GetActiveTicketBy
 
         if (ticket == null)
         {
-            return new ServiceResponse<TicketDto>
+            return new ServiceResponse<TicketReadModel>
             {
                 Succeeded = false,
                 Message = "Ticket not found.",
@@ -36,7 +36,7 @@ public class GetActiveTicketByIdQueryHandler : IRequestHandler<GetActiveTicketBy
             };
         }
 
-        return new ServiceResponse<TicketDto>
+        return new ServiceResponse<TicketReadModel>
         {
             Message = "Get Active Ticket By Id Successfully",
             Succeeded = true,

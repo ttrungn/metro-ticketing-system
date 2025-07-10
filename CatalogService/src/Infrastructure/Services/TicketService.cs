@@ -76,16 +76,12 @@ public class TicketService : ITicketService
 
     }
 
-    public async Task<TicketDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<TicketReadModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var repo = _unitOfWork.GetRepository<Ticket, Guid>();
-        var ticket = await repo.GetByIdAsync(id, cancellationToken);
-
-        if(ticket == null || ticket.DeleteFlag == true)
-        {
-            return null;
-        }
-        return ticket.ToTicketDto();
+        var session = _unitOfWork.GetDocumentSession();
+        var ticket = await QueryableExtensions.FirstOrDefaultAsync(session.Query<TicketReadModel>()
+            .Where(t => t.Id == id && t.DeleteFlag == false).AsNoTracking(), cancellationToken);
+        return ticket;
 
     }
 
@@ -135,10 +131,14 @@ public class TicketService : ITicketService
 
     public async Task<SingleUseTicketResponseDto> GetSingleUseTicketInfo(GetSingleUseTicketWithPriceQuery request, CancellationToken cancellationToken = default)
     {
-        var ticketRepo = _unitOfWork.GetRepository<Ticket, Guid>();
+        var session = _unitOfWork.GetDocumentSession();
 
-        var singleUseTicket = ticketRepo.Query().FirstOrDefault(t => t.TicketType == Domain.Enum.TicketTypeEnum.SingleUseType);
-
+        var singleUseTicket = await QueryableExtensions.FirstOrDefaultAsync(session.Query<TicketReadModel>()
+            .Where(t => t.TicketType == TicketTypeEnum.SingleUseType && t.DeleteFlag == false).AsNoTracking()
+            , cancellationToken);
+        if (singleUseTicket == null)
+            throw new Exception("Không tìm thấy vé lượt đơn.");
+        
         var ticketPrice = await this.GetSingleTicketPrice(request.RouteId, request.EntryStationId, request.ExitStationId);
 
         return new SingleUseTicketResponseDto

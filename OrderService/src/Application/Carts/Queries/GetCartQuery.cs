@@ -5,9 +5,9 @@ using OrderService.Application.Common.Interfaces.Services;
 
 namespace OrderService.Application.Carts.Queries;
 
-public record GetCartQuery : IRequest<ServiceResponse<IEnumerable<CartResponseDto>>>;
+public record GetCartQuery : IRequest<ServiceResponse<IEnumerable<GetCartsResponseDto>>>;
 public class GetCartQueryHandler : IRequestHandler<GetCartQuery, 
-    ServiceResponse<IEnumerable<CartResponseDto>>>
+    ServiceResponse<IEnumerable<GetCartsResponseDto>>>
 {
     private readonly ICartService _cartService;
     private readonly IUser _user;
@@ -18,11 +18,11 @@ public class GetCartQueryHandler : IRequestHandler<GetCartQuery,
         _user = user;
     }
 
-    public async Task<ServiceResponse<IEnumerable<CartResponseDto>>> Handle(GetCartQuery request, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<IEnumerable<GetCartsResponseDto>>> Handle(GetCartQuery request, CancellationToken cancellationToken)
     {
         if(string.IsNullOrEmpty(_user.Id))
         {
-            return new ServiceResponse<IEnumerable<CartResponseDto>>()
+            return new ServiceResponse<IEnumerable<GetCartsResponseDto>>()
             {
                 Succeeded = false,
                 Message = "Bạn cần đăng nhập để thực hiện thao tác này.",
@@ -30,7 +30,7 @@ public class GetCartQueryHandler : IRequestHandler<GetCartQuery,
             };
         }
         var response = await _cartService.GetCartsAsync(_user.Id!, cancellationToken);
-        return new ServiceResponse<IEnumerable<CartResponseDto>>()
+        return new ServiceResponse<IEnumerable<GetCartsResponseDto>>()
         {
             Succeeded = true,
             Message = "Lấy giỏ hàng thành công.",

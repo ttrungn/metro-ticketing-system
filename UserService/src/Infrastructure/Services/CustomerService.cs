@@ -18,21 +18,13 @@ public class CustomerService : ICustomerService
         _unitOfWork = unitOfWork;
         _userManager = userManager;
     }
-    public async Task<CustomerResponseDto?> GetCustomerById(string userId)
+    public async Task<CustomerReadModel?> GetCustomerById(string userId)
     {
-        var user = await _userManager.FindByIdAsync(userId);
-        var customerRepo = _unitOfWork.GetRepository<Customer, Guid>();
-        var customer = await customerRepo.Query().FirstOrDefaultAsync(c => c.ApplicationUserId == userId);
-        
-        if(user == null || customer == null) return null;
-        
-        var respoone = new CustomerResponseDto()
-        {
-            CustomerId = customer?.Id.ToString(),
-            Name = user.FullName.ToString()!,
-            Email = user.Email,
-            IsStudent = customer!.IsStudent,
-        };
-        return respoone;
+        var session = _unitOfWork.GetDocumentSession();
+        var customer = await session.LoadAsync<CustomerReadModel>(userId);
+
+        if (customer == null) return null;
+
+        return customer;
     }
 }

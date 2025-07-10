@@ -8,4 +8,6 @@ public class CustomerResponseDto
     public string Name { get; set; } = null!;
     public string? Email { get; set; } = null!;
     public bool IsStudent { get; set; } = false;
+    
+    //xóa file này
 }

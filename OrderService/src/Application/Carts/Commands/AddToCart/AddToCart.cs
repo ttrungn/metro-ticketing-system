@@ -6,7 +6,7 @@ using OrderService.Application.Common.Interfaces.Services;
 
 namespace OrderService.Application.Carts.Commands.AddToCart;
 
-public record AddToCartCommand : IRequest<ServiceResponse<CartIdResponseWithStudentDto>>
+public record AddToCartCommand : IRequest<ServiceResponse<CartCreatedResponse>>
 {
     public string TicketId { get; init; } = null!;
     public int Quantity { get; init; }
@@ -23,7 +23,7 @@ public class AddToCartCommandValidator : AbstractValidator<AddToCartCommand>
     }
 }
 
-public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, ServiceResponse<CartIdResponseWithStudentDto>>
+public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, ServiceResponse<CartCreatedResponse>>
 {
     private readonly ILogger<AddToCartCommandHandler> _logger;
     private readonly ICartService _cartService;
@@ -36,13 +36,13 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, Service
         _user = user;
     }
     
-    public async Task<ServiceResponse<CartIdResponseWithStudentDto>> Handle(AddToCartCommand request,
+    public async Task<ServiceResponse<CartCreatedResponse>> Handle(AddToCartCommand request,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(_user.Id))
         {
             _logger.LogWarning("User is not authenticated.");
-            return new ServiceResponse<CartIdResponseWithStudentDto>
+            return new ServiceResponse<CartCreatedResponse>
             {
                 Succeeded = false,
                 Message = "Bạn cần đăng nhập để thực hiện thao tác này.",
@@ -55,7 +55,7 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, Service
         if (cart == null)
         {
             _logger.LogError("Failed to add item to cart for user {UserId}", _user.Id);
-            return new ServiceResponse<CartIdResponseWithStudentDto>
+            return new ServiceResponse<CartCreatedResponse>
             {
                 Succeeded = false,
                 Message = "Thêm vé vào giỏ hàng thất bại.",
@@ -64,7 +64,7 @@ public class AddToCartCommandHandler : IRequestHandler<AddToCartCommand, Service
         }
 
         _logger.LogInformation("Item added to cart for user {UserId}", _user.Id);
-        return new ServiceResponse<CartIdResponseWithStudentDto>
+        return new ServiceResponse<CartCreatedResponse>
         {
             Succeeded = true,
             Message = "Thêm vé vào giỏ hàng thành công.",

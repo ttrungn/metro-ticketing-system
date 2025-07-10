@@ -6,7 +6,7 @@ using UserService.Application.Users.DTOs;
 
 namespace UserService.Application.Users.Queries.GetCustomer;
 
-public record GetCustomerQuery : IRequest<ServiceResponse<CustomerResponseDto>>;
+public record GetCustomerQuery : IRequest<ServiceResponse<CustomerReadModel>>;
 
 public class GetCustomerQueryValidator : AbstractValidator<GetCustomerQuery>
 {
@@ -15,7 +15,7 @@ public class GetCustomerQueryValidator : AbstractValidator<GetCustomerQuery>
     }
 }
 
-public class GetCustomerHandler : IRequestHandler<GetCustomerQuery, ServiceResponse<CustomerResponseDto>>
+public class GetCustomerHandler : IRequestHandler<GetCustomerQuery, ServiceResponse<CustomerReadModel>>
 {
     private readonly ICustomerService _customerService;
     private readonly IUser _user;
@@ -28,14 +28,14 @@ public class GetCustomerHandler : IRequestHandler<GetCustomerQuery, ServiceRespo
         _logger = logger;
     }
 
-    public async Task<ServiceResponse<CustomerResponseDto>> Handle(GetCustomerQuery request, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<CustomerReadModel>> Handle(GetCustomerQuery request, CancellationToken cancellationToken)
     {
         var customer = await _customerService.GetCustomerById(_user.Id!);
 
         if (customer == null)
         {
             _logger.LogWarning("User with ID {userId} not found", _user.Id);
-            return new ServiceResponse<CustomerResponseDto>
+            return new ServiceResponse<CustomerReadModel>
             {
                 Succeeded = false,
                 Message = "Không tìm thấy khách hàng!",
@@ -43,7 +43,7 @@ public class GetCustomerHandler : IRequestHandler<GetCustomerQuery, ServiceRespo
             };
         }
         _logger.LogInformation("User with ID {RouteId} retrieved successfully", _user.Id);
-        return new ServiceResponse<CustomerResponseDto>
+        return new ServiceResponse<CustomerReadModel>
         {
             Succeeded = true,
             Message = "Lấy thông tin khách hàng thành công!",

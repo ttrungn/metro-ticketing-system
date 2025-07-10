@@ -19,7 +19,7 @@ public interface ITicketService
 
     //Task<List<TicketDto>> GetAllPagingAsync(int page, int pageSize, string filter, CancellationToken cancellationToken = default);
 
-    Task<TicketDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<TicketReadModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<Guid> UpdateAsync(TicketDto ticket, CancellationToken cancellationToken = default);
 

@@ -1,6 +1,8 @@
-﻿namespace OrderService.Application.Carts.DTOs;
+﻿using BuildingBlocks.Domain.Common;
 
-public class TicketDto
+namespace OrderService.Application.Carts.DTOs;
+
+public class TicketReadModel : BaseReadModel
 {
     public Guid Id { get; set; }
     

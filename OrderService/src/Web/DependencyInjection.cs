@@ -1,4 +1,5 @@
-﻿using BuildingBlocks.Domain.Events.Sample;
+﻿using BuildingBlocks.Domain.Events.Cart;
+using BuildingBlocks.Domain.Events.Sample;
 using Confluent.Kafka;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,7 @@ using OrderService.Application.Common.Interfaces;
 using OrderService.Application.OptionModel;
 using OrderService.Infrastructure.Data;
 using OrderService.Web.Consumers;
+using OrderService.Web.Consumers.Cart;
 using OrderService.Web.Services;
 
 namespace OrderService.Web;
@@ -73,8 +75,43 @@ public static class DependencyInjection
                         kc.RetryBackoff = TimeSpan.FromMilliseconds(
                             configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
                     });
-                
+                rider.AddProducer<AddToCartEvent>(
+                    configuration["KafkaSettings:OrderServiceEvents:AddToCart:Name"],
+                    (ctx, kc) =>
+                    {
+                        kc.MessageTimeout = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageTimeoutMs"));
+                        kc.MessageSendMaxRetries =
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageSendMaxRetries");
+                        kc.RetryBackoff = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
+                    });
+                rider.AddProducer<UpdateCartEvent>(
+                    configuration["KafkaSettings:OrderServiceEvents:UpdateCart:Name"],
+                    (ctx, kc) =>
+                    {
+                        kc.MessageTimeout = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageTimeoutMs"));
+                        kc.MessageSendMaxRetries =
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageSendMaxRetries");
+                        kc.RetryBackoff = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
+                    });
+                rider.AddProducer<DeleteCartEvent>(
+                    configuration["KafkaSettings:OrderServiceEvents:DeleteCart:Name"],
+                    (ctx, kc) =>
+                    {
+                        kc.MessageTimeout = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageTimeoutMs"));
+                        kc.MessageSendMaxRetries =
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageSendMaxRetries");
+                        kc.RetryBackoff = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
+                    });
                 rider.AddConsumer<SampleConsumer>();
+                rider.AddConsumer<AddToCartConsumer>();
+                rider.AddConsumer<UpdateCartConsumer>();
+                rider.AddConsumer<DeleteCartConsumer>();
                 
                 rider.UsingKafka((context, k) =>
                 {
@@ -105,7 +142,31 @@ public static class DependencyInjection
                         {
                             e.ConfigureConsumer<SampleConsumer>(context);
                         }
-                    );;
+                    );
+                    k.TopicEndpoint<AddToCartEvent>(
+                        configuration["KafkaSettings:OrderServiceEvents:AddToCart:Name"],
+                        configuration["KafkaSettings:OrderServiceEvents:AddToCart:Group"],
+                        e =>
+                        {
+                            e.ConfigureConsumer<AddToCartConsumer>(context);
+                        }
+                    );
+                    k.TopicEndpoint<UpdateCartEvent>(
+                        configuration["KafkaSettings:OrderServiceEvents:UpdateCart:Name"],
+                        configuration["KafkaSettings:OrderServiceEvents:UpdateCart:Group"],
+                        e =>
+                        {
+                            e.ConfigureConsumer<UpdateCartConsumer>(context);
+                        }
+                    );
+                    k.TopicEndpoint<DeleteCartEvent>(
+                        configuration["KafkaSettings:OrderServiceEvents:DeleteCart:Name"],
+                        configuration["KafkaSettings:OrderServiceEvents:DeleteCart:Group"],
+                        e =>
+                        {
+                            e.ConfigureConsumer<DeleteCartConsumer>(context);
+                        }
+                    );
                 });
             });
         });
