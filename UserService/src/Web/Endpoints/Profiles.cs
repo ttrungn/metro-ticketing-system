@@ -7,10 +7,10 @@ public class Profiles : EndpointGroupBase
     public override void Map(WebApplication app)
     {
         app.MapGroup(this)
-            .MapGet(GetUserByEmailAsync, "/");
+            .MapGet(GetUserByIdAsync, "/");
     }
 
-    private static async Task<IResult> GetUserByEmailAsync(ISender sender)
+    private static async Task<IResult> GetUserByIdAsync(ISender sender)
     {
         var response = await sender.Send(new GetUserQuery());
 

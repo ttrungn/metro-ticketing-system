@@ -83,7 +83,7 @@ public class IdentityService : IIdentityService
             Email = email,
             UserName = email,
         };
-        
+
         var createUserResult = await _userManager.CreateAsync(user, password);
         if (!createUserResult.Succeeded)
         {
@@ -169,7 +169,7 @@ public class IdentityService : IIdentityService
     }
 
 
-    
+
     public async Task<string?> GetUserNameAsync(string userId)
     {
         var user = await _userManager.FindByIdAsync(userId);
@@ -199,23 +199,13 @@ public class IdentityService : IIdentityService
         return result.Succeeded;
     }
 
-    public async Task<UserResponseDto?> GetUserById(string userId)
+    public async Task<CustomerReadModel?> GetUserById(string userId)
     {
-        var user = await _userManager.FindByIdAsync(userId);
-
-        var customerRepo = _unitOfWork.GetRepository<Customer, Guid>();
-
-        var customer = await customerRepo.Query().FirstOrDefaultAsync(c => c.ApplicationUserId == userId);
+        var session = _unitOfWork.GetDocumentSession();
+        var user = await session.LoadAsync<CustomerReadModel>(userId);
 
         if (user == null) return null;
 
-        var response = new UserResponseDto()
-        {
-            Name = user.FullName,
-            Email = user.Email,
-            IsStudent = customer?.IsStudent ?? false
-        };
-
-        return response;
+        return user;
     }
 }
