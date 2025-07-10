@@ -239,7 +239,7 @@
         "tags": [
           "Profiles"
         ],
-        "operationId": "GetUserByEmailAsync",
+        "operationId": "GetUserByIdAsync",
         "responses": {
           "200": {
             "description": ""

@@ -1,8 +1,13 @@
 ﻿
 using CatalogService.Application.Common.Interfaces.Services;
+using CatalogService.Application.Tickets.Commands.CreateTicket;
+using CatalogService.Application.Tickets.Commands.DeleteTicket;
+using CatalogService.Application.Tickets.Commands.UpdateTicket;
 using CatalogService.Application.Tickets.Queries.GetSingleUseTicketWithPrice;
 using Microsoft.AspNetCore.Mvc;
 using CatalogService.Application.Tickets.Queries.GetActiveTicketByIdQuery;
+using CatalogService.Application.Tickets.Queries.GetTickets;
+using CatalogService.Domain.Enum;
 
 namespace CatalogService.Web.Endpoints;
 
@@ -15,7 +20,11 @@ public class Tickets : EndpointGroupBase
             .DisableAntiforgery()
             .MapGet(GetActiveTickets, "/")
             .MapPost(GetSingleUseTicketWithPrice, "/single-use-ticket-info/")
-            .MapGet(GetActiveTicketsById, "/{id:guid}");
+            .MapGet(GetActiveTicketsById, "/{id:guid}")
+            .MapPost(CreateTicket, "/")
+            .MapPut(UpdateTicket, "/")
+            .MapDelete(DeleteTicket, "/{id:guid}")
+            .MapGet(GetTickets, "/filter");
     }
 
     private static async Task<IResult> GetActiveTickets(
@@ -51,5 +60,77 @@ public class Tickets : EndpointGroupBase
         }
 
         return TypedResults.NotFound(response);
+    }
+
+    private static async Task<IResult> CreateTicket(ISender sender, CreateTicketCommand command)
+    {
+        var response = await sender.Send(command);
+        if (response.Succeeded)
+        {
+            return TypedResults.Created($"/api/catalog/tickets/{response.Data}", response);
+        }
+
+        return TypedResults.BadRequest(response);
+    }
+
+    private static async Task<IResult> UpdateTicket(ISender sender, UpdateTicketCommand command)
+    {
+        var response = await sender.Send(command);
+        if (response.Succeeded)
+        {
+            return TypedResults.Ok(response);
+        }
+
+        return TypedResults.BadRequest(response);
+    }
+
+    private static async Task<IResult> DeleteTicket(ISender sender, [FromRoute] Guid id)
+    {
+        var command = new DeleteTicketCommand(id);
+        var response = await sender.Send(command);
+        if (response.Succeeded)
+        {
+            return TypedResults.NoContent();
+        }
+
+        return TypedResults.BadRequest(response);
+    }
+
+    private static async Task<IResult> GetTickets(
+        ISender sender,
+        [FromQuery] int page = 0,
+        [FromQuery] int pageSize = 8,
+        [FromQuery] string? name = "",
+        [FromQuery] decimal? minPrice = null,
+        [FromQuery] decimal? maxPrice = null,
+        [FromQuery] int? minActiveInDay = null,
+        [FromQuery] int? maxActiveInDay = null,
+        [FromQuery] int? minExpirationInDay = null,
+        [FromQuery] int? maxExpirationInDay = null,
+        [FromQuery] TicketTypeEnum? ticketType = null,
+        [FromQuery] bool? status = null)
+    {
+        var query = new GetTicketsQuery()
+        {
+            Page = page,
+            PageSize = pageSize,
+            Name = name ?? string.Empty,
+            MinPrice = minPrice ?? Decimal.MinValue,
+            MaxPrice = maxPrice ?? Decimal.MaxValue,
+            MinActiveInDay = minActiveInDay ?? Int32.MinValue,
+            MaxActiveInDay = maxActiveInDay ?? Int32.MaxValue,
+            MinExpirationInDay = minExpirationInDay ?? Int32.MinValue,
+            MaxExpirationInDay = maxExpirationInDay ?? Int32.MaxValue,
+            TicketType = ticketType,
+            Status = status
+        };
+
+        var response = await sender.Send(query);
+        if (response.Succeeded)
+        {
+            return TypedResults.Ok(response);
+        }
+
+        return TypedResults.BadRequest(response);
     }
 }
