@@ -1,10 +1,10 @@
 ﻿namespace OrderService.Application.Carts.DTOs;
 
-public class StationResponseDto
+public class StationReadModel
 {
-    public string Id { get; set; } = null!;
-    public string? Code { get; set; }
-    public string? Name { get; set; }
+    public Guid Id { get; set; }
+    public string Code { get; set; } = null!;
+    public string Name { get; set; } = null!;
     public string? StreetNumber { get; set; }
     public string? Street { get; set; }
     public string? Ward { get; set; }

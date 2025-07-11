@@ -4,5 +4,5 @@ namespace UserService.Application.Common.Interfaces.Services;
 
 public interface ICustomerService
 {
-    Task<CustomerResponseDto?> GetCustomerById(string userId);
+    Task<CustomerReadModel?> GetCustomerById(string userId);
 }

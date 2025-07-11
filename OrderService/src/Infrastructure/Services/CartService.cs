@@ -1,5 +1,7 @@
 ﻿using System.Linq.Expressions;
+using BuildingBlocks.Domain.Events.Cart;
 using BuildingBlocks.Response;
+using Marten;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using OrderService.Application.Carts.Commands.AddToCart;
@@ -23,7 +25,7 @@ public class CartService : ICartService
         _configuration = configuration;
     }
     
-    public async Task<CartIdResponseWithStudentDto> CreateAsync(AddToCartCommand command, string userId, CancellationToken cancellationToken = default)
+    public async Task<CartCreatedResponse> CreateAsync(AddToCartCommand command, string userId, CancellationToken cancellationToken = default)
     {
         Guid cartId;
         var responseCustomer = await GetCustomerResponse(userId, cancellationToken);
@@ -36,13 +38,13 @@ public class CartService : ICartService
         {
             if (responseTicket!.TicketType == 3)
             {
-                return new CartIdResponseWithStudentDto() { IsStudent = false };
+                return new CartCreatedResponse() { IsStudent = false };
             }
         }
         // Check if the user already has a same ticket in the cart
         var filter = new List<Expression<Func<Cart, bool>>>
         {
-            c => c.CustomerId == responseCustomer.Data!.CustomerId
+            c => c.CustomerId == responseCustomer.Data.CustomerId.ToString()
                  && c.TicketId == command.TicketId
                  && c.EntryStationId == command.EntryStationId
                  && c.DestinationStationId == command.DestinationStationId
@@ -56,6 +58,16 @@ public class CartService : ICartService
         {
             existingCartItem.Quantity += command.Quantity;
             await cartRepo.UpdateAsync(existingCartItem, cancellationToken);
+            existingCartItem.AddDomainEvent(new AddToCartEvent()
+            {
+                Id = existingCartItem.Id,
+                CustomerId = existingCartItem.CustomerId,
+                TicketId = existingCartItem.TicketId,
+                Quantity = existingCartItem.Quantity,
+                EntryStationId = existingCartItem.EntryStationId,
+                DestinationStationId = existingCartItem.DestinationStationId,
+                RouteId = existingCartItem.RouteId
+            });
             cartId = existingCartItem.Id;
         }
         else
@@ -64,25 +76,35 @@ public class CartService : ICartService
             var newCart = new Cart()
             {
                 Id = cartId,
-                TicketId = command.TicketId.ToString(),
+                TicketId = command.TicketId,
                 Quantity = command.Quantity,
                 EntryStationId = command.EntryStationId,
                 DestinationStationId = command.DestinationStationId,
                 RouteId = command.RouteId,
-                CustomerId = responseCustomer.Data!.CustomerId
+                CustomerId = responseCustomer.Data.CustomerId.ToString()
             };
-            
             await cartRepo.AddAsync(newCart, cancellationToken);
+            
+            newCart.AddDomainEvent(new AddToCartEvent()
+            {
+                Id = newCart.Id,
+                CustomerId = newCart.CustomerId,
+                TicketId = newCart.TicketId,
+                Quantity = newCart.Quantity,
+                EntryStationId = newCart.EntryStationId,
+                DestinationStationId = newCart.DestinationStationId,
+                RouteId = newCart.RouteId
+            });
         }
         await _unitOfWork.SaveChangesAsync();
-        return  new CartIdResponseWithStudentDto
+        return  new CartCreatedResponse
         {
             Id = cartId,
             IsStudent = responseCustomer.Data.IsStudent
         };
     }
     
-    public async Task<IEnumerable<CartResponseDto>?> GetCartsAsync(string userId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<GetCartsResponseDto>?> GetCartsAsync(string userId, CancellationToken cancellationToken = default)
     {
 
         var responseCustomer = await GetCustomerResponse(userId, cancellationToken);
@@ -91,12 +113,12 @@ public class CartService : ICartService
             return null;
         }
         var customerId = responseCustomer.Data?.CustomerId;
-        
-        var cartRepo = _unitOfWork.GetRepository<Cart, Guid>();
-        var carts = await cartRepo.Query() 
-            .Where(c => c.CustomerId == customerId)
-            .ToListAsync(cancellationToken);  
-
+        var session = _unitOfWork.GetDocumentSession();
+        var cartReadModels = await QueryableExtensions.ToListAsync(
+            session.Query<CartReadModel>()
+                .Where(c => c.CustomerId == customerId.ToString())
+                .AsNoTracking(),
+            cancellationToken);
         
         var routeInfoLst = new Dictionary<string, string>(); 
         var entryStationNames = new Dictionary<string, string>(); 
@@ -104,9 +126,9 @@ public class CartService : ICartService
         var ticketPrices = new Dictionary<string, decimal>();
         var ticketNames = new Dictionary<string, string>();
         
-        await PopulateCartDetails(carts, routeInfoLst, entryStationNames, destinationStationNames, ticketNames, ticketPrices, cancellationToken);
+        await PopulateCartDetails(cartReadModels, routeInfoLst, entryStationNames, destinationStationNames, ticketNames, ticketPrices, cancellationToken);
         
-        var cartDtos = carts.Select(cart => new CartResponseDto
+        var cartDtos = cartReadModels.Select(cart => new GetCartsResponseDto
         {
             CartId = cart.Id.ToString(),
             TicketName = ticketNames.GetValueOrDefault(cart.TicketId!, "Unknown Ticket"),
@@ -126,9 +148,8 @@ public class CartService : ICartService
         var customerId = responseCustomer.Data?.CustomerId;
         
         var cartRepo = _unitOfWork.GetRepository<Cart, Guid>();
-        var carts = await cartRepo.Query() 
-            .Where(c => c.CustomerId == customerId)
-            .ToListAsync(cancellationToken);  
+        var carts = await EntityFrameworkQueryableExtensions.ToListAsync(cartRepo.Query() 
+                .Where(c => c.CustomerId == customerId.ToString()), cancellationToken);  
 
         return carts.Sum(c => c.Quantity);
     }
@@ -151,6 +172,11 @@ public class CartService : ICartService
         }
 
         cart.Quantity = quantity;
+        cart.AddDomainEvent(new UpdateCartEvent()
+        {
+            Id = cart.Id,
+            Quantity = cart.Quantity
+        });
         await cartRepo.UpdateAsync(cart, cancellationToken);
         await cartRepo.SaveChangesAsync(cancellationToken);
         
@@ -172,13 +198,27 @@ public class CartService : ICartService
         {
             return Guid.Empty; 
         }
-
+        cart.AddDomainEvent(new DeleteCartEvent()
+        {
+            Id = cart.Id
+        });
+        
         await cartRepo.RemoveOutAsync(cart, cancellationToken);
         await cartRepo.SaveChangesAsync(cancellationToken);
         return cart.Id;
     }
     #region Helper Methods
-    private async Task PopulateCartDetails(IEnumerable<Cart> carts, Dictionary<string, string> routeInfoLst, 
+    private async Task<ServiceResponse<CustomerReadModel>> GetCustomerResponse(string userId, CancellationToken cancellationToken)
+    {
+        var baseUrlCustomer = Guard.Against.NullOrEmpty(_configuration["ClientSettings:UserServiceClient"], message: "User Service Client URL is not configured.");
+        var endpointCustomer = $"api/user/Customers";
+        return await _httpClientService.SendGet<ServiceResponse<CustomerReadModel>>(
+            baseUrlCustomer,
+            endpointCustomer,
+            cancellationToken: cancellationToken);
+    }
+
+    private async Task PopulateCartDetails(IEnumerable<CartReadModel> carts, Dictionary<string, string> routeInfoLst, 
         Dictionary<string, string> entryStationNames, Dictionary<string, string> destinationStationNames, 
         Dictionary<string, string> ticketNames, Dictionary<string, decimal> ticketPrices,
         CancellationToken cancellationToken)
@@ -224,16 +264,7 @@ public class CartService : ICartService
        
         }
     }
-    private async Task<ServiceResponse<CustomerResponseDto>> GetCustomerResponse(string userId, CancellationToken cancellationToken)
-    {
-        var baseUrlCustomer = Guard.Against.NullOrEmpty(_configuration["ClientSettings:UserServiceClient"], message: "User Service Client URL is not configured.");
-        var endpointCustomer = $"api/user/Customers/";
-        return await _httpClientService.SendGet<ServiceResponse<CustomerResponseDto>>(
-            baseUrlCustomer,
-            endpointCustomer,
-            cancellationToken: cancellationToken);
-    }
-    private async Task<string?> GetRouteInfo(string routeId, string baseUrl, CancellationToken cancellationToken)
+        private async Task<string?> GetRouteInfo(string routeId, string baseUrl, CancellationToken cancellationToken)
     {    
         if (string.IsNullOrEmpty(routeId) || !Guid.TryParse(routeId, out var routeGuid))
         {
@@ -253,16 +284,16 @@ public class CartService : ICartService
         {
             return null;
         }
-        var stationResponse = await _httpClientService.SendGet<ServiceResponse<StationResponseDto>>(
+        var stationResponse = await _httpClientService.SendGet<ServiceResponse<StationReadModel>>(
             baseUrl,
             $"api/catalog/stations/{Guid.Parse(stationId)}",
             cancellationToken: cancellationToken);
 
         return stationResponse?.Data?.Name ?? "Station Not Found";
     }
-    private async Task<TicketDto?> GetTicketSingleUse(GetTicketInfoRequestDto request, string baseUrl, CancellationToken cancellationToken)
+    private async Task<TicketReadModel?> GetTicketSingleUse(GetTicketInfoRequestDto request, string baseUrl, CancellationToken cancellationToken)
     {
-        var ticketResponse = await _httpClientService.SendPost<ServiceResponse<TicketDto>>(
+        var ticketResponse = await _httpClientService.SendPost<ServiceResponse<TicketReadModel>>(
             baseUrl,
             $"api/catalog/Tickets/single-use-ticket-info/",
             request,
@@ -271,10 +302,10 @@ public class CartService : ICartService
         return ticketResponse?.Data;
     }
     
-    private async Task<TicketDto?> GetTicketInfo(string ticketId, CancellationToken cancellationToken)
+    private async Task<TicketReadModel?> GetTicketInfo(string ticketId, CancellationToken cancellationToken)
     {
         var baseUrl = Guard.Against.NullOrEmpty(_configuration["ClientSettings:CatalogServiceClient"], message: "Catalog Service Client URL is not configured.");
-        var ticketResponse = await _httpClientService.SendGet<ServiceResponse<TicketDto>>(
+        var ticketResponse = await _httpClientService.SendGet<ServiceResponse<TicketReadModel>>(
             baseUrl,
             $"api/catalog/Tickets/{ticketId}",
             cancellationToken: cancellationToken);
