@@ -19,6 +19,8 @@ public class GetStudentRequestQueryValidator : AbstractValidator<GetStudentReque
 {
     public GetStudentRequestQueryValidator()
     {
+        RuleFor(x => x.CurrentPage)
+            .GreaterThanOrEqualTo(0).WithMessage("Trang hiện tại phải lớn hơn hoặc bằng 0!");
         RuleFor(x => x.PageSize)
             .GreaterThan(0).WithMessage("Kích thước trang phải lớn hơn 0!");
     }
