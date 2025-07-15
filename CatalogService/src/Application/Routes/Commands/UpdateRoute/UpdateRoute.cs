@@ -11,7 +11,7 @@ public record UpdateRouteCommand : IRequest<ServiceResponse<Guid>>
     public string Name { get; init; } = null!;
     public double? LengthInKm { get; init; }
     public Stream? ThumbnailImageStream { get; init; }
-    public string? ThumbnailImageFileName{ get; init; }
+    public string? ThumbnailImageFileName { get; init; }
 }
 
 public class UpdateRouteCommandValidator : AbstractValidator<UpdateRouteCommand>
@@ -20,9 +20,6 @@ public class UpdateRouteCommandValidator : AbstractValidator<UpdateRouteCommand>
     {
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Xin vui lòng nhập tên tuyến!");
-
-        RuleFor(x => x.LengthInKm)
-            .GreaterThan(0).WithMessage("Chiều dài tuyến phải lớn hơn 0!");
     }
 }
 
