@@ -127,6 +127,56 @@
         }
       }
     },
+    "/api/order/Orders/update-ticket-to-used": {
+      "put": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "UpdateTicketToUsed",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTicketToUsedCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/order/Orders/update-ticket-to-unused-or-expired": {
+      "put": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "UpdateTicketToUnusedOrExpired",
+        "requestBody": {
+          "x-name": "command",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTicketToUnusedOrExpiredCommand"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/order/Payment/momo/create": {
       "post": {
         "tags": [
@@ -229,6 +279,34 @@
           1,
           2
         ]
+      },
+      "UpdateTicketToUsedCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "ticketId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
+      "UpdateTicketToUnusedOrExpiredCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "ticketId": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
       },
       "CreateMomoPaymentCommand": {
         "type": "object",

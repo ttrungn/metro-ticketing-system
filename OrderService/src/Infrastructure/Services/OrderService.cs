@@ -1,5 +1,4 @@
-﻿
-using BuildingBlocks.Response;
+﻿using BuildingBlocks.Response;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using OrderService.Application.Common.Interfaces.Repositories;
@@ -16,16 +15,19 @@ public class OrderService : IOrderService
     private readonly IConfiguration _configuration;
     private readonly IHttpClientService _httpClientService;
 
-    public OrderService(IUnitOfWork unitOfWork, IHttpClientService httpClientService, IConfiguration configuration)
+    public OrderService(IUnitOfWork unitOfWork, IHttpClientService httpClientService,
+        IConfiguration configuration)
     {
         _unitOfWork = unitOfWork;
         _httpClientService = httpClientService;
         _configuration = configuration;
     }
 
-    public async Task<IEnumerable<TicketDto>> GetUserTicketsAsync(string? userId, PurchaseTicketStatus status, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<TicketDto>> GetUserTicketsAsync(string? userId,
+        PurchaseTicketStatus status, CancellationToken cancellationToken = default)
     {
-        var baseUrl = Guard.Against.NullOrEmpty(_configuration["ClientSettings:UserServiceClient"], message: "User Service Client URL is not configured.");
+        var baseUrl = Guard.Against.NullOrEmpty(_configuration["ClientSettings:UserServiceClient"],
+            message: "User Service Client URL is not configured.");
         var endpoint = $"api/user/Customers";
         var response = await _httpClientService.SendGet<ServiceResponse<CustomerReadModel>>(
             baseUrl,
@@ -41,7 +43,8 @@ public class OrderService : IOrderService
 
         if (status == PurchaseTicketStatus.Unused)
         {
-            query = query.Where(od => od.Status == PurchaseTicketStatus.Unused && od.ExpiredAt > now);
+            query =
+                query.Where(od => od.Status == PurchaseTicketStatus.Unused && od.ExpiredAt > now);
         }
         else if (status == PurchaseTicketStatus.Used)
         {
@@ -49,12 +52,13 @@ public class OrderService : IOrderService
         }
         else if (status == PurchaseTicketStatus.Expired)
         {
-            query = query.Where(od => od.ExpiredAt < now || od.Status == status); // Có thể bỏ kiểm tra Status
+            query = query.Where(od => od.ExpiredAt < now || od.Status == status);
         }
 
         var tickets = await query
             .Select(od => new TicketDto
             {
+                Id = od.Id,
                 OrderId = od.OrderId,
                 TicketId = od.TicketId,
                 BoughtPrice = od.BoughtPrice,
@@ -64,8 +68,85 @@ public class OrderService : IOrderService
                 EntryStationId = od.EntryStationId,
                 DestinationStationId = od.DestinationStationId
             })
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
 
         return tickets;
+    }
+
+    public async Task<(Guid, Guid)> UpdateTicketAsync(
+        string? userId,
+        Guid id,
+        Guid ticketId,
+        PurchaseTicketStatus fromStatus,
+        PurchaseTicketStatus? toStatus,
+        CancellationToken cancellationToken = default)
+    {
+        var userUrl = Guard.Against.NullOrEmpty(_configuration["ClientSettings:UserServiceClient"],
+            message: "User Service Client URL is not configured.");
+        var userEndpoint = $"api/user/Customers";
+        var userResponse = await _httpClientService.SendGet<ServiceResponse<CustomerReadModel>>(
+            userUrl,
+            userEndpoint,
+            cancellationToken: cancellationToken);
+        var customerId = userResponse?.Data?.CustomerId.ToString();
+
+        var ticketUrl = Guard.Against.NullOrEmpty(_configuration["ClientSettings:CatalogServiceClient"],
+            message: "Catalog Service Client URL is not configured.");
+        var ticketEndpoint = $"api/catalog/Tickets/{ticketId}";
+        var ticketResponse = await _httpClientService.SendGet<ServiceResponse<TicketReadModel>>(
+            ticketUrl,
+            ticketEndpoint,
+            cancellationToken: cancellationToken);
+        if (ticketResponse.Succeeded == false) return (id, Guid.Empty);
+        var ticketModel = ticketResponse?.Data!;
+
+        var repo = _unitOfWork.GetRepository<OrderDetail, Guid>();
+        var now = DateTimeOffset.UtcNow;
+        var query = repo.Query()
+            .Where(od => od.Id == id
+                         && od.TicketId == ticketId
+                         && od.Order.CustomerId == customerId
+                         && od.ExpiredAt > now);
+        OrderDetail? ticket = null!;
+
+        if (fromStatus == PurchaseTicketStatus.Unused && toStatus == PurchaseTicketStatus.Used)
+        {
+            query = query.Where(od => od.Status == PurchaseTicketStatus.Unused);
+            ticket = await query
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cancellationToken);
+            if (ticket == null) return (id, Guid.Empty);
+            if (ticket.ActiveAt == DateTimeOffset.MinValue)
+            {
+                ticket.ActiveAt = now;
+                ticket.ExpiredAt = now.AddDays(ticketModel.ExpirationInDay);
+            }
+            ticket.Status = PurchaseTicketStatus.Used;
+        }
+        else if (fromStatus == PurchaseTicketStatus.Used && ticketModel.TicketType == 1)
+        {
+            query = query.Where(od => od.Status == PurchaseTicketStatus.Used);
+            ticket = await query
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cancellationToken);
+            if (ticket == null) return (id, Guid.Empty);
+
+            ticket.ExpiredAt = now;
+            ticket.Status = PurchaseTicketStatus.Expired;
+        }
+        else if (fromStatus == PurchaseTicketStatus.Used && ticketModel.TicketType != 1)
+        {
+            query = query.Where(od => od.Status == PurchaseTicketStatus.Used);
+            ticket = await query
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cancellationToken);
+            if (ticket == null) return (id, Guid.Empty);
+            ticket.Status = PurchaseTicketStatus.Unused;
+        }
+
+        await repo.UpdateAsync(ticket, cancellationToken);
+        await _unitOfWork.SaveChangesAsync();
+        return (id, ticketId);
     }
 }
