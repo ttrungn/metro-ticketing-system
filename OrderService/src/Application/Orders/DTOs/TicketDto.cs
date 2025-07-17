@@ -12,6 +12,6 @@ public class TicketDto
     public DateTimeOffset ActiveAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset ExpiredAt { get; set; } = DateTimeOffset.UtcNow;
     public PurchaseTicketStatus Status { get; set; } = PurchaseTicketStatus.Unused;
-    public string EntryStationId { get; set; } = null!;
-    public string DestinationStationId { get; set; } = null!;
+    public string? EntryStationName { get; set; } = null!;
+    public string? DestinationStationName { get; set; } = null!;
 }
