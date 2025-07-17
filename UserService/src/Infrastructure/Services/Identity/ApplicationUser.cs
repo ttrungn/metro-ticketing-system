@@ -7,7 +7,7 @@ namespace UserService.Infrastructure.Services.Identity;
 
 public class ApplicationUser : IdentityUser, IBaseAuditableEntity, IBaseEntity
 {
-    public FullName FullName { get; init; } = null!;
+    public FullName FullName { get; set; } = null!;
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset LastModifiedAt { get; set; }
     public DateTimeOffset DeletedAt { get; set; }
