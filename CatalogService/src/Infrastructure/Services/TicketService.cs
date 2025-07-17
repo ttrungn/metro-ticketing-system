@@ -138,7 +138,7 @@ public class TicketService : ITicketService
             , cancellationToken);
         if (singleUseTicket == null)
             throw new Exception("Không tìm thấy vé lượt đơn.");
-        
+
         var ticketPrice = await this.GetSingleTicketPrice(request.RouteId, request.EntryStationId, request.ExitStationId);
 
         return new SingleUseTicketResponseDto
@@ -298,10 +298,6 @@ public class TicketService : ITicketService
             (string.IsNullOrEmpty(query.Name) || r.Name!.ToLower().Contains(query.Name.ToLower())) &&
             (query.MinPrice == null || r.Price >= query.MinPrice) &&
             (query.MaxPrice == null || r.Price <= query.MaxPrice) &&
-            (query.MinActiveInDay == null || r.ActiveInDay >= query.MinActiveInDay) &&
-            (query.MaxActiveInDay == null || r.ActiveInDay <= query.MaxActiveInDay) &&
-            (query.MinExpirationInDay == null || r.ExpirationInDay >= query.MinExpirationInDay) &&
-            (query.MaxExpirationInDay == null || r.ExpirationInDay <= query.MaxExpirationInDay) &&
             (query.TicketType == null || r.TicketType == query.TicketType) &&
             (query.Status == null || r.DeleteFlag == query.Status);
     }

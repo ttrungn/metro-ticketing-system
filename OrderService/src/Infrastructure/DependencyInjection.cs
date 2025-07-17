@@ -29,7 +29,7 @@ public static class DependencyInjection
 
         services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();
-        
+
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
@@ -68,7 +68,7 @@ public static class DependencyInjection
             });
 
         services.AddAuthorization();
-        
+
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<ApplicationDbContextInitialiser>();
         services.AddScoped<IMomoService, MomoService>();
@@ -79,6 +79,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<ICartService, CartService>();
         services.AddScoped<IHttpClientService, HttpClientService>();
+        services.AddScoped<IOrderService, Services.OrderService>();
         services.AddScoped(typeof(IMassTransitService<>), typeof(MassTransitService<>));
 
         services.AddSingleton(TimeProvider.System);

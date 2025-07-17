@@ -103,6 +103,30 @@
         }
       }
     },
+    "/api/order/Orders": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "operationId": "GetUserTicket",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PurchaseTicketStatus"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/order/Payment/momo/create": {
       "post": {
         "tags": [
@@ -191,6 +215,20 @@
             "format": "int32"
           }
         }
+      },
+      "PurchaseTicketStatus": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Unused",
+          "Used",
+          "Expired"
+        ],
+        "enum": [
+          0,
+          1,
+          2
+        ]
       },
       "CreateMomoPaymentCommand": {
         "type": "object",

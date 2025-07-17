@@ -682,46 +682,6 @@
             "x-position": 5
           },
           {
-            "name": "minActiveInDay",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true
-            },
-            "x-position": 6
-          },
-          {
-            "name": "maxActiveInDay",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true
-            },
-            "x-position": 7
-          },
-          {
-            "name": "minExpirationInDay",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true
-            },
-            "x-position": 8
-          },
-          {
-            "name": "maxExpirationInDay",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true
-            },
-            "x-position": 9
-          },
-          {
             "name": "ticketType",
             "in": "query",
             "schema": {
@@ -736,7 +696,7 @@
                 }
               ]
             },
-            "x-position": 10
+            "x-position": 6
           },
           {
             "name": "status",
@@ -745,7 +705,7 @@
               "type": "boolean",
               "nullable": true
             },
-            "x-position": 11
+            "x-position": 7
           }
         ],
         "responses": {

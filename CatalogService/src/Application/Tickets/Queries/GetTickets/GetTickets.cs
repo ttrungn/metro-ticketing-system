@@ -14,10 +14,6 @@ public record GetTicketsQuery : IRequest<ServiceResponse<GetTicketsResponseDto>>
     public string? Name { get; set; } = string.Empty;
     public decimal? MinPrice { get; set; } = Decimal.MinValue;
     public decimal? MaxPrice { get; set; } = Decimal.MaxValue;
-    public int? MinActiveInDay { get; set; } = Int32.MinValue;
-    public int? MaxActiveInDay { get; set; } = Int32.MaxValue;
-    public int? MinExpirationInDay { get; set; } = Int32.MinValue;
-    public int? MaxExpirationInDay { get; set; } = Int32.MaxValue;
     public TicketTypeEnum? TicketType { get; set; }
     public bool? Status { get; init; } = false;
 }
