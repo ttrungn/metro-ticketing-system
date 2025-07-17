@@ -55,18 +55,38 @@ public class OrderService : IOrderService
             query = query.Where(od => od.ExpiredAt < now || od.Status == status);
         }
 
+        var ticketUrl = Guard.Against.NullOrEmpty(_configuration["ClientSettings:CatalogServiceClient"],
+            message: "Catalog Service Client URL is not configured.");
+        var ticketEndpoint = $"api/catalog/Tickets/filter?page=0&pageSize=100&status=false";
+        var ticketResponse = await _httpClientService.SendGet<ServiceResponse<GetTicketsResponseDto>>(
+            ticketUrl,
+            ticketEndpoint,
+            cancellationToken: cancellationToken);
+
+        var stationUrl = Guard.Against.NullOrEmpty(_configuration["ClientSettings:CatalogServiceClient"],
+            message: "Catalog Service Client URL is not configured.");
+        var stationEndpoint = $"api/catalog/Stations?page=0&pageSize=100&status=false";
+        var stationResponse = await _httpClientService.SendGet<ServiceResponse<GetStationsResponseDto>>(
+            stationUrl,
+            stationEndpoint,
+            cancellationToken: cancellationToken);
+
+        var ticketMap = ticketResponse?.Data?.Tickets.ToDictionary(t => t.Id, t => t.Name) ?? new Dictionary<Guid, string?>();
+        var stationMap = stationResponse?.Data?.Stations.ToDictionary(s => s.Id, s => s.Name) ?? new Dictionary<Guid, string?>();
+
         var tickets = await query
             .Select(od => new TicketDto
             {
                 Id = od.Id,
                 OrderId = od.OrderId,
                 TicketId = od.TicketId,
+                TicketName = ticketMap.GetValueOrDefault(od.TicketId),
                 BoughtPrice = od.BoughtPrice,
                 ActiveAt = od.ActiveAt,
                 ExpiredAt = od.ExpiredAt,
                 Status = od.Status,
-                EntryStationId = od.EntryStationId,
-                DestinationStationId = od.DestinationStationId
+                EntryStationName = stationMap.GetValueOrDefault(Guid.Parse(od.EntryStationId)!),
+                DestinationStationName = stationMap.GetValueOrDefault(Guid.Parse(od.DestinationStationId)!)
             })
             .AsNoTracking()
             .ToListAsync(cancellationToken);
@@ -106,13 +126,12 @@ public class OrderService : IOrderService
         var query = repo.Query()
             .Where(od => od.Id == id
                          && od.TicketId == ticketId
-                         && od.Order.CustomerId == customerId
-                         && od.ExpiredAt > now);
+                         && od.Order.CustomerId == customerId);
         OrderDetail? ticket = null!;
 
         if (fromStatus == PurchaseTicketStatus.Unused && toStatus == PurchaseTicketStatus.Used)
         {
-            query = query.Where(od => od.Status == PurchaseTicketStatus.Unused);
+            query = query.Where(od => od.Status == PurchaseTicketStatus.Unused && od.ExpiredAt > now);
             ticket = await query
                 .AsNoTracking()
                 .FirstOrDefaultAsync(cancellationToken);
@@ -126,7 +145,7 @@ public class OrderService : IOrderService
         }
         else if (fromStatus == PurchaseTicketStatus.Used && ticketModel.TicketType == 1)
         {
-            query = query.Where(od => od.Status == PurchaseTicketStatus.Used);
+            query = query.Where(od => od.Status == PurchaseTicketStatus.Used && od.ExpiredAt > now);
             ticket = await query
                 .AsNoTracking()
                 .FirstOrDefaultAsync(cancellationToken);
@@ -142,7 +161,14 @@ public class OrderService : IOrderService
                 .AsNoTracking()
                 .FirstOrDefaultAsync(cancellationToken);
             if (ticket == null) return (id, Guid.Empty);
-            ticket.Status = PurchaseTicketStatus.Unused;
+            if (ticket.ExpiredAt < now)
+            {
+                ticket.Status = PurchaseTicketStatus.Expired;
+            }
+            else
+            {
+                ticket.Status = PurchaseTicketStatus.Unused;
+            }
         }
 
         await repo.UpdateAsync(ticket, cancellationToken);

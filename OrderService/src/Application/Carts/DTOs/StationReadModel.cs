@@ -4,7 +4,7 @@ public class StationReadModel
 {
     public Guid Id { get; set; }
     public string Code { get; set; } = null!;
-    public string Name { get; set; } = null!;
+    public string? Name { get; set; } = null!;
     public string? StreetNumber { get; set; }
     public string? Street { get; set; }
     public string? Ward { get; set; }
