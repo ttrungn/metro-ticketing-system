@@ -34,11 +34,25 @@ public class OrderService : IOrderService
         var customerId = response?.Data?.CustomerId.ToString();
 
         var repo = _unitOfWork.GetRepository<OrderDetail, Guid>();
-        var tickets = await repo
-            .Query()
-            .Where(od => od.Order.CustomerId == customerId
-                         && od.Order.Status == OrderStatus.Paid
-                         && od.Status == status)
+
+        var now = DateTimeOffset.UtcNow;
+        var query = repo.Query().Where(od => od.Order.CustomerId == customerId
+                                             && od.Order.Status == OrderStatus.Paid);
+
+        if (status == PurchaseTicketStatus.Unused)
+        {
+            query = query.Where(od => od.Status == PurchaseTicketStatus.Unused && od.ExpiredAt > now);
+        }
+        else if (status == PurchaseTicketStatus.Used)
+        {
+            query = query.Where(od => od.Status == PurchaseTicketStatus.Used);
+        }
+        else if (status == PurchaseTicketStatus.Expired)
+        {
+            query = query.Where(od => od.ExpiredAt < now || od.Status == status); // Có thể bỏ kiểm tra Status
+        }
+
+        var tickets = await query
             .Select(od => new TicketDto
             {
                 OrderId = od.OrderId,
