@@ -103,10 +103,6 @@ public class Tickets : EndpointGroupBase
         [FromQuery] string? name = "",
         [FromQuery] decimal? minPrice = null,
         [FromQuery] decimal? maxPrice = null,
-        [FromQuery] int? minActiveInDay = null,
-        [FromQuery] int? maxActiveInDay = null,
-        [FromQuery] int? minExpirationInDay = null,
-        [FromQuery] int? maxExpirationInDay = null,
         [FromQuery] TicketTypeEnum? ticketType = null,
         [FromQuery] bool? status = null)
     {
@@ -117,10 +113,6 @@ public class Tickets : EndpointGroupBase
             Name = name ?? string.Empty,
             MinPrice = minPrice ?? Decimal.MinValue,
             MaxPrice = maxPrice ?? Decimal.MaxValue,
-            MinActiveInDay = minActiveInDay ?? Int32.MinValue,
-            MaxActiveInDay = maxActiveInDay ?? Int32.MaxValue,
-            MinExpirationInDay = minExpirationInDay ?? Int32.MinValue,
-            MaxExpirationInDay = maxExpirationInDay ?? Int32.MaxValue,
             TicketType = ticketType,
             Status = status
         };
