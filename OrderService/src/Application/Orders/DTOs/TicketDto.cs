@@ -8,10 +8,11 @@ public class TicketDto
     public Guid OrderId { get; set; }
     public Guid TicketId { get; set; }
     public string? TicketName { get; set; } = null!;
+    public int TicketType { get; set; }
     public decimal BoughtPrice { get; set; } = 0;
     public DateTimeOffset ActiveAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset ExpiredAt { get; set; } = DateTimeOffset.UtcNow;
     public PurchaseTicketStatus Status { get; set; } = PurchaseTicketStatus.Unused;
-    public string EntryStationId { get; set; } = null!;
-    public string DestinationStationId { get; set; } = null!;
+    public string? EntryStationName { get; set; } = null!;
+    public string? DestinationStationName { get; set; } = null!;
 }

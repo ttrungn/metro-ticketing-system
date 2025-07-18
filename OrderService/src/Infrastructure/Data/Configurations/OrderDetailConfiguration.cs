@@ -15,7 +15,9 @@ public class OrderDetailConfiguration : IEntityTypeConfiguration<OrderDetail>
 
         builder.Property(o => o.OrderId).IsRequired();
 
-        builder.Property(o => o.BoughtPrice).IsRequired();
+        builder.Property(o => o.BoughtPrice)
+            .IsRequired()
+            .HasPrecision(18, 2);
 
         builder.Property(o => o.ActiveAt).IsRequired();
 
@@ -24,11 +26,11 @@ public class OrderDetailConfiguration : IEntityTypeConfiguration<OrderDetail>
         builder.Property(o => o.Status).IsRequired();
 
         builder.Property(o => o.EntryStationId)
-            .IsRequired()
+            .IsRequired(false)
             .HasMaxLength(50);
 
         builder.Property(o => o.DestinationStationId)
-            .IsRequired()
+            .IsRequired(false)
             .HasMaxLength(50);
 
         builder.HasOne(od => od.Order)

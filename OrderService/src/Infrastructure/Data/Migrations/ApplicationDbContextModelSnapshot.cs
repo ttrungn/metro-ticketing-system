@@ -119,6 +119,7 @@ namespace OrderService.Infrastructure.Data.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<decimal>("BoughtPrice")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -131,12 +132,10 @@ namespace OrderService.Infrastructure.Data.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("DestinationStationId")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("EntryStationId")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
