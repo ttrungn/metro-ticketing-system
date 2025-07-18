@@ -73,6 +73,7 @@ public class OrderService : IOrderService
 
         var ticketMap = ticketResponse?.Data?.Tickets.ToDictionary(t => t.Id, t => t.Name) ?? new Dictionary<Guid, string?>();
         var stationMap = stationResponse?.Data?.Stations.ToDictionary(s => s.Id, s => s.Name) ?? new Dictionary<Guid, string?>();
+        var typeMap = ticketResponse?.Data?.Tickets.ToDictionary(t => t.Id, t => t.TicketType) ?? new Dictionary<Guid, int>();
 
         var tickets = await query
             .Select(od => new TicketDto
@@ -81,6 +82,7 @@ public class OrderService : IOrderService
                 OrderId = od.OrderId,
                 TicketId = od.TicketId,
                 TicketName = ticketMap.GetValueOrDefault(od.TicketId),
+                TicketType = typeMap.GetValueOrDefault(od.TicketId),
                 BoughtPrice = od.BoughtPrice,
                 ActiveAt = od.ActiveAt,
                 ExpiredAt = od.ExpiredAt,
