@@ -103,6 +103,7 @@ public static class DependencyInjection
         services.AddScoped<IAzureBlobService, AzureBlobService>();
         services.AddScoped(typeof(IMassTransitService<>), typeof(MassTransitService<>));
         services.AddScoped<ICustomerService, CustomerService>();
+        services.AddScoped<IStaffService, StaffService>();
         services.AddSingleton(TimeProvider.System);
 
         services.AddHttpContextAccessor();
