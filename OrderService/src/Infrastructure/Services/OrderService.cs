@@ -87,8 +87,8 @@ public class OrderService : IOrderService
                 ActiveAt = od.ActiveAt,
                 ExpiredAt = od.ExpiredAt,
                 Status = od.Status,
-                EntryStationName = stationMap.GetValueOrDefault(Guid.Parse(od.EntryStationId ?? "")!),
-                DestinationStationName = stationMap.GetValueOrDefault(Guid.Parse(od.DestinationStationId ?? "")!)
+                EntryStationName = od.EntryStationId != null ? stationMap.GetValueOrDefault(Guid.Parse(od.EntryStationId)) : null,
+                DestinationStationName = od.DestinationStationId != null ? stationMap.GetValueOrDefault(Guid.Parse(od.DestinationStationId)) : null,
             })
             .AsNoTracking()
             .ToListAsync(cancellationToken);
