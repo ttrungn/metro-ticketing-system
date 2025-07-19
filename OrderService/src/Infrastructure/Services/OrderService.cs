@@ -28,7 +28,7 @@ public class OrderService : IOrderService
     {
         var baseUrl = Guard.Against.NullOrEmpty(_configuration["ClientSettings:UserServiceClient"],
             message: "User Service Client URL is not configured.");
-        var endpoint = $"api/user/Customers";
+        var endpoint = $"api/user/Customers/profile";
         var response = await _httpClientService.SendGet<ServiceResponse<CustomerReadModel>>(
             baseUrl,
             endpoint,
