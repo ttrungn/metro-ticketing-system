@@ -211,7 +211,7 @@ public class CartService : ICartService
     private async Task<ServiceResponse<CustomerReadModel>> GetCustomerResponse(string userId, CancellationToken cancellationToken)
     {
         var baseUrlCustomer = Guard.Against.NullOrEmpty(_configuration["ClientSettings:UserServiceClient"], message: "User Service Client URL is not configured.");
-        var endpointCustomer = $"api/user/Customers";
+        var endpointCustomer = $"api/user/Customers/profile";
         return await _httpClientService.SendGet<ServiceResponse<CustomerReadModel>>(
             baseUrlCustomer,
             endpointCustomer,
