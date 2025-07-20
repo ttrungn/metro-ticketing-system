@@ -39,7 +39,7 @@ namespace NotificationService.Infrastructure.Services
 
                 using var smtp = new SmtpClient();
                 await smtp.ConnectAsync(_mailSettings.Host, _mailSettings.Port, _mailSettings.UseSSL ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls);
-                await smtp.AuthenticateAsync(_mailSettings.EmailId, _mailSettings.Password);
+                await smtp.AuthenticateAsync(_mailSettings.Username, _mailSettings.Password);
                 await smtp.SendAsync(emailMessage);
                 await smtp.DisconnectAsync(true);
 
