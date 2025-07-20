@@ -6,6 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="MailKit" />
         <PackageReference Include="Marten" />
         <PackageReference Include="MassTransit.Kafka" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
@@ -21,6 +22,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="MimeKit" />
     </ItemGroup>
 
     <ItemGroup>

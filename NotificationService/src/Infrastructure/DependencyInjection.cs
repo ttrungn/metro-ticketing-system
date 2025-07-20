@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using NotificationService.Application.Common.Interfaces;
 using NotificationService.Application.Common.Interfaces.Repositories;
 using NotificationService.Application.Common.Interfaces.Services;
+using NotificationService.Application.Common.Models;
 using NotificationService.Infrastructure.Data;
 using NotificationService.Infrastructure.Data.Interceptors;
 using NotificationService.Infrastructure.Repositories;
@@ -67,7 +68,9 @@ public static class DependencyInjection
             });
 
         services.AddAuthorization();
-        
+
+        services.Configure<MailSettings>(configuration.GetSection("MailSettings"));
+
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<ApplicationDbContextInitialiser>();
 
@@ -76,6 +79,8 @@ public static class DependencyInjection
         
         services.AddScoped<IWeatherForecastService, WeatherForecastService>();
         services.AddScoped(typeof(IMassTransitService<>), typeof(MassTransitService<>));
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IEmailTemplateService, EmailTemplateService>();
         
         services.AddSingleton(TimeProvider.System);
 
