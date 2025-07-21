@@ -23,19 +23,22 @@ public class CreateMomoPaymentCommandValidator : AbstractValidator<CreateMomoPay
 
 public class CreateMomoPaymentCommandHandler : IRequestHandler<CreateMomoPaymentCommand, ServiceResponse<MomoCreatePaymentResponseModel>>
 {
-    private readonly IApplicationDbContext _context;
 
     private readonly ILogger<CreateMomoPaymentCommandHandler> _logger;
     private readonly IMomoService _service;
-
+    private readonly IUser _user;
+    private readonly IOrderService _orderService;
     public CreateMomoPaymentCommandHandler(
-          IApplicationDbContext context,
           ILogger<CreateMomoPaymentCommandHandler> logger,
-          IMomoService service)
+          IMomoService service,
+            IUser user,
+            IOrderService orderService
+          )
     {
-        _context = context;
         _logger = logger;
         _service = service;
+        _user = user;
+        _orderService = orderService;
     }
 
 
@@ -70,6 +73,17 @@ public class CreateMomoPaymentCommandHandler : IRequestHandler<CreateMomoPayment
             }
 
             _logger.LogInformation("MoMo payment initiated. OrderId: {OrderId}", momoResponse.OrderId);
+
+            var orderId = await _orderService.CreateOrderAsync(momoResponse.OrderId,_user.Id, request.OrderDetails, cancellationToken);    
+            
+            if (orderId == Guid.Empty)
+            {
+                _logger.LogError("Failed to create order for MoMo payment. OrderId: {OrderId}", momoResponse.OrderId);
+                response.Succeeded = false;
+                response.Message = "Failed to create order for MoMo payment.";
+                return response;
+            }
+
             response.Succeeded = true;
             response.Message = "MoMo payment created successfully.";
             response.Data = momoResponse;

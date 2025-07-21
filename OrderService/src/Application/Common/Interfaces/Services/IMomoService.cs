@@ -13,5 +13,5 @@ public interface IMomoService
     Task<MomoCreatePaymentResponseModel> CreatePaymentWithMomo(CreateMomoPaymentCommand command, CancellationToken cancellationToken = default);
 
 
-    Task<string> ConfirmMomoPaymentAsync(ConfirmMomoPaymentCommand command, CancellationToken cancellationToken = default);
+    Task<bool> ConfirmMomoPaymentAsync(ConfirmMomoPaymentCommand command, CancellationToken cancellationToken = default);
 }
