@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using OrderService.Application.Common.Interfaces.Repositories;
 using OrderService.Application.Common.Interfaces.Services;
+using OrderService.Application.MomoPayment.DTOs;
 using OrderService.Application.Orders.DTOs;
 using OrderService.Domain.Entities;
 using OrderService.Domain.Enums;
@@ -176,5 +177,118 @@ public class OrderService : IOrderService
         await repo.UpdateAsync(ticket, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
         return (id, ticketId);
+    }
+
+    public async Task<Guid> CreateOrderAsync(string orderId, string? userId, List<OrderDetailDto> orderDetails, CancellationToken cancellationToken = default)
+    {
+        var userUrl = Guard.Against.NullOrEmpty(_configuration["ClientSettings:UserServiceClient"],
+            message: "User Service Client URL is not configured.");
+
+        var userEndpoint = $"api/user/Customers/profile";
+
+        var userResponse = await _httpClientService.SendGet<ServiceResponse<CustomerReadModel>>(
+            userUrl,
+            userEndpoint,
+            cancellationToken: cancellationToken);
+
+        if (userResponse==null)
+        {
+           return Guid.Empty;
+        }
+
+        var ticketUrl = Guard.Against.NullOrEmpty(_configuration["ClientSettings:CatalogServiceClient"],
+            message: "Catalog Service Client URL is not configured.");
+
+        var ticketEndpoint = $"api/catalog/Tickets/filter?page=0&pageSize=100&status=false";
+
+        var ticketResponse = await _httpClientService.SendGet<ServiceResponse<GetTicketsResponseDto>>(
+            ticketUrl,
+            ticketEndpoint,
+            cancellationToken: cancellationToken);  
+
+        if (ticketResponse.Succeeded == false)
+        {
+            return Guid.Empty;
+        }   
+
+        if (Guid.TryParse(orderId, out var returnedOrderId) == false)
+        {
+            return Guid.Empty;
+        }
+
+       
+
+        var orderDetailsList = new List<OrderDetail>();
+        var tickets = (GetTicketsResponseDto)ticketResponse?.Data!;
+
+        var buyDate = DateTime.Now; 
+        foreach (var orderDetail in orderDetails)
+        {
+            var ticket= tickets.Tickets.FirstOrDefault(t => t.Id == orderDetail.TicketId);
+
+            if (ticket == null)
+            {
+                return Guid.Empty;
+            }
+            var activeDate = buyDate.AddDays(ticket.ActiveInDay);
+            var expiredDate = activeDate.AddDays(ticket.ExpirationInDay);  
+            var orderDetailEntity = new OrderDetail
+            {
+                Id  = new Guid(),
+                OrderId = returnedOrderId,
+                TicketId = orderDetail.TicketId,
+                BoughtPrice = orderDetail.BoughtPrice,
+                ActiveAt = activeDate,
+                ExpiredAt = DateTimeOffset.MinValue,
+                EntryStationId = orderDetail.EntryStationId.ToString(),
+                DestinationStationId = orderDetail.DestinationStationId.ToString(),
+            };
+            orderDetailsList.Add(orderDetailEntity);
+        }
+        var order = new Order
+        {
+            Id = returnedOrderId,
+            CustomerId = userResponse?.Data?.CustomerId.ToString()!,
+            Status = OrderStatus.Unpaid,
+            PaymentMethod = PaymentMethod.MoMo,
+            ThirdPartyPaymentId = "",
+            OrderDetails = orderDetailsList,
+        };
+
+        await _unitOfWork.GetRepository<Order, Guid>().AddAsync(order, cancellationToken);
+        await _unitOfWork.SaveChangesAsync();
+        return returnedOrderId;
+
+    }
+
+    public async Task<Guid> ConfirmOrder(decimal amount,string thirdPaymentId,string? userId, Guid orderId, OrderStatus status,string transType, CancellationToken cancellationToken = default)
+    {
+        var repo = _unitOfWork.GetRepository<Order, Guid>();
+        var order = await repo.GetByIdAsync(orderId);
+        if (order == null)
+        {
+            return Guid.Empty;
+        }
+        order.ThirdPartyPaymentId = thirdPaymentId;
+        order.Status = status;
+
+        await repo.UpdateAsync(order, cancellationToken);
+        var transactionHistoryRepo = _unitOfWork.GetRepository<TransactionHistory, Guid>();
+
+        await transactionHistoryRepo.AddAsync(new TransactionHistory
+        {
+            Id = Guid.NewGuid(),
+            OrderId = orderId,
+            CustomerId = order.CustomerId,
+            Amount = amount,
+            TransactionDate = DateTime.UtcNow,
+            PaymentMethod = order.PaymentMethod,
+            TransactionType = transType,
+
+        });
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return orderId;
     }
 }

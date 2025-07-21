@@ -336,11 +336,13 @@
           },
           "entryStationId": {
             "type": "string",
-            "format": "guid"
+            "format": "guid",
+            "nullable": true
           },
           "destinationStationId": {
             "type": "string",
-            "format": "guid"
+            "format": "guid",
+            "nullable": true
           },
           "boughtPrice": {
             "type": "number",
