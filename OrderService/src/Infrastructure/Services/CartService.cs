@@ -132,8 +132,11 @@ public class CartService : ICartService
         {
             CartId = cart.Id.ToString(),
             TicketName = ticketNames.GetValueOrDefault(cart.TicketId!, "Unknown Ticket"),
+            TicketId = cart.TicketId!,
             EntryStationName = entryStationNames.GetValueOrDefault(cart.EntryStationId!, ""),
+            EntryStationId = cart.EntryStationId!,
             DestinationStationName = destinationStationNames.GetValueOrDefault(cart.DestinationStationId!, ""),
+            DestinationStationId = cart.DestinationStationId!,
             Route = routeInfoLst.GetValueOrDefault(cart.RouteId!, ""),
             Quantity = cart.Quantity,
             Price = ticketPrices.GetValueOrDefault(cart.TicketId!, 0),
