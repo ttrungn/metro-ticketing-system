@@ -13,7 +13,7 @@ using OrderService.Application.MomoPayment.Commands.ConfirmMomoPayment;
 using OrderService.Application.MomoPayment.Commands.CreateMomoPayment;
 using OrderService.Application.MomoPayment.DTOs;
 using OrderService.Application.OptionModel;
-
+using OrderService.Application.Common.Mappings;
 namespace OrderService.Infrastructure.Services;
 
 public class MomoService : IMomoService
@@ -30,11 +30,18 @@ public class MomoService : IMomoService
         _options = options;
     }
 
-    public Task<string> ConfirmMomoPaymentAsync(ConfirmMomoPaymentCommand command, CancellationToken cancellationToken = default)
+    public Task<bool> ConfirmMomoPaymentAsync(ConfirmMomoPaymentCommand command, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Confirming MoMo payment with command: {Command}", JsonConvert.SerializeObject(command, Formatting.Indented));
+        var options = _options.Value;
+        if (command.IsValidSignature(options) == false)
+        {
+            _logger.LogError("Invalid signature for MoMo payment confirmation.");
+            return Task.FromResult<bool>(false);
+        }
+        
 
-        return Task.FromResult<string>("ok");
+        return Task.FromResult<bool>(true);
     }
 
     public async Task<MomoCreatePaymentResponseModel> CreatePaymentWithMomo(CreateMomoPaymentCommand command, CancellationToken cancellationToken = default)

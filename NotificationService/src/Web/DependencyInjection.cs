@@ -1,10 +1,12 @@
 ﻿using BuildingBlocks.Domain.Events.Sample;
+using BuildingBlocks.Domain.Events.Users;
 using Confluent.Kafka;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using NotificationService.Application.Common.Interfaces;
+using NotificationService.Application.Mails.Queries.SendWelcome;
 using NotificationService.Infrastructure.Data;
 using NotificationService.Web.Consumers;
 using NotificationService.Web.Services;
@@ -68,6 +70,7 @@ public static class DependencyInjection
                     });
                 
                 rider.AddConsumer<SampleConsumer>();
+                rider.AddConsumer<CreateCustomerEventConsumer>();
                 
                 rider.UsingKafka((context, k) =>
                 {
@@ -98,7 +101,15 @@ public static class DependencyInjection
                         {
                             e.ConfigureConsumer<SampleConsumer>(context);
                         }
-                    );;
+                    );
+                    k.TopicEndpoint<CreateCustomerEvent>(
+                        configuration["KafkaSettings:UserServiceEvents:SendWelcomeEmail:Name"],
+                        configuration["KafkaSettings:UserServiceEvents:SendWelcomeEmail:Group"],
+                        e =>
+                        {
+                            e.ConfigureConsumer<CreateCustomerEventConsumer>(context);
+                        }
+                    );
                 });
             });
         });

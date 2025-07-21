@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using OrderService.Application.Common.Interfaces;
 using OrderService.Application.Common.Interfaces.Services;
+using OrderService.Domain.Enums;
 
 namespace OrderService.Application.MomoPayment.Commands.ConfirmMomoPayment;
 
@@ -44,25 +45,53 @@ public class ConfirmMomoPaymentCommandValidator : AbstractValidator<ConfirmMomoP
 public class ConfirmMomoPaymentCommandHandler : IRequestHandler<ConfirmMomoPaymentCommand, ServiceResponse<string>>
 {
     private readonly IMomoService _service;
+    private readonly IUser _user;
 
     private readonly ILogger<ConfirmMomoPaymentCommandHandler> _logger;
-   
+
+    private readonly IOrderService _orderService;
     public ConfirmMomoPaymentCommandHandler(
+        IUser user,
         IMomoService service,
-        ILogger<ConfirmMomoPaymentCommandHandler> logger)
+        ILogger<ConfirmMomoPaymentCommandHandler> logger,
+        IOrderService orderService)
     {
+        _user = user;
         _service = service;
         _logger = logger;
-    }
+        _orderService = orderService;
+    }   
 
     public async Task<ServiceResponse<string>> Handle(ConfirmMomoPaymentCommand request, CancellationToken cancellationToken)
     {
-       string msg =  await _service.ConfirmMomoPaymentAsync(request, cancellationToken);
+        var isConfirm =  await _service.ConfirmMomoPaymentAsync(request, cancellationToken);
+
+        if (!isConfirm)
+        {
+            return new ServiceResponse<string>
+            {
+                Succeeded = false,
+                Message = "Payment signature invalid.",
+                Data = null
+            };
+        }
+
+        var orderStatus = request.resultCode == 0 ? OrderStatus.Paid : OrderStatus.Cancelled;
+        var orderId = Guid.Parse(request.OrderId!);
+        await _orderService.ConfirmOrder(
+            (decimal)request.Amount!,
+            request.TransId.ToString()!,
+            _user.Id,
+            orderId,
+            orderStatus,                 
+            request.OrderId!);
+
+
         var response = new ServiceResponse<string>
         {
             Succeeded = true,
             Message = "Payment confirmed successfully.",
-            Data = msg
+            Data = "ok",
         };
         return response;
     }

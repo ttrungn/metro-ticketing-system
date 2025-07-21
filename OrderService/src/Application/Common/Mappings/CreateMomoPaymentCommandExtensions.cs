@@ -12,7 +12,7 @@ public static class CreateMomoPaymentCommandExtensions
         this CreateMomoPaymentCommand command,
         MomoOptionModel options)
     {
-        var orderId = DateTimeOffset.UtcNow.Ticks.ToString();
+        var orderId = Guid.NewGuid().ToString();
         var requestId = Guid.NewGuid().ToString();
 
         // Serialize OrderDetails to base64 extraData
