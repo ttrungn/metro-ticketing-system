@@ -64,6 +64,7 @@ public class ConfirmMomoPaymentCommandHandler : IRequestHandler<ConfirmMomoPayme
 
     public async Task<ServiceResponse<string>> Handle(ConfirmMomoPaymentCommand request, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("ConfirmMomoPaymentCommandHandler: Handle called with request: {@Request}", request);   
         var isConfirm =  await _service.ConfirmMomoPaymentAsync(request, cancellationToken);
 
         if (!isConfirm)
@@ -77,7 +78,17 @@ public class ConfirmMomoPaymentCommandHandler : IRequestHandler<ConfirmMomoPayme
         }
 
         var orderStatus = request.resultCode == 0 ? OrderStatus.Paid : OrderStatus.Cancelled;
-        var orderId = Guid.Parse(request.OrderId!);
+        var isValidOrderId = Guid.TryParse(request.OrderId!,out var orderId);
+        if (isValidOrderId == false)
+        {
+            _logger.LogError("Invalid OrderId: {OrderId}", request.OrderId);
+            return new ServiceResponse<string>
+            {
+                Succeeded = false,
+                Message = "Invalid OrderId.",
+                Data = null
+            };
+        }
         await _orderService.ConfirmOrder(
             (decimal)request.Amount!,
             request.TransId.ToString()!,
@@ -86,7 +97,7 @@ public class ConfirmMomoPaymentCommandHandler : IRequestHandler<ConfirmMomoPayme
             orderStatus,                 
             request.PayType!);
 
-
+        _logger.LogInformation("Payment confirmed for OrderId: {OrderId}, Status: {Status}", request.OrderId, orderStatus);
         var response = new ServiceResponse<string>
         {
             Succeeded = true,
