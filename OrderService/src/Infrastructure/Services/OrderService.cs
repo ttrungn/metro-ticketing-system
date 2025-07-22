@@ -139,7 +139,7 @@ public class OrderService : IOrderService
                 .AsNoTracking()
                 .FirstOrDefaultAsync(cancellationToken);
             if (ticket == null) return (id, Guid.Empty);
-            if (ticket.ActiveAt == DateTimeOffset.MinValue)
+            if (ticket.ActiveAt > DateTimeOffset.UtcNow)
             {
                 ticket.ActiveAt = now;
                 ticket.ExpiredAt = now.AddDays(ticketModel.ExpirationInDay);
@@ -204,24 +204,24 @@ public class OrderService : IOrderService
         var ticketResponse = await _httpClientService.SendGet<ServiceResponse<GetTicketsResponseDto>>(
             ticketUrl,
             ticketEndpoint,
-            cancellationToken: cancellationToken);  
+            cancellationToken: cancellationToken);
 
         if (ticketResponse.Succeeded == false)
         {
             return Guid.Empty;
-        }   
+        }
 
         if (Guid.TryParse(orderId, out var returnedOrderId) == false)
         {
             return Guid.Empty;
         }
 
-       
+
 
         var orderDetailsList = new List<OrderDetail>();
         var tickets = (GetTicketsResponseDto)ticketResponse?.Data!;
 
-        var buyDate = DateTime.Now; 
+        var buyDate = DateTime.Now;
         foreach (var orderDetail in orderDetails)
         {
             var ticket= tickets.Tickets.FirstOrDefault(t => t.Id == orderDetail.TicketId);
@@ -231,7 +231,7 @@ public class OrderService : IOrderService
                 return Guid.Empty;
             }
             var activeDate = buyDate.AddDays(ticket.ActiveInDay);
-            var expiredDate = activeDate.AddDays(ticket.ExpirationInDay);  
+            var expiredDate = activeDate.AddDays(ticket.ExpirationInDay);
             var orderDetailEntity = new OrderDetail
             {
                 Id  = new Guid(),
@@ -239,7 +239,7 @@ public class OrderService : IOrderService
                 TicketId = orderDetail.TicketId,
                 BoughtPrice = orderDetail.BoughtPrice,
                 ActiveAt = activeDate,
-                ExpiredAt = DateTimeOffset.MinValue,
+                ExpiredAt = expiredDate,
                 EntryStationId = orderDetail.EntryStationId.ToString(),
                 DestinationStationId = orderDetail.DestinationStationId.ToString(),
             };
