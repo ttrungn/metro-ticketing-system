@@ -84,7 +84,7 @@ public class ConfirmMomoPaymentCommandHandler : IRequestHandler<ConfirmMomoPayme
             _user.Id,
             orderId,
             orderStatus,                 
-            request.OrderId!);
+            request.PayType!);
 
 
         var response = new ServiceResponse<string>
