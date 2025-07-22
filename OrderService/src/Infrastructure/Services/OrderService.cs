@@ -1,6 +1,7 @@
 ﻿using BuildingBlocks.Response;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using OrderService.Application.Common.Interfaces.Repositories;
 using OrderService.Application.Common.Interfaces.Services;
 using OrderService.Application.MomoPayment.DTOs;
@@ -15,13 +16,17 @@ public class OrderService : IOrderService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IConfiguration _configuration;
     private readonly IHttpClientService _httpClientService;
+    private readonly ILogger<OrderService> _logger; 
 
     public OrderService(IUnitOfWork unitOfWork, IHttpClientService httpClientService,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        ILogger<OrderService> logger
+        )
     {
         _unitOfWork = unitOfWork;
         _httpClientService = httpClientService;
         _configuration = configuration;
+        _logger = logger;   
     }
 
     public async Task<IEnumerable<TicketDto>> GetUserTicketsAsync(string? userId,
@@ -239,7 +244,7 @@ public class OrderService : IOrderService
                 TicketId = orderDetail.TicketId,
                 BoughtPrice = orderDetail.BoughtPrice,
                 ActiveAt = activeDate,
-                ExpiredAt = DateTimeOffset.MinValue,
+                ExpiredAt = expiredDate,
                 EntryStationId = orderDetail.EntryStationId.ToString(),
                 DestinationStationId = orderDetail.DestinationStationId.ToString(),
             };
@@ -267,15 +272,17 @@ public class OrderService : IOrderService
         var order = await repo.GetByIdAsync(orderId);
         if (order == null)
         {
+            _logger.LogWarning("ConfirmOrder: Cannot found order ID = {OrderId}", orderId);
+
             return Guid.Empty;
         }
         order.ThirdPartyPaymentId = thirdPaymentId;
         order.Status = status;
-
+        _logger.LogInformation("ConfirmOrder: Order: {@Order}, Amount: {Amount}, TransactionType: {TransType}", order, amount, transType);
         await repo.UpdateAsync(order, cancellationToken);
         var transactionHistoryRepo = _unitOfWork.GetRepository<TransactionHistory, Guid>();
 
-        await transactionHistoryRepo.AddAsync(new TransactionHistory
+        var transactionHistory = new TransactionHistory
         {
             Id = Guid.NewGuid(),
             OrderId = orderId,
@@ -285,8 +292,10 @@ public class OrderService : IOrderService
             PaymentMethod = order.PaymentMethod,
             TransactionType = transType,
 
-        });
+        };
 
+            await transactionHistoryRepo.AddAsync(transactionHistory);
+        _logger.LogInformation("ConfirmOrder: Transaction history added for OrderId: {TransactionHistory}", transactionHistory);
         await _unitOfWork.SaveChangesAsync();
 
         return orderId;
