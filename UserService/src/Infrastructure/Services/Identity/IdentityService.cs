@@ -109,7 +109,7 @@ public class IdentityService : IIdentityService
 
         try
         {
-            if (role == Roles.Customer)
+            if (role.ToLower() == Roles.Customer.ToLower())
             {
                 var customerRepo = _unitOfWork.GetRepository<Customer, Guid>();
                 var customer = new Customer()
@@ -129,7 +129,7 @@ public class IdentityService : IIdentityService
                     DeleteFlag = false
                 });
             }
-            else if (role == Roles.Staff)
+            else if (role.ToLower() == Roles.Staff.ToLower())
             {
                 var staffRepo = _unitOfWork.GetRepository<Staff, Guid>();
                 var staff = new Staff()
@@ -146,6 +146,10 @@ public class IdentityService : IIdentityService
                     StaffId = staff.Id,
                     DeleteFlag = false
                 });
+            }
+            else
+            {
+                throw new Exception("Role không hợp lệ!");
             }
             await _unitOfWork.SaveChangesAsync();
         }
