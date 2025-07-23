@@ -2,6 +2,7 @@
 using UserService.Application.Feedbacks.Commands.CreateFeedbackType;
 using UserService.Application.Feedbacks.Commands.UpdateFeedbackType;
 using UserService.Application.Feedbacks.DTOs;
+using UserService.Application.Feedbacks.Queries.GetUserFeedback;
 
 namespace UserService.Application.Common.Interfaces.Services;
 
@@ -14,4 +15,5 @@ public interface IFeedbackService
     Task<Guid> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Guid> UpdateAsync(UpdateFeedbackTypeCommand command, CancellationToken cancellationToken = default);
     Task<FeedbackTypeReadModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<(IEnumerable<UserFeedbackResponse>, int)> GetAsync(GetUserFeedbackQuery request, CancellationToken cancellationToken = default);
 }
