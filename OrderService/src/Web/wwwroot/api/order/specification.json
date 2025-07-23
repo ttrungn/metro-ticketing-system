@@ -347,6 +347,10 @@
           "boughtPrice": {
             "type": "number",
             "format": "decimal"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
