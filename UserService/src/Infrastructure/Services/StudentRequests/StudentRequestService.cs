@@ -122,6 +122,7 @@ public class StudentRequestService : IStudentRequestService
         var studentRequestRepo = _unitOfWork.GetRepository<StudentRequest, Guid>();
         var studentRequest = await studentRequestRepo.GetByIdAsync(updateStudentRequestCommand.Id);
         var staffRepo = _unitOfWork.GetRepository<Staff, Guid>();
+        var customerRepo = _unitOfWork.GetRepository<Customer, Guid>();
         var staffId = staffRepo.Query().FirstOrDefault(s => s.ApplicationUserId == userId)?.Id;
         if (staffId == null)
         {
@@ -137,13 +138,15 @@ public class StudentRequestService : IStudentRequestService
         }
         studentRequest.StaffId = staffId; 
         studentRequest.Status = updateStudentRequestCommand.Status;
-    
+        var customer = await customerRepo.GetByIdAsync(studentRequest.CustomerId);
         if (updateStudentRequestCommand.Status == StudentRequestStatus.Approved)
         {
+            customer!.IsStudent = true;
             studentRequest.AddDomainEvent(new UpdateStudentRequestApproveEvent
             {
                 Id = studentRequest.Id, 
                 StaffId = studentRequest.StaffId ?? Guid.Empty,
+                CustomerId = studentRequest.CustomerId,
             });
         }
         if (updateStudentRequestCommand.Status == StudentRequestStatus.Declined)

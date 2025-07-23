@@ -8,5 +8,5 @@ public class UpdateStudentRequestApproveEvent : DomainBaseEvent
     
     public Guid StaffId { get; set; }
     
-    
+    public Guid CustomerId { get; set; }
 }
