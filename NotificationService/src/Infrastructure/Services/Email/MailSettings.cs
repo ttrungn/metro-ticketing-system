@@ -1,4 +1,4 @@
-namespace NotificationService.Application.Common.Models;
+namespace NotificationService.Infrastructure.Services.Email;
 
 public class MailSettings
 {

@@ -2,9 +2,185 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Order Succeeded</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Succeeded - Metro Ticketing System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+            min-height: 100vh;
+            color: #2c5530;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(44, 85, 48, 0.08);
+            padding: 32px 24px 24px 24px;
+        }
+        .header {
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            color: white;
+            padding: 1.5rem 0;
+            text-align: center;
+            border-radius: 12px 12px 0 0;
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+        }
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+        .success-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        .summary {
+            background: #e8f5e8;
+            border: 1px solid #c8e6c9;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .summary strong {
+            color: #388e3c;
+            font-size: 1.3rem;
+        }
+        .order-info {
+            margin-bottom: 2rem;
+        }
+        .order-info h2 {
+            font-size: 1.2rem;
+            color: #388e3c;
+            margin-bottom: 0.5rem;
+        }
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            min-width: 0;
+        }
+        .order-details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            font-size: 0.8rem;
+        }
+        .order-details-table th, .order-details-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e0e0e0;
+            text-align: left;
+        }
+        .order-details-table th {
+            background: #f1f8e9;
+            color: #2c5530;
+            font-weight: 600;
+        }
+        .order-details-table td {
+            color: #444;
+        }
+        .total-row td {
+            font-weight: bold;
+            color: #388e3c;
+            font-size: 0.85rem;
+            padding-top: 2px;
+            padding-bottom: 2px;
+            white-space: nowrap;
+            text-align: right;
+        }
+        .customer-info {
+            background: #f1f8e9;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        .customer-info h3 {
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+            color: #388e3c;
+        }
+        .footer {
+            background: linear-gradient(135deg, #2c5530 0%, #3d5a3d 100%);
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+            border-radius: 0 0 12px 12px;
+            margin-top: 2rem;
+            font-size: 0.95rem;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 12px 4px 16px 4px;
+            }
+            .header h1 {
+                font-size: 1.3rem;
+            }
+            .order-details-table th, .order-details-table td {
+                font-size: 0.75rem;
+                padding: 4px 1px;
+            }
+        }
+    </style>
 </head>
 <body>
-
+    <div class="container">
+        <div class="header">
+            <div class="success-icon">✅</div>
+            <h1>Đặt Vé Thành Công!</h1>
+            <p>Cảm ơn bạn đã mua vé tại Metro Ticketing System</p>
+        </div>
+        <div class="summary">
+            <p>Đơn hàng của bạn đã được đặt thành công.</p>
+            <p>Tổng thanh toán: <strong>{{Amount}} VND</strong></p>
+        </div>
+        <div class="customer-info">
+            <h3>Thông tin khách hàng</h3>
+            <p><strong>Email:</strong> {{CustomerEmail}}</p>
+        </div>
+        <div class="order-info">
+            <h2>Chi tiết đơn hàng</h2>
+            <div class="table-responsive">
+                <table class="order-details-table">
+                <thead>
+                    <tr>
+                        <th>Vé</th>
+                        <th>Ga đi</th>
+                        <th>Ga đến</th>
+                        <th>Số lượng</th>
+                        <th>Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{TicketName}}</td>
+                        <td>{{EntryStationName}}</td>
+                        <td>{{DestinationStationName}}</td>
+                        <td>{{Quantity}}</td>
+                        <td>{{Subtotal}} VND</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="5" style="text-align:right;">Tổng cộng: {{Amount}} VND</td>
+                    </tr>
+                </tfoot>
+                </table>
+            </div>
+        </div>
+        <div style="text-align:center; margin-top:2rem;">
+            <p>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ bộ phận hỗ trợ của chúng tôi.</p>
+            <p>Chúc bạn có một chuyến đi vui vẻ!</p>
+        </div>
+        <div class="footer">
+            &copy; 2024 Metro Ticketing System. Đã đăng ký bản quyền.
+        </div>
+    </div>
 </body>
 </html>

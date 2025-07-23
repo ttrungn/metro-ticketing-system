@@ -1,13 +1,13 @@
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Logging;
-using MimeKit;
 using Microsoft.Extensions.Options;
+using MimeKit;
 using NotificationService.Application.Common.Interfaces.Services;
 using NotificationService.Application.Common.Models;
 using NotificationService.Application.Mails.Queries.SendWelcome;
 
-namespace NotificationService.Infrastructure.Services
+namespace NotificationService.Infrastructure.Services.Email
 {
     public class EmailService : IEmailService
     {
