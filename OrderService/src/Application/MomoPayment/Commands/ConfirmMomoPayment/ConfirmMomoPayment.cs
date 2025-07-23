@@ -32,7 +32,7 @@ public record ConfirmMomoPaymentCommand : IRequest<ServiceResponse<string>>
     public string? ExtraData { get; init; } 
 
     public string? Signature { get; init; } 
-
+    
 }
 
 public class ConfirmMomoPaymentCommandValidator : AbstractValidator<ConfirmMomoPaymentCommand>

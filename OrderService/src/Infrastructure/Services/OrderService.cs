@@ -237,18 +237,21 @@ public class OrderService : IOrderService
             }
             var activeDate = buyDate.AddDays(ticket.ActiveInDay);
             var expiredDate = activeDate.AddDays(ticket.ExpirationInDay);  
-            var orderDetailEntity = new OrderDetail
+            for(var i = 0; i < orderDetail.Quantity; i++)
             {
-                Id  = new Guid(),
-                OrderId = returnedOrderId,
-                TicketId = orderDetail.TicketId,
-                BoughtPrice = orderDetail.BoughtPrice,
-                ActiveAt = activeDate,
-                ExpiredAt = expiredDate,
-                EntryStationId = orderDetail.EntryStationId.ToString(),
-                DestinationStationId = orderDetail.DestinationStationId.ToString(),
-            };
-            orderDetailsList.Add(orderDetailEntity);
+            var orderDetailEntity = new OrderDetail
+                {
+                    Id = new Guid(),
+                    OrderId = returnedOrderId,
+                    TicketId = orderDetail.TicketId,
+                    BoughtPrice = orderDetail.BoughtPrice,
+                    ActiveAt = activeDate,
+                    ExpiredAt = expiredDate,
+                    EntryStationId = orderDetail.EntryStationId.ToString(),
+                    DestinationStationId = orderDetail.DestinationStationId.ToString(),
+                };
+                orderDetailsList.Add(orderDetailEntity);
+            }
         }
         var order = new Order
         {
