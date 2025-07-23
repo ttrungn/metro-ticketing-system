@@ -40,7 +40,7 @@ public class BusService : IBusService
         {
             Id = id,
             Code = code,
-            StationId = command.StationId,
+            StationId = station.Id,
             DestinationName = command.DestinationName,
         };
 
@@ -49,6 +49,7 @@ public class BusService : IBusService
             Id = bus.Id,
             Code = bus.Code,
             StationId = bus.StationId,
+            StationName = station.Name,
             DestinationName = bus.DestinationName,
         });
 
@@ -67,6 +68,7 @@ public class BusService : IBusService
         {
             return Guid.Empty;
         }
+        string stationName = "unknown";
 
         if (command.StationId.HasValue)
         {
@@ -76,6 +78,7 @@ public class BusService : IBusService
                 return Guid.Empty;
             }
             bus.StationId = command.StationId.Value;
+            stationName = station.Name ?? "unknown";
         }
 
         bus.DestinationName = command.DestinationName;
@@ -84,6 +87,7 @@ public class BusService : IBusService
         {
             Id = bus.Id,
             StationId = bus.StationId,
+            StationName = stationName,
             DestinationName = bus.DestinationName,
         });
 
@@ -154,6 +158,7 @@ public class BusService : IBusService
     {
         return (b) =>
             (query.StationId == Guid.Empty || b.StationId == query.StationId) &&
+            (query.StationName == null || b.StationName!.ToLower().Contains(query.StationName!.ToLower() + "")) &&
             b.DestinationName!.ToLower().Contains(query.DestinationName!.ToLower() + "") &&
             b.DeleteFlag == query.Status;
     }

@@ -46,58 +46,62 @@ public class ConfirmMomoPaymentCommandHandler : IRequestHandler<ConfirmMomoPayme
 {
     private readonly IMomoService _service;
     private readonly IUser _user;
+    private readonly ICartService _cartService;
 
     private readonly ILogger<ConfirmMomoPaymentCommandHandler> _logger;
 
     private readonly IOrderService _orderService;
     public ConfirmMomoPaymentCommandHandler(
+        ICartService cartService,
         IUser user,
         IMomoService service,
         ILogger<ConfirmMomoPaymentCommandHandler> logger,
         IOrderService orderService)
     {
+        _cartService = cartService;
         _user = user;
         _service = service;
         _logger = logger;
         _orderService = orderService;
     }   
 
-    public async Task<ServiceResponse<string>> Handle(ConfirmMomoPaymentCommand request, CancellationToken cancellationToken)
+    public Task<ServiceResponse<string>> Handle(ConfirmMomoPaymentCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("ConfirmMomoPaymentCommandHandler: Handle called with request: {@Request}", request);   
-        var isConfirm =  await _service.ConfirmMomoPaymentAsync(request, cancellationToken);
+ //       var isConfirm =  await _service.ConfirmMomoPaymentAsync(request, cancellationToken);
 
-        if (!isConfirm)
-        {
-            return new ServiceResponse<string>
-            {
-                Succeeded = false,
-                Message = "Payment signature invalid.",
-                Data = null
-            };
-        }
+ //       if (!isConfirm)
+ //       {
+ //           return new ServiceResponse<string>
+ //           {
+ //               Succeeded = false,
+ //               Message = "Payment signature invalid.",
+ //               Data = null
+ //           };
+ //       }
+        
+ //       var orderStatus = request.resultCode == 0 ? OrderStatus.Paid : OrderStatus.Cancelled;
+ //       var isValidOrderId = Guid.TryParse(request.OrderId!,out var orderId);
+ ////       await _cartService.RemoveAllCartItemsAsync(_user.Id!, cancellationToken);
+ //       if (isValidOrderId == false)
+ //       {
+ //           _logger.LogError("Invalid OrderId: {OrderId}", request.OrderId);
+ //           return new ServiceResponse<string>
+ //           {
+ //               Succeeded = false,
+ //               Message = "Invalid OrderId.",
+ //               Data = null
+ //           };
+ //       }
+ //       await _orderService.ConfirmOrder(
+ //           (decimal)request.Amount!,
+ //           request.TransId.ToString()!,
+ //           _user.Id,
+ //           orderId,
+ //           orderStatus,                 
+ //           request.PayType!);
 
-        var orderStatus = request.resultCode == 0 ? OrderStatus.Paid : OrderStatus.Cancelled;
-        var isValidOrderId = Guid.TryParse(request.OrderId!,out var orderId);
-        if (isValidOrderId == false)
-        {
-            _logger.LogError("Invalid OrderId: {OrderId}", request.OrderId);
-            return new ServiceResponse<string>
-            {
-                Succeeded = false,
-                Message = "Invalid OrderId.",
-                Data = null
-            };
-        }
-        await _orderService.ConfirmOrder(
-            (decimal)request.Amount!,
-            request.TransId.ToString()!,
-            _user.Id,
-            orderId,
-            orderStatus,                 
-            request.PayType!);
-
-        _logger.LogInformation("Payment confirmed for OrderId: {OrderId}, Status: {Status}", request.OrderId, orderStatus);
+ //       _logger.LogInformation("Payment confirmed for OrderId: {OrderId}, Status: {Status}", request.OrderId, orderStatus);
         var response = new ServiceResponse<string>
         {
             Succeeded = true,
