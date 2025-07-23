@@ -210,6 +210,35 @@ public class CartService : ICartService
         await cartRepo.SaveChangesAsync(cancellationToken);
         return cart.Id;
     }
+    
+    public async Task RemoveAllCartItemsAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var responseCustomer = await GetCustomerResponse(userId, cancellationToken);
+        if (responseCustomer.Data == null)
+        {
+            return;
+        }
+
+        var customerId = responseCustomer.Data.CustomerId.ToString();
+        var cartRepo = _unitOfWork.GetRepository<Cart, Guid>();
+
+        var carts = await EntityFrameworkQueryableExtensions.ToListAsync(cartRepo.Query()
+            .Where(c => c.CustomerId == customerId), cancellationToken);
+        if (carts.Count != 0)
+        {
+            foreach (var cartItem in carts)
+            {
+                await cartRepo.RemoveOutAsync(cartItem, cancellationToken);
+                cartItem.AddDomainEvent(new DeleteCartEvent()
+                {
+                    Id = cartItem.Id
+                });
+            }
+        }
+
+        await cartRepo.SaveChangesAsync(cancellationToken);
+    }
+
     #region Helper Methods
     private async Task<ServiceResponse<CustomerReadModel>> GetCustomerResponse(string userId, CancellationToken cancellationToken)
     {
