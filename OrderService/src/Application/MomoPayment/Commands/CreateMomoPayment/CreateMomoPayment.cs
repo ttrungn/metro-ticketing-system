@@ -18,6 +18,14 @@ public class CreateMomoPaymentCommandValidator : AbstractValidator<CreateMomoPay
 {
     public CreateMomoPaymentCommandValidator()
     {
+        RuleFor(x => x.Amount)
+            .NotNull()
+            .GreaterThan(0)
+            .WithMessage("Amount must be greater than zero.");
+        RuleFor(x => x.OrderDetails)
+            .NotNull()
+            .NotEmpty()
+            .WithMessage("Order details must not be empty.");
     }
 }
 

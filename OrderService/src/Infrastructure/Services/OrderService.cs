@@ -236,19 +236,25 @@ public class OrderService : IOrderService
                 return Guid.Empty;
             }
             var activeDate = buyDate.AddDays(ticket.ActiveInDay);
-            var expiredDate = activeDate.AddDays(ticket.ExpirationInDay);
-            var orderDetailEntity = new OrderDetail
+            var expiredDate = activeDate.AddDays(ticket.ExpirationInDay);  
+            var entryStationId = orderDetail.EntryStationId.HasValue ? orderDetail.EntryStationId.Value.ToString() : null;
+            var destinationStationId = orderDetail.DestinationStationId.HasValue ? orderDetail.DestinationStationId.Value.ToString() : null;
+            for(var i = 0; i < orderDetail.Quantity; i++)
             {
-                Id  = new Guid(),
-                OrderId = returnedOrderId,
-                TicketId = orderDetail.TicketId,
-                BoughtPrice = orderDetail.BoughtPrice,
-                ActiveAt = activeDate,
-                ExpiredAt = expiredDate,
-                EntryStationId = orderDetail.EntryStationId.ToString(),
-                DestinationStationId = orderDetail.DestinationStationId.ToString(),
-            };
-            orderDetailsList.Add(orderDetailEntity);
+                var orderDetailEntity = new OrderDetail
+                    {
+                        Id = new Guid(),
+                        OrderId = returnedOrderId,
+                        TicketId = orderDetail.TicketId,
+                        BoughtPrice = orderDetail.BoughtPrice,
+                        ActiveAt = activeDate,
+                        ExpiredAt = expiredDate,
+                        EntryStationId = entryStationId,
+                        DestinationStationId = destinationStationId,
+                    };
+                    orderDetailsList.Add(orderDetailEntity);
+            }
+
         }
         var order = new Order
         {
