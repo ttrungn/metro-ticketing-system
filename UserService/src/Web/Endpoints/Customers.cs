@@ -14,7 +14,8 @@ public class Customers : EndpointGroupBase
             .DisableAntiforgery()
             .MapGet(GetCustomerByUserIdAsync, "/profile")
             .MapGet(GetCustomersAsync, "/")
-            .MapDelete(DeleteCustomerByIdAsync, "/{id:guid}");
+            .MapDelete(DeleteCustomerByIdAsync, "/deactivate/{id:guid}")
+            .MapPut(DeleteCustomerByIdAsync, "/activate/{id:guid}");
     }
     
     private static async Task<IResult> GetCustomerByUserIdAsync(ISender sender)

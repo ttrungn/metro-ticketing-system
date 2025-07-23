@@ -97,4 +97,14 @@ public class StaffService : IStaffService
         await staffRepo.UpdateAsync(staff);
         await _unitOfWork.SaveChangesAsync();
     }
+    
+    public async Task ActivateStaffById(Guid id)
+    {
+        var staffRepo = _unitOfWork.GetRepository<Staff, Guid>();
+        var staff = staffRepo.Query().FirstOrDefault(c => c.Id == id);
+        if (staff == null) return;
+        staff.DeleteFlag = false;
+        await staffRepo.UpdateAsync(staff);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }
