@@ -71,6 +71,7 @@ public class Buses : EndpointGroupBase
         [FromQuery] int page = 0,
         [FromQuery] int pageSize = 8,
         [FromQuery] Guid? stationId = null,
+        [FromQuery] string? stationName = "",
         [FromQuery] string? destinationName = "",
         [FromQuery] bool? status = false)
     {
@@ -79,6 +80,7 @@ public class Buses : EndpointGroupBase
             Page = page,
             PageSize = pageSize,
             StationId = stationId ?? Guid.Empty,
+            StationName = stationName ?? string.Empty,
             DestinationName = destinationName ?? string.Empty,
             Status = status ?? false
         };
