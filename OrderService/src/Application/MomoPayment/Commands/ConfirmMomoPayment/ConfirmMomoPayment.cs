@@ -108,6 +108,6 @@ public class ConfirmMomoPaymentCommandHandler : IRequestHandler<ConfirmMomoPayme
             Message = "Payment confirmed successfully.",
             Data = "ok",
         };
-        return response;
+        return Task.FromResult(response);
     }
 }
