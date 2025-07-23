@@ -81,7 +81,7 @@ public static class DependencyInjection
         services.AddScoped(typeof(IMassTransitService<>), typeof(MassTransitService<>));
         services.AddSingleton(new BlobServiceClient(azureBlobStorageConnectionString));
         services.AddScoped<IAzureBlobService, AzureBlobService>();
-
+        services.AddScoped<IPriceRangeService, PriceRangeService>();
         services.AddSingleton(TimeProvider.System);
 
         return services;
