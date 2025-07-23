@@ -101,7 +101,7 @@ public class ConfirmMomoPaymentCommandHandler : IRequestHandler<ConfirmMomoPayme
             orderId,
             orderStatus,
             request.PayType!);
-        if (isValidOrder == Guid.Empty)
+        if (isValidOrder == 0)
         {
             _logger.LogError("Failed to confirm order for OrderId: {OrderId}", request.OrderId);
             return new ServiceResponse<PaymentResultDto>
@@ -121,7 +121,7 @@ public class ConfirmMomoPaymentCommandHandler : IRequestHandler<ConfirmMomoPayme
             Data = new PaymentResultDto
             {
                 IsConfirm = true,
-                TicketCount = 2,
+                TicketCount = isValidOrder,
                 Message = "Bạn đã mua thành công 2 vé."
             }
         };

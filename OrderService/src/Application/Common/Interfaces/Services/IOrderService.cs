@@ -25,7 +25,7 @@ public interface IOrderService
         List<OrderDetailDto>  orderDetails,
         CancellationToken cancellationToken = default);
 
-    Task<Guid> ConfirmOrder(
+    Task<int> ConfirmOrder(
         decimal amount,
         string thirdPartyTransactionId, 
         string? userId,
