@@ -36,7 +36,7 @@ public class Payment : EndpointGroupBase
         var response = await sender.Send(command);
         if (response != null)
         {
-            return TypedResults.NoContent();
+            return TypedResults.Ok(response);
         }
         else return TypedResults.BadRequest();
     }

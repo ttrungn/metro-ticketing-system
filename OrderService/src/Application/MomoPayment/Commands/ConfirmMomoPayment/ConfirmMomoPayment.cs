@@ -2,11 +2,13 @@
 using Microsoft.Extensions.Logging;
 using OrderService.Application.Common.Interfaces;
 using OrderService.Application.Common.Interfaces.Services;
+using OrderService.Application.MomoPayment.DTOs;
 using OrderService.Domain.Enums;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OrderService.Application.MomoPayment.Commands.ConfirmMomoPayment;
 
-public record ConfirmMomoPaymentCommand : IRequest<ServiceResponse<string>>
+public record ConfirmMomoPaymentCommand : IRequest<ServiceResponse<PaymentResultDto>>
 {
     public string? PartnerCode { get; init; }
     public string? OrderId { get; init; }
@@ -42,7 +44,7 @@ public class ConfirmMomoPaymentCommandValidator : AbstractValidator<ConfirmMomoP
     }
 }
 
-public class ConfirmMomoPaymentCommandHandler : IRequestHandler<ConfirmMomoPaymentCommand, ServiceResponse<string>>
+public class ConfirmMomoPaymentCommandHandler : IRequestHandler<ConfirmMomoPaymentCommand, ServiceResponse<PaymentResultDto>>
 {
     private readonly IMomoService _service;
     private readonly IUser _user;
@@ -65,49 +67,64 @@ public class ConfirmMomoPaymentCommandHandler : IRequestHandler<ConfirmMomoPayme
         _orderService = orderService;
     }   
 
-    public Task<ServiceResponse<string>> Handle(ConfirmMomoPaymentCommand request, CancellationToken cancellationToken)
+    public async Task<ServiceResponse<PaymentResultDto>> Handle(ConfirmMomoPaymentCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("ConfirmMomoPaymentCommandHandler: Handle called with request: {@Request}", request);   
- //       var isConfirm =  await _service.ConfirmMomoPaymentAsync(request, cancellationToken);
+        _logger.LogInformation("ConfirmMomoPaymentCommandHandler: Handle called with request: {@Request}", request);
+        var isConfirm = await _service.ConfirmMomoPaymentAsync(request, cancellationToken);
 
- //       if (!isConfirm)
- //       {
- //           return new ServiceResponse<string>
- //           {
- //               Succeeded = false,
- //               Message = "Payment signature invalid.",
- //               Data = null
- //           };
- //       }
-        
- //       var orderStatus = request.resultCode == 0 ? OrderStatus.Paid : OrderStatus.Cancelled;
- //       var isValidOrderId = Guid.TryParse(request.OrderId!,out var orderId);
- ////       await _cartService.RemoveAllCartItemsAsync(_user.Id!, cancellationToken);
- //       if (isValidOrderId == false)
- //       {
- //           _logger.LogError("Invalid OrderId: {OrderId}", request.OrderId);
- //           return new ServiceResponse<string>
- //           {
- //               Succeeded = false,
- //               Message = "Invalid OrderId.",
- //               Data = null
- //           };
- //       }
- //       await _orderService.ConfirmOrder(
- //           (decimal)request.Amount!,
- //           request.TransId.ToString()!,
- //           _user.Id,
- //           orderId,
- //           orderStatus,                 
- //           request.PayType!);
+        if (!isConfirm)
+        {
+            return new ServiceResponse<PaymentResultDto>
+            {
+                Succeeded = false,
+                Message = "Payment signature invalid.",
+                Data = null
+            };
+        }
 
- //       _logger.LogInformation("Payment confirmed for OrderId: {OrderId}, Status: {Status}", request.OrderId, orderStatus);
-        var response = new ServiceResponse<string>
+        var orderStatus = request.resultCode == 0 ? OrderStatus.Paid : OrderStatus.Cancelled;
+        var isValidOrderId = Guid.TryParse(request.OrderId!, out var orderId);
+        if (isValidOrderId == false)
+        {
+            _logger.LogError("Invalid OrderId: {OrderId}", request.OrderId);
+            return new ServiceResponse<PaymentResultDto>
+            {
+                Succeeded = false,
+                Message = "Invalid OrderId.",
+                Data = null
+            };
+        }
+        var isValidOrder = await _orderService.ConfirmOrder(
+            (decimal)request.Amount!,
+            request.TransId.ToString()!,
+            _user.Id,
+            orderId,
+            orderStatus,
+            request.PayType!);
+        if (isValidOrder == 0)
+        {
+            _logger.LogError("Failed to confirm order for OrderId: {OrderId}", request.OrderId);
+            return new ServiceResponse<PaymentResultDto>
+            {
+                Succeeded = false,
+                Message = "Failed to confirm order.",
+                Data = null
+            };
+        }
+        await _cartService.RemoveAllCartItemsAsync(_user.Id!, cancellationToken);
+
+        _logger.LogInformation("Payment confirmed for OrderId: {OrderId}, Status: {Status}", request.OrderId, orderStatus);
+        var response = new ServiceResponse<PaymentResultDto>
         {
             Succeeded = true,
             Message = "Payment confirmed successfully.",
-            Data = "ok",
+            Data = new PaymentResultDto
+            {
+                IsConfirm = true,
+                TicketCount = isValidOrder,
+                Message = "Bạn đã mua thành công 2 vé."
+            }
         };
-        return Task.FromResult(response);
+        return response;
     }
 }
