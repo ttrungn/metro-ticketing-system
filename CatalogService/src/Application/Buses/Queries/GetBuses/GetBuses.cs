@@ -11,6 +11,7 @@ public record GetBusesQuery : IRequest<ServiceResponse<GetBusesResponseDto>>
     public int Page { get; init; } = 0;
     public int PageSize { get; init; } = 8;
     public Guid? StationId { get; init; } = Guid.Empty;
+    public string? StationName { get; init; } = string.Empty;
     public string? DestinationName { get; init; } = string.Empty;
     public bool? Status { get; init; } = false;
 }

@@ -158,6 +158,7 @@ public class BusService : IBusService
     {
         return (b) =>
             (query.StationId == Guid.Empty || b.StationId == query.StationId) &&
+            (query.StationName == null || b.StationName!.ToLower().Contains(query.StationName!.ToLower() + "")) &&
             b.DestinationName!.ToLower().Contains(query.DestinationName!.ToLower() + "") &&
             b.DeleteFlag == query.Status;
     }
