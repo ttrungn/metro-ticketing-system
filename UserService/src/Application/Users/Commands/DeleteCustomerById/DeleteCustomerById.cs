@@ -33,7 +33,7 @@ public class DeleteCustomerByIdCommandHandler : IRequestHandler<DeleteCustomerBy
 
     public async Task<Unit> Handle(DeleteCustomerByIdCommand request, CancellationToken cancellationToken)
     {
-        await _customerService.DeleteCustomerbyId(request.Id);
+        await _customerService.DeleteCustomerById(request.Id);
         _logger.LogInformation("Delete customer with ID {Id} successfully", request.Id);
         return Unit.Value;
     }

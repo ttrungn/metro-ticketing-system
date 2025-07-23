@@ -10,4 +10,5 @@ public interface IStaffService
     Task<IEnumerable<StaffResponseDto>> GetAllStaffs(GetStaffsQuery query);
     Task<bool> UpdateStaffById(UpdateStaffByIdCommand request);
     Task DeleteStaffById(Guid id);
+    Task ActivateStaffById(Guid id);
 }
