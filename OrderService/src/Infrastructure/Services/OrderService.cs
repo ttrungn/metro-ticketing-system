@@ -237,6 +237,8 @@ public class OrderService : IOrderService
             }
             var activeDate = buyDate.AddDays(ticket.ActiveInDay);
             var expiredDate = activeDate.AddDays(ticket.ExpirationInDay);
+            var entryStationId = orderDetail.EntryStationId.HasValue ? orderDetail.EntryStationId.Value.ToString() : null;
+            var destinationStationId = orderDetail.DestinationStationId.HasValue ? orderDetail.DestinationStationId.Value.ToString() : null;
             var orderDetailEntity = new OrderDetail
             {
                 Id  = new Guid(),
@@ -245,8 +247,8 @@ public class OrderService : IOrderService
                 BoughtPrice = orderDetail.BoughtPrice,
                 ActiveAt = activeDate,
                 ExpiredAt = expiredDate,
-                EntryStationId = orderDetail.EntryStationId.ToString(),
-                DestinationStationId = orderDetail.DestinationStationId.ToString(),
+                EntryStationId = entryStationId,
+                DestinationStationId = destinationStationId,
             };
             orderDetailsList.Add(orderDetailEntity);
         }
