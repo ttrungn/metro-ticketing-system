@@ -272,7 +272,7 @@ public class OrderService : IOrderService
 
     }
 
-    public async Task<Guid> ConfirmOrder(decimal amount,string thirdPaymentId,string? userId, Guid orderId, OrderStatus status,string transType, CancellationToken cancellationToken = default)
+    public async Task<int> ConfirmOrder(decimal amount,string thirdPaymentId,string? userId, Guid orderId, OrderStatus status,string transType, CancellationToken cancellationToken = default)
     {
         var repo = _unitOfWork.GetRepository<Order, Guid>();
         var order = await repo.GetByIdAsync(orderId);
@@ -280,7 +280,7 @@ public class OrderService : IOrderService
         {
             _logger.LogWarning("ConfirmOrder: Cannot found order ID = {OrderId}", orderId);
 
-            return Guid.Empty;
+            return 0;
         }
         order.ThirdPartyPaymentId = thirdPaymentId;
         order.Status = status;
@@ -304,6 +304,6 @@ public class OrderService : IOrderService
         _logger.LogInformation("ConfirmOrder: Transaction history added for OrderId: {TransactionHistory}", transactionHistory);
         await _unitOfWork.SaveChangesAsync();
 
-        return orderId;
+        return order.OrderDetails.Select(t => t.DeleteFlag == false).Count();
     }
 }
