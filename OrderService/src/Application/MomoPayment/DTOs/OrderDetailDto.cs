@@ -15,7 +15,7 @@ public class OrderDetailDto
     public Guid? DestinationStationId { get; set; }
 
     public decimal BoughtPrice { get; set; } = 0;
-    [(0)]
+   
     public int Quantity { get; set; }
 
 }
