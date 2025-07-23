@@ -40,4 +40,6 @@ public class Payment : EndpointGroupBase
         }
         else return TypedResults.BadRequest();
     }
+    
+   
 }
