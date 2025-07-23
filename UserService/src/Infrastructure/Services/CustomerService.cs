@@ -54,13 +54,25 @@ public class CustomerService : ICustomerService
         return customerResponseDtos;
     }
 
-    public async Task DeleteCustomerbyId(Guid id)
+    public async Task DeleteCustomerById(Guid id)
     {
         var customerRepo = _unitOfWork.GetRepository<Customer, Guid>();
         var customer = customerRepo.Query().FirstOrDefault(c => c.Id == id);
         if (customer == null) return;
         
         customer.DeleteFlag = true;
+        
+        await customerRepo.UpdateAsync(customer);
+        await _unitOfWork.SaveChangesAsync();
+    }
+    
+    public async Task ActivateCustomerById(Guid id)
+    {
+        var customerRepo = _unitOfWork.GetRepository<Customer, Guid>();
+        var customer = customerRepo.Query().FirstOrDefault(c => c.Id == id);
+        if (customer == null) return;
+        
+        customer.DeleteFlag = false;
         
         await customerRepo.UpdateAsync(customer);
         await _unitOfWork.SaveChangesAsync();

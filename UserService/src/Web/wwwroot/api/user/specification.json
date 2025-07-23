@@ -144,12 +144,37 @@
         }
       }
     },
-    "/api/user/Customers/{id}": {
+    "/api/user/Customers/deactivate/{id}": {
       "delete": {
         "tags": [
           "Customers"
         ],
         "operationId": "DeleteCustomerByIdAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/user/Customers/activate/{id}": {
+      "put": {
+        "tags": [
+          "Customers"
+        ],
+        "operationId": "ActivateCustomerByIdAsync",
         "parameters": [
           {
             "name": "id",
@@ -436,12 +461,39 @@
             "description": ""
           }
         }
-      },
+      }
+    },
+    "/api/user/Staffs/deactivate/{id}": {
       "delete": {
         "tags": [
           "Staffs"
         ],
         "operationId": "DeleteStaffByIdAsync",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/user/Staffs/activate/{id}": {
+      "put": {
+        "tags": [
+          "Staffs"
+        ],
+        "operationId": "ActivateStaffByIdAsync",
         "parameters": [
           {
             "name": "id",
