@@ -46,16 +46,19 @@ public class ConfirmMomoPaymentCommandHandler : IRequestHandler<ConfirmMomoPayme
 {
     private readonly IMomoService _service;
     private readonly IUser _user;
+    private readonly ICartService _cartService;
 
     private readonly ILogger<ConfirmMomoPaymentCommandHandler> _logger;
 
     private readonly IOrderService _orderService;
     public ConfirmMomoPaymentCommandHandler(
+        ICartService cartService,
         IUser user,
         IMomoService service,
         ILogger<ConfirmMomoPaymentCommandHandler> logger,
         IOrderService orderService)
     {
+        _cartService = cartService;
         _user = user;
         _service = service;
         _logger = logger;
@@ -76,9 +79,10 @@ public class ConfirmMomoPaymentCommandHandler : IRequestHandler<ConfirmMomoPayme
                 Data = null
             };
         }
-
+        
         var orderStatus = request.resultCode == 0 ? OrderStatus.Paid : OrderStatus.Cancelled;
         var isValidOrderId = Guid.TryParse(request.OrderId!,out var orderId);
+ //       await _cartService.RemoveAllCartItemsAsync(_user.Id!, cancellationToken);
         if (isValidOrderId == false)
         {
             _logger.LogError("Invalid OrderId: {OrderId}", request.OrderId);

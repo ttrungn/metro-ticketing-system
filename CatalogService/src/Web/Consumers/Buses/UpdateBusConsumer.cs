@@ -27,6 +27,7 @@ public class UpdateBusConsumer : IConsumer<UpdateBusEvent>
         if (busReadModel != null)
         {
             busReadModel.StationId = message.StationId;
+            busReadModel.StationName = message.StationName;
             busReadModel.DestinationName = message.DestinationName;
             busReadModel.LastModifiedAt = message.LastModifiedAt;
 

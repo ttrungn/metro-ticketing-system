@@ -91,6 +91,8 @@ public class StudentRequestService : IStudentRequestService
 
        var studentRequests = await QueryableExtensions.ToListAsync(session.Query<StudentRqReadModel>()
             .Where(filter)
+            .OrderByDescending(s => s.CreatedAt)
+            .ThenBy(s => s.Status) 
             .Skip(query.CurrentPage * query.PageSize)
             .Take(query.PageSize)
             .AsNoTracking()
@@ -129,9 +131,13 @@ public class StudentRequestService : IStudentRequestService
 
         if (studentRequest == null)
             return Guid.Empty;
-
+        if(studentRequest.Status == StudentRequestStatus.Approved || studentRequest.Status == StudentRequestStatus.Declined)
+        {
+            return Guid.Empty;
+        }
         studentRequest.StaffId = staffId; 
         studentRequest.Status = updateStudentRequestCommand.Status;
+    
         if (updateStudentRequestCommand.Status == StudentRequestStatus.Approved)
         {
             studentRequest.AddDomainEvent(new UpdateStudentRequestApproveEvent

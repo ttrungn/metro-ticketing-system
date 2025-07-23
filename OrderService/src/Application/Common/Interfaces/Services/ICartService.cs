@@ -12,4 +12,5 @@ public interface ICartService
     Task<Guid> DeleteCartAsync(Guid id, string userId, CancellationToken cancellationToken = default);
 
     Task<Guid> UpdateCartAsync(Guid id, int quantity, string userId, CancellationToken cancellationToken = default);
+    Task RemoveAllCartItemsAsync(string userId, CancellationToken cancellationToken = default);
 }
