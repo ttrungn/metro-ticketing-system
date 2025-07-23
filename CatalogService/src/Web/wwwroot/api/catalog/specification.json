@@ -90,7 +90,7 @@
             "x-position": 3
           },
           {
-            "name": "destinationName",
+            "name": "stationName",
             "in": "query",
             "schema": {
               "type": "string",
@@ -100,6 +100,16 @@
             "x-position": 4
           },
           {
+            "name": "destinationName",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "",
+              "nullable": true
+            },
+            "x-position": 5
+          },
+          {
             "name": "status",
             "in": "query",
             "schema": {
@@ -107,7 +117,7 @@
               "default": false,
               "nullable": true
             },
-            "x-position": 5
+            "x-position": 6
           }
         ],
         "responses": {

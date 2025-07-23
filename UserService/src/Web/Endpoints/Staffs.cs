@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using UserService.Application.Users.Commands.ActivateStaffById;
 using UserService.Application.Users.Commands.DeleteStaffById;
 using UserService.Application.Users.Commands.UpdateStaffById;
 using UserService.Application.Users.Queries.GetStaffById;
@@ -15,7 +16,8 @@ public class Staffs : EndpointGroupBase
             .MapGet(GetStaffsAsync, "/")
             .MapGet(GetStaffByIdAsync, "/{id:guid}")
             .MapPut(UpdateStaffByIdAsync, "/{id:guid}")
-            .MapDelete(DeleteStaffByIdAsync, "/{id:guid}");
+            .MapDelete(DeleteStaffByIdAsync, "/deactivate/{id:guid}")
+            .MapPut(ActivateStaffByIdAsync, "/activate/{id:guid}");
     }
 
     private static async Task<IResult> GetStaffByIdAsync(ISender sender, [FromRoute] Guid id)
@@ -81,6 +83,16 @@ public class Staffs : EndpointGroupBase
     private static async Task<IResult> DeleteStaffByIdAsync(ISender sender, [FromRoute] Guid id)
     {
         var response = await sender.Send(new DeleteStaffByIdCommand()
+        {
+            Id = id
+        });
+        
+        return TypedResults.NoContent();
+    }
+    
+    private static async Task<IResult> ActivateStaffByIdAsync(ISender sender, [FromRoute] Guid id)
+    {
+        var response = await sender.Send(new ActivateStaffByIdCommand()
         {
             Id = id
         });

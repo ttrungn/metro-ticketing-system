@@ -52,10 +52,36 @@ public class IdentityService : IIdentityService
         }
 
         var roles = await _userManager.GetRolesAsync(user);
-        var hasRole = roles.Contains(role);
+        var hasRole = roles.Select(r => r.ToLower()).Contains(role.ToLower());
         if (!hasRole)
         {
             return (Result.Failure(["Email hoặc mật khẩu không chính xác!"]), string.Empty, string.Empty, 0);
+        }
+
+        if (role.ToLower() == Roles.Customer.ToLower())
+        {
+            var customerRepo = _unitOfWork.GetRepository<Customer, Guid>();
+            var customer = await customerRepo.Query().FirstOrDefaultAsync(c => c.ApplicationUserId == user.Id);
+            if (customer == null)
+            {
+                return (Result.Failure(["Email hoặc mật khẩu không chính xác!"]), string.Empty, string.Empty, 0);
+            }
+            if (customer.DeleteFlag)
+            {
+                return (Result.Failure(["Tài khoản bị khóa, vui lòng liên hệ với hệ thống để được hỗ trợ!"]), string.Empty, string.Empty, 0);
+            }
+        } else if (role.ToLower() == Roles.Staff.ToLower())
+        {
+            var staffRepo = _unitOfWork.GetRepository<Staff, Guid>();
+            var staff = await staffRepo.Query().FirstOrDefaultAsync(c => c.ApplicationUserId == user.Id);
+            if (staff == null)
+            {
+                return (Result.Failure(["Email hoặc mật khẩu không chính xác!"]), string.Empty, string.Empty, 0);
+            }
+            if (staff.DeleteFlag)
+            {
+                return (Result.Failure(["Tài khoản bị khóa, vui lòng liên hệ với hệ thống để được hỗ trợ!"]), string.Empty, string.Empty, 0);
+            }
         }
 
         var token = _tokenRepository.GenerateJwtToken(user.Id, user.Email!, roles);
@@ -109,7 +135,7 @@ public class IdentityService : IIdentityService
 
         try
         {
-            if (role == Roles.Customer)
+            if (role.ToLower() == Roles.Customer.ToLower())
             {
                 var customerRepo = _unitOfWork.GetRepository<Customer, Guid>();
                 var customer = new Customer()
@@ -129,7 +155,7 @@ public class IdentityService : IIdentityService
                     DeleteFlag = false
                 });
             }
-            else if (role == Roles.Staff)
+            else if (role.ToLower() == Roles.Staff.ToLower())
             {
                 var staffRepo = _unitOfWork.GetRepository<Staff, Guid>();
                 var staff = new Staff()
@@ -146,6 +172,10 @@ public class IdentityService : IIdentityService
                     StaffId = staff.Id,
                     DeleteFlag = false
                 });
+            }
+            else
+            {
+                throw new Exception("Role không hợp lệ!");
             }
             await _unitOfWork.SaveChangesAsync();
         }

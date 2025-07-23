@@ -28,6 +28,7 @@ public class CreateBusConsumer : IConsumer<CreateBusEvent>
             Id = message.Id,
             Code = message.Code,
             StationId = message.StationId,
+            StationName = message.StationName,
             DestinationName = message.DestinationName,
             CreatedAt = message.CreatedAt,
             LastModifiedAt = message.LastModifiedAt,

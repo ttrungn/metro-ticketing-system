@@ -7,5 +7,6 @@ public interface ICustomerService
 {
     Task<CustomerReadModel?> GetCustomerById(string userId);
     Task<IEnumerable<CustomerResponseDto>> GetAllCustomers(GetCustomersQuery query);
-    Task DeleteCustomerbyId(Guid id);
+    Task DeleteCustomerById(Guid id);
+    Task ActivateCustomerById(Guid id);
 }
