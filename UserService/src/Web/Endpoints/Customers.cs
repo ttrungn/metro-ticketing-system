@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UserService.Application.Common.Interfaces.Services;
+using UserService.Application.Users.Commands.ActivateCustomerById;
+using UserService.Application.Users.Commands.ActivateStaffById;
 using UserService.Application.Users.Commands.DeleteCustomerById;
 using UserService.Application.Users.Queries.GetCustomer;
 using UserService.Application.Users.Queries.GetCustomers;
@@ -15,7 +17,7 @@ public class Customers : EndpointGroupBase
             .MapGet(GetCustomerByUserIdAsync, "/profile")
             .MapGet(GetCustomersAsync, "/")
             .MapDelete(DeleteCustomerByIdAsync, "/deactivate/{id:guid}")
-            .MapPut(DeleteCustomerByIdAsync, "/activate/{id:guid}");
+            .MapPut(ActivateCustomerByIdAsync, "/activate/{id:guid}");
     }
     
     private static async Task<IResult> GetCustomerByUserIdAsync(ISender sender)
@@ -59,6 +61,18 @@ public class Customers : EndpointGroupBase
     private static async Task<IResult> DeleteCustomerByIdAsync(ISender sender, [FromRoute] Guid id)
     {
         var query = new DeleteCustomerByIdCommand(){Id = id};
+
+        var response = await sender.Send(query);
+
+        return TypedResults.NoContent();
+    }
+    
+    private static async Task<IResult> ActivateCustomerByIdAsync(ISender sender, [FromRoute] Guid id)
+    {
+        var query = new ActivateCustomerByIdCommand()
+        {
+            Id = id
+        };
 
         var response = await sender.Send(query);
 

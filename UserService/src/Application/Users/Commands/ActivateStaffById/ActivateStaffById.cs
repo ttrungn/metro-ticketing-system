@@ -33,7 +33,7 @@ public class ActivateStaffByIdCommandHandler : IRequestHandler<ActivateStaffById
     public async Task<Unit> Handle(ActivateStaffByIdCommand request, CancellationToken cancellationToken)
     {
         await _staffService.ActivateStaffById(request.Id);
-        _logger.LogInformation("Delete staff with ID {Id} successfully", request.Id);
+        _logger.LogInformation("Activate staff with ID {Id} successfully", request.Id);
         return Unit.Value;
     }
 }
