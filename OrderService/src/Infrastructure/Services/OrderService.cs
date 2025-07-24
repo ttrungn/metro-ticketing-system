@@ -3,6 +3,7 @@ using BuildingBlocks.Response;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using OrderService.Application.Common.Interfaces;
 using OrderService.Application.Common.Interfaces.Repositories;
 using OrderService.Application.Common.Interfaces.Services;
@@ -290,13 +291,15 @@ public class OrderService : IOrderService
         order.Status = status;
         _logger.LogInformation("ConfirmOrder: Order: {@Order}, Amount: {Amount}, TransactionType: {TransType}", order, amount, transType);
         await repo.UpdateAsync(order, cancellationToken);
-        order.AddDomainEvent(new CreateOrderEvent()
+        var createOrderEvent = new CreateOrderEvent()
         {
             Email = user.Email!,
             OrderId = order.Id,
             Amount = amount,
             OrderDetails = MapToCreateOrderEventOrderDetails(order.OrderDetails)
-        });
+        };
+        _logger.LogInformation("CreateOrderEvent JSON: {Json}", JsonConvert.SerializeObject(createOrderEvent, Formatting.Indented));
+        order.AddDomainEvent(createOrderEvent);
         var transactionHistoryRepo = _unitOfWork.GetRepository<TransactionHistory, Guid>();
 
         var transactionHistory = new TransactionHistory
