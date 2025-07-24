@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using NotificationService.Application.Common.Interfaces;
 using NotificationService.Application.Common.Interfaces.Services;
+using NotificationService.Application.Common.Models;
 using NotificationService.Application.Mails.Queries.SendWelcome;
 using NotificationService.Domain.Entities;
 
@@ -11,19 +13,19 @@ public class GetWeatherForecastsQueryHandler : IRequestHandler<GetWeatherForecas
 {
     private readonly IWeatherForecastService _weatherForecastService;
     private readonly ILogger<GetWeatherForecastsQueryHandler> _logger;
-    private readonly IEmailTemplateService _emailTemplateService;
+    private readonly IUserEmailBuilder _userEmailBuilder;
     private readonly IEmailService _emailService;
     
     public GetWeatherForecastsQueryHandler(
         IWeatherForecastService weatherForecastService,
         ILogger<GetWeatherForecastsQueryHandler> logger,
-        IEmailTemplateService emailTemplateService,
+        IUserEmailBuilder UserEmailBuilder,
         IEmailService emailService
         )
     {
         _weatherForecastService = weatherForecastService;
         _logger = logger;
-        _emailTemplateService = emailTemplateService;
+        _userEmailBuilder = UserEmailBuilder;
         _emailService = emailService;
     }
 
@@ -31,7 +33,7 @@ public class GetWeatherForecastsQueryHandler : IRequestHandler<GetWeatherForecas
     {
         await _emailService.SendMailAsync(new MailData()
         {
-            EmailBody = await _emailTemplateService.GenerateWelcomeTemplate("Trung", "Nguyen"),
+            EmailBody = await _userEmailBuilder.GenerateWelcomeTemplate("Trung", "Nguyen"),
             EmailSubject = "Welcome to Metro Ticketing System",
             EmailToId = "trungnguyen0803forwork@gmail.com",
             EmailToName = "Trung Nguyen"

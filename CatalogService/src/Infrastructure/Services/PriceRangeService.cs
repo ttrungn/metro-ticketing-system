@@ -19,15 +19,21 @@ public class PriceRangeService : IPriceRangeService
     public async Task<Guid> CreateAsync(CreatePriceRangeCommand command, CancellationToken cancellationToken = default)
     {
         var repo = _unitOfWork.GetRepository<PriceRange, Guid>();
-        var minFromKm = await repo.Query().Where(p=> p.DeleteFlag == false)
-                                            .MinAsync(x => x.FromKm, cancellationToken);
-        var maxToKm = await repo.Query().Where(p=> p.DeleteFlag == false)
-                                        .MaxAsync(x => x.ToKm, cancellationToken);
-        if ((command.FromKm >= minFromKm && command.FromKm < maxToKm) || (command.ToKm > minFromKm && command.ToKm <= maxToKm))
+        var priceRanges = await repo.Query()
+            .Where(p => p.DeleteFlag == false)
+            .ToListAsync(cancellationToken);
+
+        if (priceRanges.Any())
         {
-            return Guid.Empty;
+            var minFromKm = priceRanges.Min(x => x.FromKm);
+            var maxToKm = priceRanges.Max(x => x.ToKm);
+
+            if ((command.FromKm >= minFromKm && command.FromKm < maxToKm) ||
+                (command.ToKm > minFromKm && command.ToKm <= maxToKm))
+            {
+                return Guid.Empty;
+            }
         }
-        
         var priceRange = new PriceRange()
         {
             FromKm = command.FromKm,
@@ -37,7 +43,7 @@ public class PriceRangeService : IPriceRangeService
 
         await repo.AddAsync(priceRange, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
-        
+
         return priceRange.Id;
     }
 
@@ -63,10 +69,12 @@ public class PriceRangeService : IPriceRangeService
                 DeleteFlag = x.DeleteFlag
             })
             .ToListAsync(cancellationToken);
+        var totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);
 
-        return (priceRanges, totalCount);
+
+        return (priceRanges, totalPages);
     }
-    
+
     public async Task<Guid> UpdateAsync(UpdatePriceRangeCommand command, CancellationToken cancellationToken = default)
     {
         var repo = _unitOfWork.GetRepository<PriceRange, Guid>();
@@ -91,7 +99,7 @@ public class PriceRangeService : IPriceRangeService
 
         await repo.UpdateAsync(priceRange, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
-        
+
         return priceRange.Id;
     }
     public async Task<Guid> DeleteAsync(Guid requestId, CancellationToken cancellationToken = default)
@@ -104,22 +112,22 @@ public class PriceRangeService : IPriceRangeService
         }
         var fromKmToDelete = priceRange.FromKm;
         var toKmToDelete = priceRange.ToKm;
-        
+
         var nextPriceRange = await repo.Query()
             .Where(p => p.DeleteFlag == false && p.Id != requestId && p.ToKm == fromKmToDelete )
             .FirstOrDefaultAsync(cancellationToken);
-        
+
         var prevPriceRange = await repo.Query()
             .Where(p => p.DeleteFlag == false && p.Id != requestId && p.FromKm == toKmToDelete )
             .FirstOrDefaultAsync(cancellationToken);
         if (nextPriceRange != null && prevPriceRange != null)
-            return Guid.Empty; 
-        
+            return Guid.Empty;
+
         priceRange.DeleteFlag = true;
 
         await repo.UpdateAsync(priceRange, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
-        
+
         return priceRange.Id;
     }
     public async Task<PriceRangeDto?> GetByIdAsync(Guid queryId, CancellationToken cancellationToken)

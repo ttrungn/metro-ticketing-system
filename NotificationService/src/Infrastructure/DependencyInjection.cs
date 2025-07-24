@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using NotificationService.Application.Common.Interfaces;
+using NotificationService.Application.Common.Interfaces.CatalogServiceClient;
 using NotificationService.Application.Common.Interfaces.Repositories;
 using NotificationService.Application.Common.Interfaces.Services;
 using NotificationService.Application.Common.Models;
@@ -14,6 +15,7 @@ using NotificationService.Infrastructure.Data;
 using NotificationService.Infrastructure.Data.Interceptors;
 using NotificationService.Infrastructure.Repositories;
 using NotificationService.Infrastructure.Services;
+using NotificationService.Infrastructure.Services.Email;
 
 namespace NotificationService.Infrastructure;
 
@@ -26,7 +28,8 @@ public static class DependencyInjection
         var readDbConnectionString = configuration.GetConnectionString("NotificationServiceReadDb");
         Guard.Against.Null(writeDbConnectionString, message: "Connection string 'NotificationServiceWriteDb' not found. Make sure you have configured the connection");
         Guard.Against.Null(readDbConnectionString, message: "Connection string 'NotificationServiceReadDb' not found. Make sure you have configured the connection");
-
+        
+        services.AddHttpContextAccessor();
         services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();
 
@@ -79,8 +82,11 @@ public static class DependencyInjection
         
         services.AddScoped<IWeatherForecastService, WeatherForecastService>();
         services.AddScoped(typeof(IMassTransitService<>), typeof(MassTransitService<>));
+        services.AddTransient<IHttpClientService, HttpClientService>();
         services.AddScoped<IEmailService, EmailService>();
-        services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+        services.AddScoped<ICatalogServiceClient, CatalogServiceClient>();
+        services.AddScoped<IUserEmailBuilder, UserEmailBuilder>();
+        services.AddScoped<IOrderEmailBuilder, OrderMailBuilder>();
         
         services.AddSingleton(TimeProvider.System);
 

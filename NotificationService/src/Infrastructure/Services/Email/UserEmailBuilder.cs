@@ -1,8 +1,9 @@
+using NotificationService.Application.Common.Interfaces;
 using NotificationService.Application.Common.Interfaces.Services;
 
-namespace NotificationService.Infrastructure.Services;
+namespace NotificationService.Infrastructure.Services.Email;
 
-public class EmailTemplateService : IEmailTemplateService
+public class UserEmailBuilder : IUserEmailBuilder
 {
     public async Task<string> GenerateWelcomeTemplate(string firstName, string lastName)
     {

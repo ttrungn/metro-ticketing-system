@@ -28,7 +28,7 @@ public interface IOrderService
     Task<int> ConfirmOrder(
         decimal amount,
         string thirdPartyTransactionId, 
-        string? userId,
+        IUser user,
         Guid orderId,
         OrderStatus status,
         string transType,

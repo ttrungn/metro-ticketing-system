@@ -1,13 +1,15 @@
-﻿using BuildingBlocks.Response;
+﻿using BuildingBlocks.Domain.Constants;
+using BuildingBlocks.Response;
 using Microsoft.Extensions.Logging;
 using OrderService.Application.Common.Interfaces;
 using OrderService.Application.Common.Interfaces.Services;
+using OrderService.Application.Common.Security;
 using OrderService.Application.MomoPayment.DTOs;
 using OrderService.Domain.Enums;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OrderService.Application.MomoPayment.Commands.ConfirmMomoPayment;
 
+[Authorize(Roles = Roles.Customer)]
 public record ConfirmMomoPaymentCommand : IRequest<ServiceResponse<PaymentResultDto>>
 {
     public string? PartnerCode { get; init; }
@@ -97,7 +99,7 @@ public class ConfirmMomoPaymentCommandHandler : IRequestHandler<ConfirmMomoPayme
         var isValidOrder = await _orderService.ConfirmOrder(
             (decimal)request.Amount!,
             request.TransId.ToString()!,
-            _user.Id,
+            _user,
             orderId,
             orderStatus,
             request.PayType!);
@@ -122,7 +124,7 @@ public class ConfirmMomoPaymentCommandHandler : IRequestHandler<ConfirmMomoPayme
             {
                 IsConfirm = true,
                 TicketCount = isValidOrder,
-                Message = "Bạn đã mua thành công 2 vé."
+                Message = $"Bạn đã mua thành công {isValidOrder} vé."
             }
         };
         return response;

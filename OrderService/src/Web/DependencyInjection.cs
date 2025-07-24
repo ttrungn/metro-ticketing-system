@@ -1,4 +1,5 @@
 ﻿using BuildingBlocks.Domain.Events.Cart;
+using BuildingBlocks.Domain.Events.Orders;
 using BuildingBlocks.Domain.Events.Sample;
 using Confluent.Kafka;
 using MassTransit;
@@ -108,6 +109,19 @@ public static class DependencyInjection
                         kc.RetryBackoff = TimeSpan.FromMilliseconds(
                             configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
                     });
+                
+                rider.AddProducer<CreateOrderEvent>(
+                    configuration["KafkaSettings:OrderServiceEvents:OrderCreated:Name"],
+                    (ctx, kc) =>
+                    {
+                        kc.MessageTimeout = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageTimeoutMs"));
+                        kc.MessageSendMaxRetries =
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:MessageSendMaxRetries");
+                        kc.RetryBackoff = TimeSpan.FromMilliseconds(
+                            configuration.GetValue<int>("KafkaSettings:ProducerConfigs:RetryBackoffMs"));
+                    });
+                
                 rider.AddConsumer<SampleConsumer>();
                 rider.AddConsumer<AddToCartConsumer>();
                 rider.AddConsumer<UpdateCartConsumer>();
