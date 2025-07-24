@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using NotificationService.Application.Common.Interfaces;
 using NotificationService.Application.Common.Interfaces.CatalogServiceClient;
 using NotificationService.Application.Common.Interfaces.Services;
@@ -8,10 +10,12 @@ namespace NotificationService.Infrastructure.Services.Email;
 
 public class OrderMailBuilder : IOrderEmailBuilder
 {
+    private readonly ILogger<OrderMailBuilder> _logger;
     private readonly ICatalogServiceClient _catalogServiceClient;
 
-    public OrderMailBuilder(ICatalogServiceClient catalogServiceClient)
+    public OrderMailBuilder(ILogger<OrderMailBuilder> logger, ICatalogServiceClient catalogServiceClient)
     {
+        _logger = logger;
         _catalogServiceClient = catalogServiceClient;
     }
 
@@ -21,6 +25,7 @@ public class OrderMailBuilder : IOrderEmailBuilder
     {
         var orderMailData = await BuildOrderMailDataAsync(email, orderDetails, cancellationToken);
         
+        _logger.LogInformation("GenerateOrderTemplate: OrderMailData: {@OrderMailData}", JsonConvert.SerializeObject(orderMailData, Formatting.Indented));
         var html = await File.ReadAllTextAsync("Templates/OrderSucceeded.html", cancellationToken);
         html = html.Replace("{{Amount}}", orderMailData.Amount.ToString("N0"));
         html = html.Replace("{{CustomerEmail}}", orderMailData.Email);
@@ -48,7 +53,7 @@ public class OrderMailBuilder : IOrderEmailBuilder
         var stations = getStationsResponse.Data?.Stations?.ToList() ?? [];
         
         var orderDetailMails = new List<OrderDetailMailData>();
-        double totalAmount = 0;
+        decimal totalAmount = 0;
 
         foreach (var item in orderDetails)
         {
@@ -63,7 +68,7 @@ public class OrderMailBuilder : IOrderEmailBuilder
             var quantity = item.Quantity;
             var price = item.Price;
 
-            totalAmount += (double)(price * quantity);
+            totalAmount += price;
 
             orderDetailMails.Add(new OrderDetailMailData
             {
@@ -74,8 +79,7 @@ public class OrderMailBuilder : IOrderEmailBuilder
                 Quantity = quantity
             });
         }
-
-
+        
         return new OrderMailData
         {
             Email = email,
