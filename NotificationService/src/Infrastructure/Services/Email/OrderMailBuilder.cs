@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using NotificationService.Application.Common.Interfaces;
 using NotificationService.Application.Common.Interfaces.CatalogServiceClient;
 using NotificationService.Application.Common.Interfaces.Services;
@@ -8,10 +10,12 @@ namespace NotificationService.Infrastructure.Services.Email;
 
 public class OrderMailBuilder : IOrderEmailBuilder
 {
+    private readonly ILogger<OrderMailBuilder> _logger;
     private readonly ICatalogServiceClient _catalogServiceClient;
 
-    public OrderMailBuilder(ICatalogServiceClient catalogServiceClient)
+    public OrderMailBuilder(ILogger<OrderMailBuilder> logger, ICatalogServiceClient catalogServiceClient)
     {
+        _logger = logger;
         _catalogServiceClient = catalogServiceClient;
     }
 
@@ -21,6 +25,7 @@ public class OrderMailBuilder : IOrderEmailBuilder
     {
         var orderMailData = await BuildOrderMailDataAsync(email, orderDetails, cancellationToken);
         
+        _logger.LogInformation("GenerateOrderTemplate: OrderMailData: {@OrderMailData}", JsonConvert.SerializeObject(orderMailData, Formatting.Indented));
         var html = await File.ReadAllTextAsync("Templates/OrderSucceeded.html", cancellationToken);
         html = html.Replace("{{Amount}}", orderMailData.Amount.ToString("N0"));
         html = html.Replace("{{CustomerEmail}}", orderMailData.Email);
@@ -42,10 +47,15 @@ public class OrderMailBuilder : IOrderEmailBuilder
         List<OrderDetailRequestDto> orderDetails,
         CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("BuildOrderMailDataAsync: OrderDetails: {@OrderDetails}", orderDetails);
         var getTicketsResponse = await _catalogServiceClient.GetTicketsAsync(0, int.MaxValue, cancellationToken);
+        _logger.LogInformation("BuildOrderMailDataAsync: GetTicketsResponse: {@GetTicketsResponse}", getTicketsResponse);
         var getStationsResponse = await _catalogServiceClient.GetStationsAsync(0, int.MaxValue, cancellationToken);
+        _logger.LogInformation("BuildOrderMailDataAsync: GetStationsResponse: {@GetStationsResponse}", getStationsResponse);
         var tickets = getTicketsResponse.Data?.Tickets?.ToList() ?? [];
+        _logger.LogInformation("BuildOrderMailDataAsync: Tickets: {@Tickets}", tickets);
         var stations = getStationsResponse.Data?.Stations?.ToList() ?? [];
+        _logger.LogInformation("BuildOrderMailDataAsync: Stations: {@Stations}", stations);
         
         var orderDetailMails = new List<OrderDetailMailData>();
         double totalAmount = 0;
@@ -74,8 +84,7 @@ public class OrderMailBuilder : IOrderEmailBuilder
                 Quantity = quantity
             });
         }
-
-
+        
         return new OrderMailData
         {
             Email = email,
