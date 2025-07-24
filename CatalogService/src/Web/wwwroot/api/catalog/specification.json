@@ -201,6 +201,15 @@
               "default": 8
             },
             "x-position": 2
+          },
+          {
+            "name": "deleteFlag",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            },
+            "x-position": 3
           }
         ],
         "responses": {

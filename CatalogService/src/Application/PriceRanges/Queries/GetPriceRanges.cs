@@ -9,6 +9,7 @@ public class GetPriceRangesQuery : IRequest<ServiceResponse<GetPriceRangeRespons
 {
     public int Page { get; init; } = 0;
     public int PageSize { get; init; } = 8;
+    public bool? DeleteFlag { get; set; }
 }
 public class GetPriceRangesValidator : AbstractValidator<GetPriceRangesQuery>
 {
