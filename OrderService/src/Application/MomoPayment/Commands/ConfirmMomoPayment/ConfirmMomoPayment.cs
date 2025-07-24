@@ -122,7 +122,7 @@ public class ConfirmMomoPaymentCommandHandler : IRequestHandler<ConfirmMomoPayme
             {
                 IsConfirm = true,
                 TicketCount = isValidOrder,
-                Message = "Bạn đã mua thành công 2 vé."
+                Message = $"Bạn đã mua thành công {isValidOrder} vé."
             }
         };
         return response;
