@@ -278,10 +278,15 @@ public class RouteService : IRouteService
         // Update route length
 
         route.LengthInKm = routeLength;
-
-
+        route.AddDomainEvent(new UpdateRouteEvent()
+        {
+            Id = route.Id,
+            LengthInKm = route.LengthInKm,
+            Name = route.Name!,
+            ThumbnailImageUrl = route.ThumbnailImageUrl
+        });
+        
         await repo.UpdateAsync(route, cancellationToken);
-
 
         await _unitOfWork.SaveChangesAsync();
 
