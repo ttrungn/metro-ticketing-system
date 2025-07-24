@@ -113,16 +113,17 @@ public class TicketService : ITicketService
 
         foreach (var pricePrange in priceRangeList)
         {
-            var rangeDistance = pricePrange.ToKm - pricePrange.FromKm;
+            var rangeDistance = pricePrange.ToKm - pricePrange.FromKm + 1;
 
             if (sumDistance >= rangeDistance)
             {
-                result = rangeDistance * (double)(pricePrange.Price);
-            }else
-            {
-                result = sumDistance * (double)(pricePrange.Price);
+                result += rangeDistance * (double)(pricePrange.Price);
             }
-                sumDistance -= rangeDistance;
+            else
+            {
+                result += sumDistance * (double)(pricePrange.Price);
+            }
+            sumDistance -= rangeDistance;
             if (sumDistance <= 0) break;
         }
 

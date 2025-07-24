@@ -19,9 +19,10 @@ public class PriceRanges : EndpointGroupBase
     private static async Task<IResult> GetPriceRanges(
         ISender sender,
         int page = 0,
-        int pageSize = 8)
+        int pageSize = 8,
+        bool? deleteFlag = null)
     {
-        var query = new GetPriceRangesQuery() { Page = page, PageSize = pageSize };
+        var query = new GetPriceRangesQuery() { Page = page, PageSize = pageSize, DeleteFlag = deleteFlag };
 
         var response = await sender.Send(query);
         if (response.Succeeded)
