@@ -26,7 +26,7 @@ public class PriceRanges : EndpointGroupBase
         var response = await sender.Send(query);
         if (response.Succeeded)
         {
-            return TypedResults.Ok(response.Data);
+            return TypedResults.Ok(response);
         }
 
         return TypedResults.BadRequest(response);
@@ -56,7 +56,7 @@ public class PriceRanges : EndpointGroupBase
 
         return TypedResults.BadRequest(response);
     }
-    
+
     private static async Task<IResult> DeletePriceRange(
         ISender sender,
         [FromRoute] Guid id)
@@ -81,7 +81,7 @@ public class PriceRanges : EndpointGroupBase
         var response = await sender.Send(query);
         if (response.Succeeded)
         {
-            return TypedResults.Ok(response.Data);
+            return TypedResults.Ok(response);
         }
 
         return TypedResults.NotFound(response);
