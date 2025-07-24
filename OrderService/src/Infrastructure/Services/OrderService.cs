@@ -330,8 +330,12 @@ public class OrderService : IOrderService
             .Select(g => new CreateOrderEventOrderDetail
             {
                 TicketId = g.Key.TicketId,
-                EntryStationId = Guid.Parse(g.Key.EntryStationId!),
-                DestinationStationId = Guid.Parse(g.Key.DestinationStationId!),
+                EntryStationId = string.IsNullOrWhiteSpace(g.Key.EntryStationId)
+                    ? Guid.Empty
+                    : Guid.Parse(g.Key.EntryStationId),
+                DestinationStationId = string.IsNullOrWhiteSpace(g.Key.DestinationStationId)
+                    ? Guid.Empty
+                    : Guid.Parse(g.Key.DestinationStationId),
                 Quantity = g.Count(),
                 Price = g.Sum(od => od.BoughtPrice)
             })
@@ -339,5 +343,4 @@ public class OrderService : IOrderService
 
         return grouped;
     }
-
 }

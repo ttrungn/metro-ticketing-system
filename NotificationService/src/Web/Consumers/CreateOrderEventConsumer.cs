@@ -25,8 +25,8 @@ public class CreateOrderEventConsumer : IConsumer<CreateOrderEvent>
             OrderDetails = context.Message.OrderDetails.Select(od => new OrderDetailRequestDto()
             {
                 TicketId = od.TicketId,
-                EntryStationId = od.EntryStationId,
-                DestinationStationId = od.DestinationStationId,
+                EntryStationId = od.EntryStationId ?? Guid.Empty,
+                DestinationStationId = od.DestinationStationId ?? Guid.Empty,
                 Quantity = od.Quantity,
                 Price = od.Price
             }).ToList(),
