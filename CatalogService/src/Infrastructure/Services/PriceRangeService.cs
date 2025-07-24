@@ -28,8 +28,8 @@ public class PriceRangeService : IPriceRangeService
             var minFromKm = priceRanges.Min(x => x.FromKm);
             var maxToKm = priceRanges.Max(x => x.ToKm);
 
-            if ((command.FromKm >= minFromKm && command.FromKm < maxToKm) ||
-                (command.ToKm > minFromKm && command.ToKm <= maxToKm))
+            if ((command.FromKm >= minFromKm && command.FromKm <= maxToKm) ||
+                (command.ToKm >= minFromKm && command.ToKm <= maxToKm))
             {
                 return Guid.Empty;
             }
@@ -88,7 +88,7 @@ public class PriceRangeService : IPriceRangeService
                                             .MinAsync(x => x.FromKm, cancellationToken);
         var maxToKm = await repo.Query().Where(p=> p.DeleteFlag == false && p.Id != command.Id)
                                         .MaxAsync(x => x.ToKm, cancellationToken);
-        if ((command.FromKm >= minFromKm && command.FromKm < maxToKm) || (command.ToKm > minFromKm && command.ToKm <= maxToKm))
+        if ((command.FromKm >= minFromKm && command.FromKm <= maxToKm) || (command.ToKm >= minFromKm && command.ToKm <= maxToKm))
         {
             return Guid.Empty;
         }
