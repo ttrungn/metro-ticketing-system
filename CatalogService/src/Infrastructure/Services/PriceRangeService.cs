@@ -51,7 +51,10 @@ public class PriceRangeService : IPriceRangeService
     {
         var repo = _unitOfWork.GetRepository<PriceRange, Guid>();
         var query = repo.Query();
-
+        if (request.DeleteFlag.HasValue)
+        {
+            query = query.Where(x => x.DeleteFlag == request.DeleteFlag.Value);
+        }
         var totalCount = await query.CountAsync(cancellationToken);
         var priceRanges = await query
             .OrderBy(x => x.FromKm)
