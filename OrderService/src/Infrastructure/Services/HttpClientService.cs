@@ -25,7 +25,10 @@ public class HttpClientService : IHttpClientService
         var client = _httpClientFactory.CreateClient();
         var request = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}/{endpoint}");
         request.Headers.Add("Accept", "application/json");
-        request.Headers.Add("Authorization", authorizationHeader);
+        if (!string.IsNullOrEmpty(authorizationHeader))
+        {
+            request.Headers.Add("Authorization", authorizationHeader);
+        }
 
         var response = await client.SendAsync(request, cancellationToken);
         if (!response.IsSuccessStatusCode)
