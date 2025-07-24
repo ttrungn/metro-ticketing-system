@@ -58,7 +58,7 @@ public class OrderMailBuilder : IOrderEmailBuilder
         _logger.LogInformation("BuildOrderMailDataAsync: Stations: {@Stations}", stations);
         
         var orderDetailMails = new List<OrderDetailMailData>();
-        double totalAmount = 0;
+        decimal totalAmount = 0;
 
         foreach (var item in orderDetails)
         {
@@ -73,7 +73,7 @@ public class OrderMailBuilder : IOrderEmailBuilder
             var quantity = item.Quantity;
             var price = item.Price;
 
-            totalAmount += (double)(price * quantity);
+            totalAmount += price;
 
             orderDetailMails.Add(new OrderDetailMailData
             {
