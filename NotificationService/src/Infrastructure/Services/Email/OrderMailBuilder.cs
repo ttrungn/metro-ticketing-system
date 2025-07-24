@@ -56,12 +56,10 @@ public class OrderMailBuilder : IOrderEmailBuilder
             if (ticket is null) continue;
 
             var entryStation = stations?.FirstOrDefault(s => s.Id == item.EntryStationId);
-            if (entryStation is null) continue;
 
             var destinationStation = stations?.FirstOrDefault(s => s.Id == item.DestinationStationId);
-            if (destinationStation is null) continue;
 
-            var ticketName = ticket.Name ?? "Unknown Ticket";
+            var ticketName = ticket.Name!;
             var quantity = item.Quantity;
             var price = item.Price;
 
@@ -70,8 +68,8 @@ public class OrderMailBuilder : IOrderEmailBuilder
             orderDetailMails.Add(new OrderDetailMailData
             {
                 TicketName = ticketName,
-                EntryStationName = entryStation.Name ?? "Unknown Station",
-                DestinationStationName = destinationStation.Name ?? "Unknown Station",
+                EntryStationName = entryStation?.Name ?? "Bất cứ trạm nào",
+                DestinationStationName = destinationStation?.Name ?? "Bất cứ trạm nào",
                 Price = price,
                 Quantity = quantity
             });
