@@ -114,15 +114,6 @@ public class OrderService : IOrderService
         PurchaseTicketStatus? toStatus,
         CancellationToken cancellationToken = default)
     {
-        var userUrl = Guard.Against.NullOrEmpty(_configuration["ClientSettings:UserServiceClient"],
-            message: "User Service Client URL is not configured.");
-        var userEndpoint = $"api/user/Customers/profile";
-        var userResponse = await _httpClientService.SendGet<ServiceResponse<CustomerReadModel>>(
-            userUrl,
-            userEndpoint,
-            cancellationToken: cancellationToken);
-        var customerId = userResponse?.Data?.CustomerId.ToString();
-
         var ticketUrl = Guard.Against.NullOrEmpty(_configuration["ClientSettings:CatalogServiceClient"],
             message: "Catalog Service Client URL is not configured.");
         var ticketEndpoint = $"api/catalog/Tickets/{ticketId}";
@@ -137,8 +128,7 @@ public class OrderService : IOrderService
         var now = DateTimeOffset.UtcNow;
         var query = repo.Query()
             .Where(od => od.Id == id
-                         && od.TicketId == ticketId
-                         && od.Order.CustomerId == customerId);
+                         && od.TicketId == ticketId);
         OrderDetail? ticket = null!;
 
         if (fromStatus == PurchaseTicketStatus.Unused && toStatus == PurchaseTicketStatus.Used)
