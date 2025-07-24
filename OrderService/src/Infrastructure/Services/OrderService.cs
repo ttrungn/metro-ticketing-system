@@ -275,7 +275,8 @@ public class OrderService : IOrderService
     public async Task<int> ConfirmOrder(decimal amount,string thirdPaymentId,string? userId, Guid orderId, OrderStatus status,string transType, CancellationToken cancellationToken = default)
     {
         var repo = _unitOfWork.GetRepository<Order, Guid>();
-        var order = await repo.GetByIdAsync(orderId);
+        var order = await repo.Query().Include(o => o.OrderDetails)
+            .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken);
         if (order == null)
         {
             _logger.LogWarning("ConfirmOrder: Cannot found order ID = {OrderId}", orderId);
@@ -304,6 +305,6 @@ public class OrderService : IOrderService
         _logger.LogInformation("ConfirmOrder: Transaction history added for OrderId: {TransactionHistory}", transactionHistory);
         await _unitOfWork.SaveChangesAsync();
 
-        return order.OrderDetails.Select(t => t.DeleteFlag == false).Count();
+        return order.OrderDetails.Count(t => t.DeleteFlag == false);
     }
 }
