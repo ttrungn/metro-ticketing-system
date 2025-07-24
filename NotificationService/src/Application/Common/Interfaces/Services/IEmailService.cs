@@ -1,3 +1,4 @@
+using NotificationService.Application.Common.Models;
 using NotificationService.Application.Mails.Queries.SendWelcome;
 
 namespace NotificationService.Application.Common.Interfaces.Services;

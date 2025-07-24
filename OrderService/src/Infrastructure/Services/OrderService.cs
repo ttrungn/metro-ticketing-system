@@ -1,7 +1,9 @@
-﻿using BuildingBlocks.Response;
+using BuildingBlocks.Domain.Events.Orders;
+using BuildingBlocks.Response;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using OrderService.Application.Common.Interfaces;
 using OrderService.Application.Common.Interfaces.Repositories;
 using OrderService.Application.Common.Interfaces.Services;
 using OrderService.Application.MomoPayment.DTOs;
@@ -16,17 +18,18 @@ public class OrderService : IOrderService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IConfiguration _configuration;
     private readonly IHttpClientService _httpClientService;
-    private readonly ILogger<OrderService> _logger; 
+    private readonly ILogger<OrderService> _logger;
 
     public OrderService(IUnitOfWork unitOfWork, IHttpClientService httpClientService,
         IConfiguration configuration,
-        ILogger<OrderService> logger
+        ILogger<OrderService> logger,
+        IUser user
         )
     {
         _unitOfWork = unitOfWork;
         _httpClientService = httpClientService;
         _configuration = configuration;
-        _logger = logger;   
+        _logger = logger;
     }
 
     public async Task<IEnumerable<TicketDto>> GetUserTicketsAsync(string? userId,
@@ -272,7 +275,7 @@ public class OrderService : IOrderService
 
     }
 
-    public async Task<int> ConfirmOrder(decimal amount,string thirdPaymentId,string? userId, Guid orderId, OrderStatus status,string transType, CancellationToken cancellationToken = default)
+    public async Task<int> ConfirmOrder(decimal amount,string thirdPaymentId, IUser user, Guid orderId, OrderStatus status,string transType, CancellationToken cancellationToken = default)
     {
         var repo = _unitOfWork.GetRepository<Order, Guid>();
         var order = await repo.Query().Include(o => o.OrderDetails)
@@ -287,6 +290,13 @@ public class OrderService : IOrderService
         order.Status = status;
         _logger.LogInformation("ConfirmOrder: Order: {@Order}, Amount: {Amount}, TransactionType: {TransType}", order, amount, transType);
         await repo.UpdateAsync(order, cancellationToken);
+        order.AddDomainEvent(new CreateOrderEvent()
+        {
+            Email = user.Email!,
+            OrderId = order.Id,
+            Amount = amount,
+            OrderDetails = MapToCreateOrderEventOrderDetails(order.OrderDetails)
+        });
         var transactionHistoryRepo = _unitOfWork.GetRepository<TransactionHistory, Guid>();
 
         var transactionHistory = new TransactionHistory
@@ -301,10 +311,33 @@ public class OrderService : IOrderService
 
         };
 
-            await transactionHistoryRepo.AddAsync(transactionHistory);
+        await transactionHistoryRepo.AddAsync(transactionHistory);
         _logger.LogInformation("ConfirmOrder: Transaction history added for OrderId: {TransactionHistory}", transactionHistory);
         await _unitOfWork.SaveChangesAsync();
 
         return order.OrderDetails.Count(t => t.DeleteFlag == false);
     }
+    
+    private List<CreateOrderEventOrderDetail> MapToCreateOrderEventOrderDetails(List<OrderDetail> orderDetails)
+    {
+        var grouped = orderDetails
+            .GroupBy(od => new
+            {
+                od.TicketId,
+                od.EntryStationId,
+                od.DestinationStationId
+            })
+            .Select(g => new CreateOrderEventOrderDetail
+            {
+                TicketId = g.Key.TicketId,
+                EntryStationId = Guid.Parse(g.Key.EntryStationId!),
+                DestinationStationId = Guid.Parse(g.Key.DestinationStationId!),
+                Quantity = g.Count(),
+                Price = g.Sum(od => od.BoughtPrice)
+            })
+            .ToList();
+
+        return grouped;
+    }
+
 }

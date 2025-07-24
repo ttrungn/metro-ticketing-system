@@ -1,4 +1,4 @@
-namespace NotificationService.Application.Mails.Queries.SendWelcome;
+namespace NotificationService.Application.Common.Models;
 
 public class MailData
 {

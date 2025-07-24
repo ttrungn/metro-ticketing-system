@@ -1,4 +1,5 @@
-﻿using BuildingBlocks.Domain.Events.Sample;
+﻿using BuildingBlocks.Domain.Events.Orders;
+using BuildingBlocks.Domain.Events.Sample;
 using BuildingBlocks.Domain.Events.Users;
 using Confluent.Kafka;
 using MassTransit;
@@ -21,7 +22,7 @@ public static class DependencyInjection
 
         services.AddScoped<IUser, CurrentUser>();
 
-        services.AddHttpContextAccessor();
+        services.AddHttpClient();
         
         services.AddHealthChecks()
             .AddDbContextCheck<ApplicationDbContext>();
@@ -71,6 +72,7 @@ public static class DependencyInjection
                 
                 rider.AddConsumer<SampleConsumer>();
                 rider.AddConsumer<CreateCustomerEventConsumer>();
+                rider.AddConsumer<CreateOrderEventConsumer>();
                 
                 rider.UsingKafka((context, k) =>
                 {
@@ -108,6 +110,14 @@ public static class DependencyInjection
                         e =>
                         {
                             e.ConfigureConsumer<CreateCustomerEventConsumer>(context);
+                        }
+                    );
+                    k.TopicEndpoint<CreateOrderEvent>(
+                        configuration["KafkaSettings:OrderServiceEvents:OrderCreated:Name"],
+                        configuration["KafkaSettings:OrderServiceEvents:OrderCreated:Group"],
+                        e =>
+                        {
+                            e.ConfigureConsumer<CreateOrderEventConsumer>(context);
                         }
                     );
                 });

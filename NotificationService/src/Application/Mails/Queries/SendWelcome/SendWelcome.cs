@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using NotificationService.Application.Common.Interfaces;
 using NotificationService.Application.Common.Interfaces.Services;
+using NotificationService.Application.Common.Models;
 
 namespace NotificationService.Application.Mails.Queries.SendWelcome;
 
@@ -24,20 +26,20 @@ public class SendWelcomeQueryHandler : IRequestHandler<SendWelcomeQuery, Unit>
 {
     private readonly ILogger<SendWelcomeQueryHandler> _logger;
     private readonly IEmailService _emailService;
-    private readonly IEmailTemplateService _emailTemplateService;
+    private readonly IUserEmailBuilder _userEmailBuilder;
     
-    public SendWelcomeQueryHandler(ILogger<SendWelcomeQueryHandler> logger, IEmailService emailService, IEmailTemplateService emailTemplateService)
+    public SendWelcomeQueryHandler(ILogger<SendWelcomeQueryHandler> logger, IEmailService emailService, IUserEmailBuilder userEmailBuilder)
     {
         _logger = logger;
         _emailService = emailService;
-        _emailTemplateService = emailTemplateService;
+        _userEmailBuilder = userEmailBuilder;
     }
 
     public async Task<Unit> Handle(SendWelcomeQuery request, CancellationToken cancellationToken)
     {
         await _emailService.SendMailAsync(new MailData()
         {
-            EmailBody = await _emailTemplateService.GenerateWelcomeTemplate(request.FirstName, request.LastName),
+            EmailBody = await _userEmailBuilder.GenerateWelcomeTemplate(request.FirstName, request.LastName),
             EmailSubject = "Welcome to Metro Ticketing System",
             EmailToId = request.Email,
             EmailToName = request.FirstName
