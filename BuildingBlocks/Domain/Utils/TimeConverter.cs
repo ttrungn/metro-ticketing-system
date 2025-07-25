@@ -6,7 +6,15 @@ public static class TimeConverter
     {
         var createdAtUtc = DateTimeOffset.UtcNow;
 
-        var vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        TimeZoneInfo vietnamTimeZone;
+        if (OperatingSystem.IsWindows())
+        {
+            vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        }
+        else
+        {
+            vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
+        }
         var createdAtInVietnam = TimeZoneInfo.ConvertTime(createdAtUtc, vietnamTimeZone);
 
         return createdAtInVietnam;
