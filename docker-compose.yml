@@ -2,6 +2,8 @@ services:
   user-service:
     image: "${REGISTRY_USERNAME}/mts-user-service:${IMAGE_TAG-latest}"
     container_name: user-service
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     expose:
       - 8080
     env_file:
@@ -11,6 +13,8 @@ services:
   sample-service:
     image: "${REGISTRY_USERNAME}/mts-sample-service:${IMAGE_TAG-latest}"
     container_name: sample-service
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     expose:
       - 8080
     env_file:
@@ -20,6 +24,8 @@ services:
   catalog-service:
     image: "${REGISTRY_USERNAME}/mts-catalog-service:${IMAGE_TAG-latest}"
     container_name: catalog-service
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     expose:
       - 8080
     env_file:
@@ -29,6 +35,8 @@ services:
   order-service:
     image: "${REGISTRY_USERNAME}/mts-order-service:${IMAGE_TAG-latest}"
     container_name: order-service
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     expose:
       - 8080
     env_file:
@@ -38,6 +46,8 @@ services:
   notification-service:
     image: "${REGISTRY_USERNAME}/mts-notification-service:${IMAGE_TAG-latest}"
     container_name: notification-service
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     expose:
       - 8080
     env_file:
@@ -47,6 +57,8 @@ services:
   api-gateway:
     image: "${REGISTRY_USERNAME}/mts-yarp-api-gateway:${IMAGE_TAG-latest}"
     container_name: api-gateway
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - "9000:8080"
     depends_on:

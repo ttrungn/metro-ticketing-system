@@ -1,3 +1,4 @@
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NotificationService.Application.Common.Interfaces;
@@ -29,15 +30,21 @@ public class OrderMailBuilder : IOrderEmailBuilder
         var html = await File.ReadAllTextAsync("Templates/OrderSucceeded.html", cancellationToken);
         html = html.Replace("{{Amount}}", orderMailData.Amount.ToString("N0"));
         html = html.Replace("{{CustomerEmail}}", orderMailData.Email);
-        var detail = orderMailData.OrderDetails.FirstOrDefault();
-        if (detail != null)
+
+        var orderDetailsRows = new StringBuilder();
+        foreach (var detail in orderMailData.OrderDetails)
         {
-            html = html.Replace("{{TicketName}}", detail.TicketName);
-            html = html.Replace("{{EntryStationName}}", detail.EntryStationName);
-            html = html.Replace("{{DestinationStationName}}", detail.DestinationStationName);
-            html = html.Replace("{{Quantity}}", detail.Quantity.ToString());
-            html = html.Replace("{{Subtotal}}", detail.Price.ToString("N0"));
+            orderDetailsRows.AppendLine($@"
+            <tr>
+                <td>{detail.TicketName}</td>
+                <td>{detail.EntryStationName}</td>
+                <td>{detail.DestinationStationName}</td>
+                <td>{detail.Quantity}</td>
+                <td>{detail.Price.ToString("N0")} VND</td>
+            </tr>");
         }
+
+        html = html.Replace("{{OrderDetailsRows}}", orderDetailsRows.ToString());
         
         return html;
     }
