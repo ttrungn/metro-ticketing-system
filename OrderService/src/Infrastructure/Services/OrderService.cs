@@ -1,4 +1,5 @@
 using BuildingBlocks.Domain.Events.Orders;
+using BuildingBlocks.Domain.Utils;
 using BuildingBlocks.Response;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -47,7 +48,7 @@ public class OrderService : IOrderService
 
         var repo = _unitOfWork.GetRepository<OrderDetail, Guid>();
 
-        var now = DateTimeOffset.Now;
+        var now = TimeConverter.GetCurrentVietNamTime();
         var query = repo.Query().Where(od => od.Order.CustomerId == customerId
                                              && od.Order.Status == OrderStatus.Paid);
 
@@ -125,7 +126,7 @@ public class OrderService : IOrderService
         var ticketModel = ticketResponse?.Data!;
 
         var repo = _unitOfWork.GetRepository<OrderDetail, Guid>();
-        var now = DateTimeOffset.Now;
+        var now = TimeConverter.GetCurrentVietNamTime();
         var query = repo.Query()
             .Where(od => od.Id == id
                          && od.TicketId == ticketId);
@@ -230,7 +231,7 @@ public class OrderService : IOrderService
                 return Guid.Empty;
             }
             var activeDate = buyDate.AddDays(ticket.ActiveInDay);
-            var expiredDate = activeDate.AddDays(ticket.ExpirationInDay);  
+            var expiredDate = activeDate.AddDays(ticket.ExpirationInDay);
             var entryStationId = orderDetail.EntryStationId.HasValue ? orderDetail.EntryStationId.Value.ToString() : null;
             var destinationStationId = orderDetail.DestinationStationId.HasValue ? orderDetail.DestinationStationId.Value.ToString() : null;
             for(var i = 0; i < orderDetail.Quantity; i++)
@@ -310,7 +311,7 @@ public class OrderService : IOrderService
 
         return order.OrderDetails.Count(t => t.DeleteFlag == false);
     }
-    
+
     private List<CreateOrderEventOrderDetail> MapToCreateOrderEventOrderDetails(List<OrderDetail> orderDetails)
     {
         var grouped = orderDetails
