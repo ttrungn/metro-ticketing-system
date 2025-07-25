@@ -47,7 +47,7 @@ public class OrderService : IOrderService
 
         var repo = _unitOfWork.GetRepository<OrderDetail, Guid>();
 
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTimeOffset.Now;
         var query = repo.Query().Where(od => od.Order.CustomerId == customerId
                                              && od.Order.Status == OrderStatus.Paid);
 
@@ -125,7 +125,7 @@ public class OrderService : IOrderService
         var ticketModel = ticketResponse?.Data!;
 
         var repo = _unitOfWork.GetRepository<OrderDetail, Guid>();
-        var now = DateTimeOffset.UtcNow;
+        var now = DateTimeOffset.Now;
         var query = repo.Query()
             .Where(od => od.Id == id
                          && od.TicketId == ticketId);
@@ -138,7 +138,7 @@ public class OrderService : IOrderService
                 .AsNoTracking()
                 .FirstOrDefaultAsync(cancellationToken);
             if (ticket == null) return (id, Guid.Empty);
-            if (ticket.ActiveAt > DateTimeOffset.UtcNow)
+            if (ticket.ActiveAt > now)
             {
                 ticket.ActiveAt = now;
                 ticket.ExpiredAt = now.AddDays(ticketModel.ExpirationInDay);
