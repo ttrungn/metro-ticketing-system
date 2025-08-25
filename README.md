@@ -1,4 +1,18 @@
-﻿Each service in the project project was generated using the [Clean.Architecture.Solution.Template](https://github.com/jasontaylordev/SampleService) version 8.0.6.
+# MetroTicketingSystem
+
+MetroTicketingSystem is a modular, microservices-based solution for managing metro ticketing operations. It leverages Clean Architecture principles for maintainability and scalability. The system is composed of several services, including CatalogService, NotificationService, OrderService, SampleService, UserService, and YarpApiGateway, each responsible for a specific domain within the ticketing workflow.
+
+## Related Projects
+
+Here are some related repositories for the metro ticketing system:
+
+- [Mobile Application (Flutter/Dart)](https://github.com/ttrungn/metro-ticketing-system-mobile)  
+  A mobile app for passengers to book, manage, and validate metro tickets.
+
+- [Web Administration Panel (React/Node.js)](https://github.com/SANG-VAN-PHAN/metro_ticket_system_admin)  
+  A web-based admin dashboard for managing tickets, routes, and system data.
+
+Each service in the project project was generated using the [Clean.Architecture.Solution.Template](https://github.com/jasontaylordev/SampleService) version 8.0.6.
 
 ## Build
 
