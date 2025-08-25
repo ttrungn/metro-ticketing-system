@@ -2,6 +2,15 @@
 
 MetroTicketingSystem is a modular, microservices-based solution for managing metro ticketing operations. It leverages Clean Architecture principles for maintainability and scalability. The system is composed of several services, including CatalogService, NotificationService, OrderService, SampleService, UserService, and YarpApiGateway, each responsible for a specific domain within the ticketing workflow.
 
+## Contributors
+
+| Name               | Role       |
+|--------------------|------------|
+| Nguyen Thanh Trung | Leader     |
+| Bui Gia Huy        | Developer  |
+| Le Hoang Khanh     | Developer  |
+| Nguyen Tri Quyet   | Developer  |
+
 ## Related Projects
 
 Here are some related repositories for the metro ticketing system:
